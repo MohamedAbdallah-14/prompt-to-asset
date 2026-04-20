@@ -41,3 +41,9 @@ ideations/**
 
 # Generated asset bundles — never hand-edited.
 assets/**
+
+# Evals artifacts — snapshot JSONs are machine-written, bundle mcpb/ is
+# zipped at pack-time, dist-release is the packed tarball.
+evals/snapshots/**
+bundle/mcpb/**
+dist-release/**
