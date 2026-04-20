@@ -238,7 +238,7 @@ async function runOnce(
     const p = resolve(outDir, "mark.svg");
     writeFileSync(p, vec.svg);
     variants.push({ path: p, format: "svg", paths: vec.paths_count });
-    masterSvg = vec.svg;
+    // masterSvg is captured on disk; no further use in this scope.
   }
 
   const validation = await tier0({

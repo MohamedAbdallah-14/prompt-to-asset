@@ -2,16 +2,15 @@ name: Publish MCP server to npm
 
 # Publishes `prompt-to-asset` to npm with OIDC-backed provenance.
 #
-# Trigger: push a tag shaped `mcp-server-vX.Y.Z` (e.g. `mcp-server-v0.2.0`).
-# The `environment: npm-publish` gate lets you require manual approval in
-# GitHub → Settings → Environments before the publish step runs.
+# Trusted Publisher is configured at
+#   https://www.npmjs.com/package/prompt-to-asset → Settings → Publishing access
+# bound to repo MohamedAbdallah-14/prompt-to-asset, workflow publish.yml,
+# environment npm-publish. OIDC handles auth — no NPM_TOKEN in repo secrets.
 #
-# Two paths for auth:
-#   1. Trusted Publisher (recommended — no NPM_TOKEN secret needed). Set up
-#      at https://www.npmjs.com/package/prompt-to-asset → Settings →
-#      Publishing access. `id-token: write` below is what OIDC needs.
-#   2. Fallback: provide an npm automation token as NPM_TOKEN. Less secure
-#      (long-lived), but works without trusted-publisher setup.
+# Trigger: push a tag shaped `mcp-server-vX.Y.Z` (e.g. mcp-server-v0.2.1).
+# The `environment: npm-publish` gate lets you require a manual approval
+# click before the publish step runs (optional — set reviewers in
+# Settings → Environments).
 
 on:
   push:
@@ -22,6 +21,10 @@ on:
 permissions:
   contents: read
   id-token: write
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -43,6 +46,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Ensure sharp resolves on the runner
+        run: npm install --no-save sharp
+
       - name: Type-check
         run: npm run typecheck
 
@@ -52,16 +58,17 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Data integrity
+      - name: Data integrity (registry vs routing-table)
         run: node packages/mcp-server/dist/index.js doctor --data
 
-      - name: Smoke
+      - name: Smoke (MCP stdio + tool surface)
         run: npm run smoke
 
-      - name: Publish with provenance
+      - name: Evals regression gate
+        run: node evals/scripts/run.mjs --check
+
+      - name: Publish with provenance (OIDC trusted publisher)
         working-directory: packages/mcp-server
-        # `--provenance` requires OIDC (id-token: write). NODE_AUTH_TOKEN is
-        # a fallback when a trusted publisher is not configured.
+        # With Trusted Publisher configured, OIDC signs the upload and
+        # attaches sigstore provenance. No NPM_TOKEN needed.
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

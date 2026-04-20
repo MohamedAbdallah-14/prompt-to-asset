@@ -265,7 +265,7 @@ const checks: Check[] = [
       } catch (err) {
         const msg = (err as Error).message;
         if (!/api.*key|provider|OPENAI_API_KEY/i.test(msg))
-          throw new Error(`error message not actionable: ${msg}`);
+          throw new Error(`error message not actionable: ${msg}`, { cause: err });
       } finally {
         for (const [k, v] of Object.entries(prior)) if (v !== undefined) process.env[k] = v;
       }

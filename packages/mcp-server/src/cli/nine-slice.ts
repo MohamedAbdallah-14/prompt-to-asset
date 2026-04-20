@@ -208,11 +208,8 @@ function parseArgs(argv: string[]): NineSliceArgs | null {
     return null;
   }
 
-  // --guides L,T,R,B is the nice ergonomic form.
-  let L = 0,
-    T = 0,
-    R = 0,
-    B = 0;
+  // --guides L,T,R,B is the nice ergonomic form; otherwise individual flags.
+  let guides: [number, number, number, number];
   if (typeof flags["guides"] === "string") {
     const parts = flags["guides"].split(",").map((s) => parseInt(s.trim(), 10));
     if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) {
@@ -221,13 +218,16 @@ function parseArgs(argv: string[]): NineSliceArgs | null {
       );
       return null;
     }
-    [L, T, R, B] = parts as [number, number, number, number];
+    guides = parts as [number, number, number, number];
   } else {
-    L = intFlag(flags["left"], 0);
-    T = intFlag(flags["top"], 0);
-    R = intFlag(flags["right"], 0);
-    B = intFlag(flags["bottom"], 0);
+    guides = [
+      intFlag(flags["left"], 0),
+      intFlag(flags["top"], 0),
+      intFlag(flags["right"], 0),
+      intFlag(flags["bottom"], 0)
+    ];
   }
+  const [L, T, R, B] = guides;
 
   const out =
     typeof flags["out"] === "string" ? resolve(flags["out"]) : resolve(pathDirname(resolve(img)));

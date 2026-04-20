@@ -1,52 +1,87 @@
 version: 2
+
+# Dependabot covers four surfaces. The schedule is daily for dev tooling
+# (cheap to merge, keeps lockfile fresh), weekly for runtime deps (require
+# test-suite signoff), and monthly for the container base image.
+
 updates:
-  # Monorepo root — workspaces resolve here
+  # Monorepo root — npm workspaces resolve here
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+      interval: "daily"
+      time: "05:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "npm"
     commit-message:
       prefix: "deps"
       include: "scope"
+    # Bundle small updates into one PR per group to keep the PR volume low.
+    # Each group moves on a consistent cadence; mismatched majors stay separate.
     groups:
       dev-tooling:
         patterns:
           - "eslint*"
+          - "@eslint/*"
           - "prettier*"
           - "@typescript-eslint/*"
+          - "typescript-eslint"
           - "typescript"
           - "vitest"
           - "@vitest/*"
+          - "@types/*"
+          - "globals"
+        update-types:
+          - "minor"
+          - "patch"
       mcp-sdk:
         patterns:
           - "@modelcontextprotocol/*"
+        update-types:
+          - "minor"
+          - "patch"
       image-pipeline:
         patterns:
           - "sharp"
           - "@resvg/*"
           - "satori*"
           - "svgo"
+          - "png-to-ico"
+          - "tesseract.js"
+          - "@fontsource/*"
+        update-types:
+          - "minor"
+          - "patch"
+      validation-runtime:
+        patterns:
+          - "zod"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # GitHub Actions workflows
+  # GitHub Actions workflows — daily, grouped.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 3
+      interval: "daily"
+      time: "05:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "ci"
     commit-message:
       prefix: "ci"
       include: "scope"
+    groups:
+      actions:
+        patterns:
+          - "*"
 
-  # Container base image
+  # Container base image — slow cadence, security bumps only.
   - package-ecosystem: "docker"
     directory: "/"
     schedule:

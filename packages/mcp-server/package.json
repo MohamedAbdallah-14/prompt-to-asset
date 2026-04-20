@@ -63,21 +63,21 @@
     "prepublishOnly": "npm run build && node scripts/prepack.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "zod": "^3.23.8"
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.3.6"
   },
   "optionalDependencies": {
-    "sharp": "^0.33.5",
-    "tesseract.js": "^5.1.1",
-    "png-to-ico": "^2.1.8",
-    "satori": "^0.10.14",
+    "@fontsource/inter": "^5.2.8",
     "@resvg/resvg-js": "^2.6.2",
-    "svgo": "^3.3.2",
-    "@fontsource/inter": "^5.1.0"
+    "png-to-ico": "^3.0.1",
+    "satori": "^0.26.0",
+    "sharp": "^0.34.5",
+    "svgo": "^4.0.1",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
-    "typescript": "^5.6.3"
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
   },
   "engines": {
     "node": ">=20.11.0"
