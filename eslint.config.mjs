@@ -24,7 +24,11 @@ export default tseslint.config(
       ".claude/**",
       ".vscode/**",
       "plugins/**",
-      "apps/web/**"
+      // MCPB bundle scaffold — zipped at pack-time, not linted
+      "bundle/mcpb/**",
+      // Snapshot JSONs + pre-built mcpb tarball output — not source
+      "evals/snapshots/**",
+      "dist-release/**"
     ]
   },
 
@@ -32,8 +36,15 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
 
   {
-    // One-shot migration scripts. Node globals, no TS rules.
-    files: ["scripts/**/*.mjs", "scripts/**/*.js"],
+    // Node-only helper scripts. Node globals, no TS rules.
+    files: [
+      "scripts/**/*.mjs",
+      "scripts/**/*.js",
+      "evals/scripts/**/*.mjs",
+      "evals/scripts/**/*.js",
+      "packages/*/scripts/**/*.mjs",
+      "packages/*/scripts/**/*.js"
+    ],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: "module",

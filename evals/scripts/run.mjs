@@ -18,8 +18,8 @@
 //   node evals/scripts/run.mjs --check         # compare against baseline and exit 1 on regression (CI)
 //   node evals/scripts/run.mjs --out <path>    # custom snapshot path
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { enhancePrompt } from "../../packages/mcp-server/dist/tools/enhance-prompt.js";

@@ -202,21 +202,6 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
   process.stdout.write(lines.join("\n") + "\n");
 }
 
-function freeHint(name: string): string {
-  switch (name) {
-    case "pollinations":
-      return "zero signup, HTTP GET — rate-limited to ~1 req/15s anonymous";
-    case "stable-horde":
-      return "community GPU cluster — anonymous apikey works; queue can be long";
-    case "huggingface":
-      return "HF Inference free tier — set HF_TOKEN (free, no credit card)";
-    case "cloudflare":
-      return "Workers AI free tier — 10k neurons/day; set CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (free)";
-    default:
-      return "";
-  }
-}
-
 function paidHint(name: string): string {
   switch (name) {
     case "openai":

@@ -13,11 +13,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { enhancePrompt } from "../tools/enhance-prompt.js";
 import { findModel } from "../config.js";
-import {
-  providerAvailability,
-  PASTE_ONLY_PROVIDERS,
-  FREE_TIER_PROVIDERS
-} from "../providers/index.js";
+import { PASTE_ONLY_PROVIDERS, FREE_TIER_PROVIDERS } from "../providers/index.js";
 import { detectApiAvailability, isApiAvailableFor } from "../modes.js";
 import { resolvePasteTargets } from "../paste-targets.js";
 import type { AssetType } from "../types.js";

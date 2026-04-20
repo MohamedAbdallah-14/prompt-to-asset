@@ -19,7 +19,10 @@
  * is deliberate: we'd rather under-enforce than block legitimate calls.
  */
 
-const DEFAULT_PRICE_USD = 0.05; // conservative fallback per image
+// Prices unknown to us → fail-open. The cost guard no-ops rather than
+// blocking a legitimate call. Kept as a documented constant; not a runtime
+// fallback price.
+// const DEFAULT_PRICE_USD = 0.05;
 
 // Prices in USD per image at the highest typical quality tier we route to.
 // Keep updated as providers publish; easier to move in one file than in
