@@ -7,8 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Default every job to read-only token. Jobs that need more (coverage upload,
-# annotations) raise their scope locally.
+# Default every job to read-only token.
 permissions:
   contents: read
 
@@ -45,6 +44,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # sharp ships per-platform binaries as `@img/sharp-<os>-<arch>` optional
+      # deps. `npm ci` resolves against the lockfile, which was generated on
+      # the maintainer's machine (darwin-arm64) and doesn't contain the
+      # linux-x64 / win32-x64 binaries. Re-resolve for whichever platform
+      # this runner is. `--no-save` keeps the lockfile untouched.
+      - name: Ensure sharp resolves on ${{ runner.os }}
+        shell: bash
+        run: npm install --no-save sharp@^0.33.5
+
       - name: Type-check
         run: npm run typecheck
 
@@ -77,8 +85,7 @@ jobs:
         if: runner.os != 'Windows'
         run: npm run verify
 
-  # Coverage + Codecov upload. Runs once on a single cell so we upload one
-  # authoritative report instead of five overlapping ones.
+  # Coverage + Codecov upload. Single cell to keep reports authoritative.
   coverage:
     name: coverage
     runs-on: ubuntu-latest
@@ -95,6 +102,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Ensure sharp resolves
+        run: npm install --no-save sharp@^0.33.5
+
       - name: Build
         run: npm run build
 
@@ -109,8 +119,7 @@ jobs:
           fail_ci_if_error: false
           verbose: true
 
-  # Belt-and-braces: pack the publishable tarball and assert its shape.
-  # Catches regressions in prepack.mjs without publishing.
+  # Pack the publishable tarball and assert shape.
   pack-check:
     name: pack-check
     runs-on: ubuntu-latest
