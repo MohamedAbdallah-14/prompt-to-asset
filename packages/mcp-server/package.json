@@ -66,12 +66,12 @@
     "zod": "^3.23.8"
   },
   "optionalDependencies": {
-    "sharp": "^0.33.5",
+    "sharp": "^0.34.5",
     "tesseract.js": "^5.1.1",
     "png-to-ico": "^2.1.8",
-    "satori": "^0.10.14",
+    "satori": "^0.26.0",
     "@resvg/resvg-js": "^2.6.2",
-    "svgo": "^3.3.2",
+    "svgo": "^4.0.1",
     "@fontsource/inter": "^5.1.0"
   },
   "devDependencies": {
