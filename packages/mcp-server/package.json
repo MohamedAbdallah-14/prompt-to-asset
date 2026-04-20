@@ -67,7 +67,7 @@
   },
   "optionalDependencies": {
     "sharp": "^0.33.5",
-    "tesseract.js": "^5.1.1",
+    "tesseract.js": "^7.0.0",
     "png-to-ico": "^2.1.8",
     "satori": "^0.10.14",
     "@resvg/resvg-js": "^2.6.2",
