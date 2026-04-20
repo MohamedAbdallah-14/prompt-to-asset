@@ -6,11 +6,7 @@ import { tier0 } from "../pipeline/validate.js";
 import { computeCacheKey } from "../cache.js";
 import { CONFIG } from "../config.js";
 import { hashBundle } from "../brand.js";
-import {
-  resolveMode,
-  buildExternalPromptPlan,
-  chooseApiTargetOrFallback
-} from "./mode-runtime.js";
+import { resolveMode, buildExternalPromptPlan, chooseApiTargetOrFallback } from "./mode-runtime.js";
 import type { GenerateIllustrationInputT } from "../schemas.js";
 import type { AssetGenerationResult } from "../types.js";
 

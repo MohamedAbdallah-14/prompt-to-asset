@@ -76,11 +76,7 @@ export const ComfyUiProvider: Provider = {
 
     if (!resp.ok) {
       const errText = await resp.text();
-      throw new ProviderError(
-        "comfyui",
-        modelId,
-        `HTTP ${resp.status}: ${errText.slice(0, 400)}`
-      );
+      throw new ProviderError("comfyui", modelId, `HTTP ${resp.status}: ${errText.slice(0, 400)}`);
     }
 
     const json = (await resp.json()) as {

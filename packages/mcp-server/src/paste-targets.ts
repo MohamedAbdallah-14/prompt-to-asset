@@ -18,10 +18,7 @@ const __dirname = dirname(__filename);
 // Same data-dir resolution as config.ts — supports both monorepo dev and
 // published-package layouts. See config.ts for the rationale.
 function resolveDataDir(): string {
-  const candidates = [
-    resolve(__dirname, "..", "data"),
-    resolve(__dirname, "../../..", "data")
-  ];
+  const candidates = [resolve(__dirname, "..", "data"), resolve(__dirname, "../../..", "data")];
   for (const c of candidates) {
     if (existsSync(resolve(c, "paste-targets.json"))) return c;
   }

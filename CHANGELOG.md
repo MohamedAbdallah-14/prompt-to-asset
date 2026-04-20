@@ -13,6 +13,31 @@ changelog notes otherwise.
 
 _Nothing yet._
 
+## [0.2.1] — 2026-04-20
+
+Maintenance release. Needed so `mcpName` lands in the published npm `package.json` and the Official MCP Registry can verify GitHub ownership.
+
+### Added
+
+- `mcpName: "io.github.MohamedAbdallah-14/prompt-to-asset"` in `packages/mcp-server/package.json`. Gates registry publication; no behaviour change.
+- `bundle/mcpb/`, `dist-release/prompt-to-asset-0.2.1.mcpb` — Claude Desktop one-click install bundle, attached to the GitHub release.
+- `server.json` at repo root — validates against the official MCP Registry schema. `mcp-publisher publish` ready to run.
+- `smithery.yaml` with stdio `startCommand` + full env schema for all 15 provider keys. No secrets baked in.
+- `.github/workflows/docker.yml` — multi-arch (amd64 + arm64) build/push to `ghcr.io/mohamedabdallah-14/prompt-to-asset` on push/tag/dispatch.
+- `.github/FUNDING.yml` — GitHub sponsor button.
+- README install badges + one-click deeplinks (Cursor / VS Code / VS Code Insiders / Claude Desktop / Smithery) + npm version + monthly downloads.
+- `docs/LAUNCH.md` — ordered checklist of every directory + launch channel that still needs user action.
+
+### Fixed
+
+- **CI sharp platform-binary.** `npm ci` resolved `@img/sharp-<os>-<arch>` optional deps against the lockfile, which was generated on darwin-arm64 and didn't include `@img/sharp-linux-x64` / `@img/sharp-win32-x64`. The favicon, app-icon, and platform-fanout tests that need sharp all failed on Ubuntu + Windows runners. Fixed by adding a post-install `npm install --no-save sharp` step that re-resolves for the current runner platform. Lockfile unchanged.
+- Three lint errors CI caught after the 0.2.0 distribution commit: stale `freeHint` helper, unused `providerAvailability` import in `pick.ts`, unused `readdirSync`/`join` in `evals/scripts/run.mjs`.
+- ESLint config: widened Node-globals override to `evals/scripts/**` and `packages/*/scripts/**`; ignore `bundle/mcpb/`, `evals/snapshots/`, `dist-release/` (generated artifacts, not source).
+
+### Changed
+
+- Dropped `dist-release/prompt-to-asset-0.2.0.mcpb`; superseded by the 0.2.1 bundle.
+
 ## [0.2.0] — 2026-04-20 (follow-on pass)
 
 Second round of changes after the 0.2.0 hardening release — built on top of the same version so the 0.2.0 tag covers both. If you're consuming the npm publish, everything below is in 0.2.0.

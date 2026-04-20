@@ -230,7 +230,8 @@ function deriveClarifyingQuestions(ctx: {
   // 3. Brief too generic — no product noun, no visual anchor. The rewriter
   //    can still run but the output will look generic. One targeted question
   //    lifts quality a lot more than a prompt-polish tool would.
-  const genericRegex = /^(?:a\s+)?(?:logo|icon|image|asset|graphic)(?:\s+for\s+(?:a|an|my)?\s*)?\s*$/i;
+  const genericRegex =
+    /^(?:a\s+)?(?:logo|icon|image|asset|graphic)(?:\s+for\s+(?:a|an|my)?\s*)?\s*$/i;
   if (genericRegex.test(ctx.brief.trim())) {
     out.push({
       id: "brief_underspecified",
@@ -240,8 +241,7 @@ function deriveClarifyingQuestions(ctx: {
       options: [
         {
           label: "Add product name + one-word vibe",
-          description:
-            'Example: "flat minimalist logo for Halcyon, a weather app — calm, airy."'
+          description: 'Example: "flat minimalist logo for Halcyon, a weather app — calm, airy."'
         },
         {
           label: "Proceed as-is",

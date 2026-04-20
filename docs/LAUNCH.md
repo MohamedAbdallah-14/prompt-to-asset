@@ -21,7 +21,7 @@ Work through this in order. Rough total: 60–90 minutes across all items.
 
 ### 1 — Republish to npm as 0.2.1 so the MCP Registry can verify ownership
 
-The registry wants `mcpName` in the *published* package.json; 0.2.0 doesn't have it. Bump and republish:
+The registry wants `mcpName` in the _published_ package.json; 0.2.0 doesn't have it. Bump and republish:
 
 ```bash
 cd /Users/mohamedabdallah/Work/Projects/prompt-to-asset/packages/mcp-server
@@ -79,10 +79,11 @@ File an issue at https://github.com/cline/mcp-marketplace/issues/new with this b
 **Logo**: see repo /docs/logo-400x400.png (add one)
 
 ### Install
+```
 
-```
 npx prompt-to-asset
-```
+
+````
 
 ### Config
 
@@ -95,7 +96,7 @@ npx prompt-to-asset
     }
   }
 }
-```
+````
 
 Optional env vars (any subset): OPENAI_API_KEY, GEMINI_API_KEY, IDEOGRAM_API_KEY, RECRAFT_API_KEY, BFL_API_KEY, STABILITY_API_KEY, LEONARDO_API_KEY, FAL_API_KEY, HF_TOKEN, REPLICATE_API_TOKEN, CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID.
 
@@ -104,7 +105,8 @@ Zero-key path works out of the box via Pollinations, Stable Horde, HF free tier,
 ### Tools (17)
 
 asset_capabilities, asset_enhance_prompt, asset_generate_logo, asset_generate_app_icon, asset_generate_favicon, asset_generate_og_image, asset_generate_illustration, asset_generate_splash_screen, asset_generate_hero, asset_save_inline_svg, asset_ingest_external, asset_remove_background, asset_vectorize, asset_upscale_refine, asset_validate, asset_brand_bundle_parse, asset_train_brand_lora.
-```
+
+````
 
 ### 6 — Continue Hub
 
@@ -124,7 +126,7 @@ https://github.com/punkpeye/awesome-mcp-servers/blob/main/CONTRIBUTING.md → PR
 
 ```markdown
 - [MohamedAbdallah-14/prompt-to-asset](https://github.com/MohamedAbdallah-14/prompt-to-asset) ([Glama Profile](https://glama.ai/mcp/servers/@MohamedAbdallah-14/prompt-to-asset)) 🎖️ - One brief → a validated multi-platform asset bundle (iOS / Android / PWA / favicon / OG / visionOS). Routes across 30+ image models; works zero-key.
-```
+````
 
 ### 10 — wong2/awesome-mcp-servers
 
@@ -137,6 +139,7 @@ Settings → Social preview → upload a 1280×640 PNG. Use the logo + one-line 
 ### 12 — Launch posts
 
 **Show HN** (title prefix required):
+
 > Show HN: Prompt-to-asset – MCP server that generates production-grade logos/icons/favicons without a paid API key
 
 Body: link to repo + 5-6 sentences explaining the three modes + one killer example. Post Tue/Wed morning US Pacific time.
@@ -144,6 +147,7 @@ Body: link to repo + 5-6 sentences explaining the three modes + one killer examp
 **Product Hunt** (create a maker account + product page ahead of time): tag as AI Tools + Developer Tools. Same day as HN.
 
 **Reddit**:
+
 - r/mcp (dedicated audience, ~15k) — full write-up
 - r/ClaudeAI, r/ClaudeCode — focus on the MCP install
 - r/cursor — focus on the Cursor deeplink + smithery install

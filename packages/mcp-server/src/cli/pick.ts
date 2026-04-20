@@ -154,7 +154,9 @@ function apiTag(modelId: string, avail: ReturnType<typeof detectApiAvailability>
   if (m?.paste_only) return "  (paste-only)";
   const provider = m?.provider ?? "";
   if (FREE_TIER_PROVIDERS.includes(provider)) {
-    return isApiAvailableFor(modelId, avail) ? "  (free tier — api live)" : "  (free tier — inactive)";
+    return isApiAvailableFor(modelId, avail)
+      ? "  (free tier — api live)"
+      : "  (free tier — inactive)";
   }
   if (PASTE_ONLY_PROVIDERS.includes(provider)) return "  (paste-only)";
   return isApiAvailableFor(modelId, avail) ? "  (api key set)" : "  (api key missing)";

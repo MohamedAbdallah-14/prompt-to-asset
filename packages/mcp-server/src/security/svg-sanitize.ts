@@ -17,7 +17,8 @@ const EVENT_HANDLER = /\son[a-z][a-z0-9]*\s*=\s*["']/i;
 const JS_URI = /(?:^|\s)(?:href|xlink:href|src|to|from|values|data)\s*=\s*["']\s*javascript:/i;
 // External reference in <image>/<use>/<script src> etc. HTTP(S), protocol-relative,
 // or file://. data: is allowed since it's self-contained (checked separately).
-const EXTERNAL_REF = /<\s*(image|use|script|link)\b[^>]*(?:href|xlink:href|src)\s*=\s*["']\s*(?:https?:|\/\/|file:|ftp:)/i;
+const EXTERNAL_REF =
+  /<\s*(image|use|script|link)\b[^>]*(?:href|xlink:href|src)\s*=\s*["']\s*(?:https?:|\/\/|file:|ftp:)/i;
 const DATA_URI_SCRIPT = /data:[^"'\s]*(?:script|javascript)[^"'\s]*/i;
 // CSS @import can fetch remote stylesheets; <style> is fine when inline.
 const CSS_AT_IMPORT = /@import\s+(?:url\s*\()?\s*["']?\s*(?:https?:|\/\/|file:)/i;

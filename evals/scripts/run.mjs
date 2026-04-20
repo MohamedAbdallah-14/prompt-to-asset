@@ -109,7 +109,9 @@ for (const b of briefs) {
       name: "safe_zone",
       expected: expect.safe_zone,
       actual: sz,
-      pass: Boolean(sz && sz.width === expect.safe_zone.width && sz.height === expect.safe_zone.height)
+      pass: Boolean(
+        sz && sz.width === expect.safe_zone.width && sz.height === expect.safe_zone.height
+      )
     });
   }
   if (expect.transparency_required !== undefined) {
@@ -211,7 +213,9 @@ if (brokeBriefs.length > 0) {
     const r = summary.results.find((x) => x.id === id);
     for (const c of r.checks) {
       if (!c.pass) {
-        lines.push(`  ${id} · ${c.name}: expected ${JSON.stringify(c.expected)}, got ${JSON.stringify(c.actual)}`);
+        lines.push(
+          `  ${id} · ${c.name}: expected ${JSON.stringify(c.expected)}, got ${JSON.stringify(c.actual)}`
+        );
       }
     }
   }

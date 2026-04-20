@@ -30,6 +30,7 @@ Contributors running from a clone can still `npm install && npm run build` and t
 Once `p2a init --register` has wired the MCP server, ask your AI assistant in plain English:
 
 **Claude Code / Cursor / Windsurf:**
+
 > Generate a favicon bundle for my app called Forge. Use `brand.json`. `inline_svg` mode.
 
 The assistant will call `asset_enhance_prompt`, surface any `clarifying_questions` via AskUserQuestion (wordmark length, palette, brief specificity), emit the `<svg>` in chat, then call `asset_save_inline_svg` to write icon.svg + favicon.ico + apple-touch + PWA 192/512/512-maskable + manifest.webmanifest + head-snippet.html. Real files, not a chat preview.

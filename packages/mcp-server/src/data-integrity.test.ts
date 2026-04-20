@@ -8,7 +8,8 @@ describe("data integrity (model-registry ↔ routing-table)", () => {
     if (!report.ok) {
       // Fail with the full list so the breakage is obvious in CI.
       throw new Error(
-        `${report.errors.length} broken references:\n` + report.errors.map((e) => `  - ${e}`).join("\n")
+        `${report.errors.length} broken references:\n` +
+          report.errors.map((e) => `  - ${e}`).join("\n")
       );
     }
     expect(report.ok).toBe(true);

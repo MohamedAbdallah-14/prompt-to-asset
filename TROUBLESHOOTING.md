@@ -170,23 +170,23 @@ p2a pick             # asks your question, returns a ranked route
 
 **Symptom.** You have an API key set but the warning fires anyway.
 
-**Cause.** The router picked a target whose provider key you *haven't* set. With `IDEOGRAM_API_KEY` unset, the router can still pick `ideogram-3-turbo` for a wordmark logo. The warning tells you that setting a different key wouldn't help unless it's one the router would pick.
+**Cause.** The router picked a target whose provider key you _haven't_ set. With `IDEOGRAM_API_KEY` unset, the router can still pick `ideogram-3-turbo` for a wordmark logo. The warning tells you that setting a different key wouldn't help unless it's one the router would pick.
 
 **Fix.** Look at `spec.target_model` in the `enhance_prompt` response. Set the matching env var:
 
-| model family | env var |
-|---|---|
-| `gpt-image-*`, `dall-e-*` | `OPENAI_API_KEY` |
-| `imagen-*`, `gemini-*` | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) |
-| `ideogram-*` | `IDEOGRAM_API_KEY` |
-| `recraft-*` | `RECRAFT_API_KEY` |
-| `flux-*` | `BFL_API_KEY` |
-| `sd-*`, `playground-*` | `STABILITY_API_KEY` |
-| `leonardo-*` | `LEONARDO_API_KEY` |
-| `fal-*` | `FAL_API_KEY` |
-| `hf-*` | `HF_TOKEN` |
-| `replicate-*` | `REPLICATE_API_TOKEN` |
-| `cf-*` | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` |
+| model family              | env var                                          |
+| ------------------------- | ------------------------------------------------ |
+| `gpt-image-*`, `dall-e-*` | `OPENAI_API_KEY`                                 |
+| `imagen-*`, `gemini-*`    | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`)           |
+| `ideogram-*`              | `IDEOGRAM_API_KEY`                               |
+| `recraft-*`               | `RECRAFT_API_KEY`                                |
+| `flux-*`                  | `BFL_API_KEY`                                    |
+| `sd-*`, `playground-*`    | `STABILITY_API_KEY`                              |
+| `leonardo-*`              | `LEONARDO_API_KEY`                               |
+| `fal-*`                   | `FAL_API_KEY`                                    |
+| `hf-*`                    | `HF_TOKEN`                                       |
+| `replicate-*`             | `REPLICATE_API_TOKEN`                            |
+| `cf-*`                    | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` |
 
 Or force a cheaper/free route:
 
@@ -199,7 +199,7 @@ Or force a cheaper/free route:
 
 **Symptom.** You asked for transparency, the PNG looks transparent in a viewer, but when inspected it's a grey-and-white checkerboard rendered as real RGB pixels.
 
-**Cause.** Neither Imagen nor Gemini 3 Flash Image emits RGBA. The VAE is RGB-only — they draw the checkerboard pattern. The router *should* refuse to send transparency-required requests to these models; see `never_models` in the `routing_trace`.
+**Cause.** Neither Imagen nor Gemini 3 Flash Image emits RGBA. The VAE is RGB-only — they draw the checkerboard pattern. The router _should_ refuse to send transparency-required requests to these models; see `never_models` in the `routing_trace`.
 
 **Fix.** Force a native-RGBA model or let the pipeline matte for you:
 

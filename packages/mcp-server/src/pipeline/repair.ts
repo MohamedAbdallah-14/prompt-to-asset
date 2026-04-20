@@ -107,7 +107,9 @@ export function deriveRepair(ctx: RepairContext): RepairPlan | null {
   //    26e: diffusion models respond to explicit hex when other tricks fail.
   if (a.palette_drift && ctx.brand_bundle?.palette?.length) {
     const hex = ctx.brand_bundle.palette.slice(0, 3).join(", ");
-    additions.push(`Palette constrained to these exact hex values: ${hex}. Do not introduce any other hues.`);
+    additions.push(
+      `Palette constrained to these exact hex values: ${hex}. Do not introduce any other hues.`
+    );
     reasons.push(`palette ΔE2000 > 10 — pinning exact hex ${hex}`);
   }
 
@@ -159,8 +161,6 @@ export function deriveRepair(ctx: RepairContext): RepairPlan | null {
 /** True when the repair plan would not materially change the input. */
 export function repairIsNoop(plan: RepairPlan): boolean {
   return (
-    plan.new_target_model === null &&
-    plan.prompt_additions.length === 0 &&
-    plan.drop_text === false
+    plan.new_target_model === null && plan.prompt_additions.length === 0 && plan.drop_text === false
   );
 }

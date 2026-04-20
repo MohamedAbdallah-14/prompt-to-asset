@@ -4,7 +4,7 @@ Deterministic regression-test harness for the routing + rewriter + validator pip
 
 ## What this is
 
-Golden briefs → assertions about what the pipeline *should* produce. No image providers called. No network. Pure-function checks on classify / route / rewrite / mode-selection / clarifying-question logic.
+Golden briefs → assertions about what the pipeline _should_ produce. No image providers called. No network. Pure-function checks on classify / route / rewrite / mode-selection / clarifying-question logic.
 
 The goal is a **fail-fast gate**: a change that breaks "transparent logo → never routes to Imagen" or "brief 'a logo' → brief_underspecified question surfaces" gets caught in CI before it ships.
 
@@ -30,18 +30,18 @@ node evals/scripts/run.mjs --check
 
 Edit `evals/briefs/golden-set.json`. Fields:
 
-| Field | Purpose |
-|---|---|
-| `id` | stable key, used in regression messages |
-| `brief` | the plain-English input |
-| `asset_type` | optional override of classifier |
-| `text_content`, `transparent`, `vector`, `brand_bundle` | optional flags |
-| `expect.route_matches` | regex the `target_model` must satisfy |
-| `expect.never_routes_to_any` | list of model ids the router must NOT pick |
-| `expect.modes_include` / `modes_exclude` | modes_available assertions |
-| `expect.clarifying_question_id` | when the brief is deliberately ambiguous, the question id we expect |
-| `expect.safe_zone` | `{width, height}` pair for platform-aware assets |
-| `expect.transparency_required` | boolean |
+| Field                                                   | Purpose                                                             |
+| ------------------------------------------------------- | ------------------------------------------------------------------- |
+| `id`                                                    | stable key, used in regression messages                             |
+| `brief`                                                 | the plain-English input                                             |
+| `asset_type`                                            | optional override of classifier                                     |
+| `text_content`, `transparent`, `vector`, `brand_bundle` | optional flags                                                      |
+| `expect.route_matches`                                  | regex the `target_model` must satisfy                               |
+| `expect.never_routes_to_any`                            | list of model ids the router must NOT pick                          |
+| `expect.modes_include` / `modes_exclude`                | modes_available assertions                                          |
+| `expect.clarifying_question_id`                         | when the brief is deliberately ambiguous, the question id we expect |
+| `expect.safe_zone`                                      | `{width, height}` pair for platform-aware assets                    |
+| `expect.transparency_required`                          | boolean                                                             |
 
 Keep the set small. One brief per routing rule, one per dialect, one per failure-mode-we-care-about. Grow by adding a brief that **would have caught a real regression** you just fixed.
 

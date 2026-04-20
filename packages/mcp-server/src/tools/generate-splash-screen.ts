@@ -6,11 +6,7 @@ import { tier0 } from "../pipeline/validate.js";
 import { computeCacheKey } from "../cache.js";
 import { CONFIG } from "../config.js";
 import { hashBundle } from "../brand.js";
-import {
-  resolveMode,
-  buildExternalPromptPlan,
-  chooseApiTargetOrFallback
-} from "./mode-runtime.js";
+import { resolveMode, buildExternalPromptPlan, chooseApiTargetOrFallback } from "./mode-runtime.js";
 import { loadSharp } from "../pipeline/sharp.js";
 import { safeReadPath, safeWritePath } from "../security/paths.js";
 import { assertSafeSvg } from "../security/svg-sanitize.js";

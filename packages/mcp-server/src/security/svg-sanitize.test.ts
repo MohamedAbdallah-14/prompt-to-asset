@@ -9,9 +9,9 @@ describe("assertSafeSvg", () => {
   });
 
   it("rejects <script>", () => {
-    expect(() =>
-      assertSafeSvg(`<svg viewBox="0 0 1 1"><script>alert(1)</script></svg>`)
-    ).toThrow(SvgRejectedError);
+    expect(() => assertSafeSvg(`<svg viewBox="0 0 1 1"><script>alert(1)</script></svg>`)).toThrow(
+      SvgRejectedError
+    );
   });
 
   it("rejects <foreignObject>", () => {
@@ -27,9 +27,9 @@ describe("assertSafeSvg", () => {
   });
 
   it("rejects onload event handlers", () => {
-    expect(() =>
-      assertSafeSvg(`<svg viewBox="0 0 1 1" onload="evil()"><rect/></svg>`)
-    ).toThrow(SvgRejectedError);
+    expect(() => assertSafeSvg(`<svg viewBox="0 0 1 1" onload="evil()"><rect/></svg>`)).toThrow(
+      SvgRejectedError
+    );
   });
 
   it("rejects javascript: URIs in href", () => {
@@ -54,7 +54,9 @@ describe("assertSafeSvg", () => {
 
   it("rejects protocol-relative references", () => {
     expect(() =>
-      assertSafeSvg(`<svg viewBox="0 0 1 1"><image href="//evil.example/x.png" width="1" height="1"/></svg>`)
+      assertSafeSvg(
+        `<svg viewBox="0 0 1 1"><image href="//evil.example/x.png" width="1" height="1"/></svg>`
+      )
     ).toThrow(SvgRejectedError);
   });
 
@@ -76,9 +78,7 @@ describe("assertSafeSvg", () => {
 
   it("accepts inline <use href='#id'> (same-doc fragment)", () => {
     expect(() =>
-      assertSafeSvg(
-        `<svg viewBox="0 0 1 1"><symbol id="x"><rect/></symbol><use href="#x"/></svg>`
-      )
+      assertSafeSvg(`<svg viewBox="0 0 1 1"><symbol id="x"><rect/></symbol><use href="#x"/></svg>`)
     ).not.toThrow();
   });
 

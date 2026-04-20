@@ -371,17 +371,23 @@ function printIdeRegistrationHints(d: Detected, alreadyRegistered: boolean): voi
   const lines: string[] = [];
   if (alreadyRegistered) {
     lines.push("Other IDEs (not auto-registered — edit manually):");
-    lines.push("  Codex CLI:    .codex/config.toml  ([mcp_servers.prompt-to-asset] command=\"p2a\")");
+    lines.push('  Codex CLI:    .codex/config.toml  ([mcp_servers.prompt-to-asset] command="p2a")');
     lines.push("  Gemini CLI:   gemini-extension.json — see docs/install.md");
     lines.push("  Cline:        .clinerules/ auto-picks up SSOT rules from npm run sync");
   } else {
     lines.push("Register the MCP server:");
     lines.push("");
     lines.push("  Claude Code:  claude mcp add prompt-to-asset -- p2a");
-    lines.push("  Cursor:       .cursor/mcp.json      { \"mcpServers\": { \"prompt-to-asset\": { \"command\": \"p2a\" } } }");
-    lines.push("  VS Code:      .vscode/mcp.json      { \"servers\": { \"prompt-to-asset\": { \"type\": \"stdio\", \"command\": \"p2a\" } } }");
-    lines.push("  Windsurf:     .windsurf/mcp.json   { \"mcpServers\": { \"prompt-to-asset\": { \"command\": \"p2a\" } } }");
-    lines.push("  Codex CLI:    .codex/config.toml    [mcp_servers.prompt-to-asset] command=\"p2a\"");
+    lines.push(
+      '  Cursor:       .cursor/mcp.json      { "mcpServers": { "prompt-to-asset": { "command": "p2a" } } }'
+    );
+    lines.push(
+      '  VS Code:      .vscode/mcp.json      { "servers": { "prompt-to-asset": { "type": "stdio", "command": "p2a" } } }'
+    );
+    lines.push(
+      '  Windsurf:     .windsurf/mcp.json   { "mcpServers": { "prompt-to-asset": { "command": "p2a" } } }'
+    );
+    lines.push('  Codex CLI:    .codex/config.toml    [mcp_servers.prompt-to-asset] command="p2a"');
     lines.push("  Gemini CLI:   gemini-extension.json — see docs/install.md");
     lines.push("  Cline:        .clinerules/ auto-picks up");
     lines.push("");

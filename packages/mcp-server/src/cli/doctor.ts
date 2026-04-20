@@ -86,8 +86,7 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
       key: "google",
       rank: 1,
       live: avail["google"] ?? false,
-      note:
-        "Google AI Studio free tier — Gemini 3 Flash Image (Nano Banana), ~1,500 images/day. GEMINI_API_KEY — no credit card."
+      note: "Google AI Studio free tier — Gemini 3 Flash Image (Nano Banana), ~1,500 images/day. GEMINI_API_KEY — no credit card."
     },
     {
       key: "huggingface",
@@ -99,8 +98,7 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
       key: "cloudflare",
       rank: 3,
       live: avail["cloudflare"] ?? false,
-      note:
-        "Cloudflare Workers AI — 10k neurons/day free. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
+      note: "Cloudflare Workers AI — 10k neurons/day free. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
     },
     {
       key: "pollinations",
@@ -177,7 +175,9 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
       "       export GEMINI_API_KEY=$(read from https://aistudio.google.com/apikey) — free, no credit card."
     );
     lines.push("  2. Or use inline_svg for logos/favicons/icons — zero network, no key.");
-    lines.push("       Ask your MCP host: \"generate an app icon for an app called X, inline_svg mode.\"");
+    lines.push(
+      '       Ask your MCP host: "generate an app icon for an app called X, inline_svg mode."'
+    );
   } else if (!anyPaid) {
     lines.push("  Fully operational on free tier. One concrete next step:");
     lines.push(
