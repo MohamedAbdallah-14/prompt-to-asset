@@ -685,3 +685,63 @@ export async function tier2Vlm(
     return { ran: true, error: (err as Error).message };
   }
 }
+
+/**
+ * Tier-1 alignment score via a VQAScore-shaped endpoint.
+ *
+ * What VQAScore does: given (image, prompt), ask a VLM "does this image
+ * satisfy the prompt?" and score it 0..1. Research shows VQAScore
+ * outperforms CLIPScore by 2-3× on compositional prompts
+ * (docs/research/27-agent-evaluation-frameworks/27b-image-generation-eval-pipelines.md).
+ *
+ * We don't bundle a model — point PROMPT_TO_BUNDLE_VQA_URL at a service
+ * that accepts `{ image_base64, prompt, asset_type }` and returns
+ * `{ score: 0..1, notes?: string[] }`. Reference implementations:
+ *   - t2v-metrics (arXiv 2404.01291) — CLIP-FlanT5, can expose a minimal
+ *     HTTP wrapper.
+ *   - Qwen2.5-VL-3B-Instruct — cheap, hostable on Modal/Replicate with a
+ *     5-line scoring prompt.
+ *   - Claude Vision + rubric — send the image + a 1-5 Likert prompt; map
+ *     Likert → 0..1 on the client.
+ *
+ * Graceful no-op when the URL isn't set; tier-0 and tier-2 continue to
+ * run normally. Fails open on HTTP/timeout errors — we don't want a flaky
+ * VQA service to tank the whole pipeline.
+ */
+export async function tier1Alignment(
+  image: Buffer,
+  asset_type: AssetType,
+  prompt: string
+): Promise<{
+  ran: boolean;
+  score?: number;
+  notes?: string[];
+  error?: string;
+}> {
+  const url = process.env["PROMPT_TO_BUNDLE_VQA_URL"];
+  if (!url) return { ran: false };
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        image_base64: image.toString("base64"),
+        prompt,
+        asset_type
+      }),
+      signal: AbortSignal.timeout(30_000)
+    });
+    if (!resp.ok) {
+      return { ran: true, error: `VQA endpoint returned HTTP ${resp.status}` };
+    }
+    const json = (await resp.json()) as { score?: number; notes?: string[] };
+    const score = typeof json.score === "number" ? json.score : undefined;
+    return {
+      ran: true,
+      ...(score !== undefined && { score }),
+      ...(json.notes && { notes: json.notes })
+    };
+  } catch (err) {
+    return { ran: true, error: (err as Error).message };
+  }
+}

@@ -1,0 +1,66 @@
+name: CodeQL
+
+# Static-analysis security scanning. Runs on:
+#   - every PR touching source
+#   - every push to main
+#   - weekly sweep (catches newly-published queries against our frozen code)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/**/*.ts"
+      - "packages/**/*.js"
+      - "scripts/**/*.mjs"
+      - "scripts/**/*.js"
+      - ".github/workflows/codeql.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/**/*.ts"
+      - "packages/**/*.js"
+      - "scripts/**/*.mjs"
+      - "scripts/**/*.js"
+  schedule:
+    - cron: "23 5 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: +security-and-quality
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

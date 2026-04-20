@@ -22,6 +22,8 @@ import type { ModeT } from "../schemas.js";
 import { selectMode, detectApiAvailability, type Mode } from "../modes.js";
 import { buildSvgBrief } from "../svg-briefs.js";
 import { resolvePasteTargets } from "../paste-targets.js";
+import { resolveGenerateTarget } from "../providers/index.js";
+import { assertWithinBudget, costSummary } from "../cost-guard.js";
 
 /**
  * Pick the execution mode for a generator call.
@@ -158,4 +160,55 @@ export function buildExternalPromptPlan(
     plan.negative_prompt = String(spec.params["negative_prompt"]);
   }
   return plan;
+}
+
+/**
+ * Soft-fallback helper for api-mode generators.
+ *
+ * The router may route to a paste-only provider as primary (Midjourney,
+ * Firefly, Krea). Without this helper, each tool would blindly call
+ * `generate(spec.target_model, …)`, hit a `ProviderError`, and fail the
+ * whole request — even when the user has an OpenAI / Ideogram / BFL key
+ * and a fallback model in the chain is perfectly usable.
+ *
+ * Behaviour:
+ *   - If `spec.target_model` has a real API and the key is set, return
+ *     `{ kind: "api", model, warnings: [] }`.
+ *   - If it's paste-only or the key is missing, walk `spec.fallback_models`
+ *     for the first model whose provider is API-reachable. Return that
+ *     with a warning explaining the swap.
+ *   - If nothing in the chain is usable, return
+ *     `{ kind: "external", plan }` so the tool can emit an
+ *     `ExternalPromptPlan` instead of throwing — the caller gets the
+ *     dialect-correct prompt + paste targets and the user keeps moving.
+ */
+export function chooseApiTargetOrFallback(
+  assetType: AssetType,
+  brief: string,
+  spec: AssetSpec,
+  opts: { expected_text?: string; images?: number } = {}
+):
+  | { kind: "api"; model: string; warnings: string[] }
+  | { kind: "external"; plan: ExternalPromptPlan } {
+  const t = resolveGenerateTarget(spec.target_model, spec.fallback_models);
+  if (t) {
+    // Pre-flight cost guard. Throws CostBudgetExceededError if over cap.
+    // We don't swallow it — the caller should see a clear error rather than
+    // a silent downgrade, otherwise the guardrail is useless as a safety
+    // net. See src/cost-guard.ts for the full policy.
+    assertWithinBudget({ modelId: t.model, images: opts.images });
+    const warnings: string[] = [];
+    if (t.note) warnings.push(t.note);
+    const costLine = costSummary({ modelId: t.model, images: opts.images });
+    if (costLine) warnings.push(costLine);
+    return { kind: "api", model: t.model, warnings };
+  }
+  // Nothing in the chain has a reachable API. Soft-fall-back to external.
+  const plan = buildExternalPromptPlan(assetType, brief, spec, opts);
+  plan.warnings.unshift(
+    `mode=api requested, but neither ${spec.target_model} nor any fallback has a reachable API right now. ` +
+      `Returning an external_prompt_only plan so you can paste the rewritten prompt into one of the listed targets. ` +
+      `To enable api mode, set a provider key (OPENAI_API_KEY / IDEOGRAM_API_KEY / RECRAFT_API_KEY / BFL_API_KEY / GEMINI_API_KEY / STABILITY_API_KEY / LEONARDO_API_KEY / FAL_API_KEY / HF_TOKEN / REPLICATE_API_TOKEN / CLOUDFLARE_API_TOKEN) and re-run.`
+  );
+  return { kind: "external", plan };
 }

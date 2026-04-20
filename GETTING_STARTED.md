@@ -64,20 +64,32 @@ Other free routes that exist but aren't wired as first-class providers (cite the
 ## Quickstart (Claude Code, zero-key)
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/yourorg/prompt-to-asset.git
+# 1. Install
+npm i -g prompt-to-asset        # global (recommended)
+# or: npm i -D prompt-to-asset  # per-project
+# or: npx prompt-to-asset <cmd> # zero install — every command works
+
+# 2. Scaffold + register
+p2a init --register             # writes brand.json + .cursor/mcp.json /
+                                # .vscode/mcp.json / .windsurf/mcp.json;
+                                # optionally runs `claude mcp add` for you
+
+# 3. Check what's on
+p2a doctor                      # ranked routes, missing deps, recommendations
+```
+
+Restart Claude Code. You should see **17 new `asset_*` tools** (2 discovery, 7 generators, 2 round-trip endpoints, 5 pipeline primitives, and the Phase-4 LoRA trainer). The same binary doubles as a scripting tool — see the [Standalone CLI section](#standalone-cli-no-ide-required).
+
+### Or run fully from a clone (contributors)
+
+```bash
+git clone https://github.com/MohamedAbdallah-14/prompt-to-asset.git
 cd prompt-to-asset
 npm install
 npm run build
-
-# 2. Regenerate cross-IDE mirrors (Cursor, Windsurf, Codex, Gemini, etc.)
-npm run sync
-
-# 3. Register the MCP server with Claude Code
-claude mcp add prompt-to-asset -- node "$PWD/packages/mcp-server/dist/index.js"
+npm run test:run                # 200+ tests; all green on a fresh clone
+npm run sync                    # regenerate cross-IDE mirrors (Cursor, Codex, Gemini, …)
 ```
-
-Restart Claude Code. You should see 16 new tools prefixed `asset_*` (2 capability / discovery tools, 7 `asset_generate_*` tools, 2 round-trip endpoints for inline-SVG and external-prompt modes, and 5 pipeline primitives — matte, vectorize, upscale, validate, brand-bundle-parse).
 
 ## Standalone CLI (no IDE required)
 
@@ -85,24 +97,36 @@ The same binary doubles as a scripting tool. No IDE or AI assistant needed.
 
 ```bash
 # Inventory — which modes + providers are live, which optional deps are installed.
-node packages/mcp-server/dist/index.js doctor
+p2a doctor
+p2a doctor --data               # registry ↔ routing-table consistency (CI-friendly)
+
+# Interactive route picker — asset type + constraints → ranked route + paste targets.
+p2a pick
 
 # Interactive setup in your project dir — detects Next / Astro / Vite /
 # Flutter / Expo / Xcode / Android and writes a brand.json scaffold.
-cd ~/src/my-app && node /path/to/prompt-to-asset/packages/mcp-server/dist/index.js init
+cd ~/src/my-app && p2a init --register
 
 # Fan a 1024² master out to every platform (appicon.co / flutter_launcher_icons parity).
-node packages/mcp-server/dist/index.js export ./master.png \
-  --app-name MyApp --theme "#2563eb" --ios18
+p2a export ./master.png --app-name MyApp --theme "#2563eb" --ios18
 
 # Games: pack frames, emit 9-slice.
-node packages/mcp-server/dist/index.js sprite-sheet ./frames --padding 2 \
-  --out build/hero.png --atlas build/hero.json
-node packages/mcp-server/dist/index.js nine-slice ./panel.png \
-  --guides 16,16,16,16 --android-9patch
+p2a sprite-sheet ./frames --padding 2 --out build/hero.png --atlas build/hero.json
+p2a nine-slice ./panel.png --guides 16,16,16,16 --android-9patch
 ```
 
 Running the binary with no args still starts the MCP stdio server — existing IDE registrations keep working.
+
+## What's new in 0.2
+
+- **`p2a pick`** — interactive route picker (CLI TUI; answers "which model should I use" without the web).
+- **`p2a init --register`** — writes `.cursor/mcp.json` / `.vscode/mcp.json` / `.windsurf/mcp.json` for you, and optionally runs `claude mcp add`.
+- **Clarifying questions.** `asset_enhance_prompt` returns `clarifying_questions[]` when the brief is ambiguous (long wordmark, missing palette, generic brief). Your AI assistant surfaces these via AskUserQuestion before generating.
+- **Regenerate loop.** `asset_generate_logo` accepts `max_retries` (0–4). On a tier-0 validation fail, the server auto-repairs (re-route away from Imagen on alpha fail, pin hex on palette drift, drop text on OCR fail) and retries. Hard-capped for cost.
+- **Tier-1 VQAScore.** `asset_validate --run-vqa` POSTs to `PROMPT_TO_BUNDLE_VQA_URL` for a 0..1 alignment score. Point it at a hosted VQAScore / Qwen-VL / Claude Vision endpoint.
+- **Phase-4 brand LoRA.** `asset_train_brand_lora` MCP tool + `comfyui-sdxl` / `comfyui-flux` / `comfyui-flux-lora` models. Point `PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL` + `PROMPT_TO_BUNDLE_MODAL_LORA_TRAIN_URL` at your own Modal / Runpod / self-host deployment.
+- **Soft-fallback for paste-only.** Midjourney / Firefly / Krea requested in `api` mode no longer throws — the server auto-swaps to the first API-reachable fallback or returns an `ExternalPromptPlan` with paste URLs.
+- **Security.** API keys in env only + `redact()` scrubbing in error surfaces; `safePath` allow-list guard on every `image_path` / `output_dir`; unconditional SVG XSS sanitizer before any disk write; `P2A_MAX_SPEND_USD_PER_RUN` cost cap.
 
 ## First prompt
 

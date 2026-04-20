@@ -9,13 +9,25 @@
 //   - docs/research/05-openai-dalle-gpt-image/5b-gpt-image-1-api.md
 //   - docs/research/06-stable-diffusion-flux/6b-flux-family-prompting.md
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const DATA_DIR = resolve(__dirname, "../../..", "data");
+// Same data-dir resolution as config.ts — supports both monorepo dev and
+// published-package layouts. See config.ts for the rationale.
+function resolveDataDir(): string {
+  const candidates = [
+    resolve(__dirname, "..", "data"),
+    resolve(__dirname, "../../..", "data")
+  ];
+  for (const c of candidates) {
+    if (existsSync(resolve(c, "paste-targets.json"))) return c;
+  }
+  return candidates[0]!;
+}
+const DATA_DIR = resolveDataDir();
 
 export interface PasteTarget {
   name: string;

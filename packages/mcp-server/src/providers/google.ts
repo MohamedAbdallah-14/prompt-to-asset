@@ -1,4 +1,5 @@
 import { CONFIG } from "../config.js";
+import { redact } from "../security/redact.js";
 import type { Provider, GenerateRequest, GenerateResult } from "./types.js";
 import { ProviderError } from "./types.js";
 import { dummyPng } from "./openai.js";
@@ -46,7 +47,11 @@ export const GoogleProvider: Provider = {
     }
 
     const modelPath = geminiModelPath(modelId);
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelPath}:generateContent?key=${CONFIG.apiKeys.google}`;
+    // Auth via `x-goog-api-key` header, NOT the `?key=` query string.
+    // Query-string keys leak into error bodies, proxy logs, browser history,
+    // and anywhere a URL gets echoed back (including prior provider code that
+    // would concatenate the URL into a thrown error message).
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelPath}:generateContent`;
 
     const body = {
       contents: [{ parts: [{ text: req.prompt }] }],
@@ -58,13 +63,22 @@ export const GoogleProvider: Provider = {
 
     const resp = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": CONFIG.apiKeys.google
+      },
       body: JSON.stringify(body)
     });
 
     if (!resp.ok) {
       const errText = await resp.text();
-      throw new ProviderError("google", modelId, `HTTP ${resp.status}: ${errText}`);
+      // Redact defensively in case Google echoes back anything key-shaped
+      // (older deployments that still accept ?key= would echo the URL).
+      throw new ProviderError(
+        "google",
+        modelId,
+        `HTTP ${resp.status}: ${redact(errText).slice(0, 500)}`
+      );
     }
 
     const json = (await resp.json()) as {

@@ -40,3 +40,8 @@ eng.traineddata
 
 # Per-user scratch — brainstorm / ideation notes, not part of the shipped repo.
 /ideations/
+
+# Staged by `npm run prepack` right before npm publish; not committed.
+packages/mcp-server/data/
+packages/mcp-server/CHANGELOG.md
+packages/mcp-server/LICENSE

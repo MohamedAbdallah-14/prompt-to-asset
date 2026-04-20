@@ -133,7 +133,9 @@ describe("availability + selectMode", () => {
       horde: true,
       // Cloudflare needs both CLOUDFLARE_API_TOKEN AND CLOUDFLARE_ACCOUNT_ID.
       cloudflare: false,
-      replicate: false
+      replicate: false,
+      // User-owned ComfyUI endpoint — opt-in via PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL.
+      comfyui: false
     });
   });
 

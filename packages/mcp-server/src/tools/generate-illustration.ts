@@ -6,7 +6,11 @@ import { tier0 } from "../pipeline/validate.js";
 import { computeCacheKey } from "../cache.js";
 import { CONFIG } from "../config.js";
 import { hashBundle } from "../brand.js";
-import { resolveMode, buildExternalPromptPlan } from "./mode-runtime.js";
+import {
+  resolveMode,
+  buildExternalPromptPlan,
+  chooseApiTargetOrFallback
+} from "./mode-runtime.js";
 import type { GenerateIllustrationInputT } from "../schemas.js";
 import type { AssetGenerationResult } from "../types.js";
 
@@ -48,6 +52,12 @@ export async function generateIllustration(
   }
 
   // api mode
+  const chosen = chooseApiTargetOrFallback("illustration", input.brief, spec, {
+    images: input.count
+  });
+  if (chosen.kind === "external") return chosen.plan;
+  const apiModel = chosen.model;
+
   const outDir = input.output_dir ?? resolve(CONFIG.outputDir, `illustration-${Date.now()}`);
   mkdirSync(outDir, { recursive: true });
 
@@ -58,8 +68,8 @@ export async function generateIllustration(
     height?: number;
     bytes?: number;
   }> = [];
-  const warnings: string[] = [...spec.warnings];
-  let modelUsed = spec.target_model;
+  const warnings: string[] = [...spec.warnings, ...chosen.warnings];
+  let modelUsed = apiModel;
   let firstSeed = 0;
   let prompt_hash = "";
   let params_hash = "";
@@ -67,7 +77,7 @@ export async function generateIllustration(
   for (let i = 0; i < input.count; i++) {
     const seed = (typeof spec.params["seed"] === "number" ? spec.params["seed"] : 0) + i * 1000003;
     const ck = computeCacheKey({
-      model: spec.target_model,
+      model: apiModel,
       seed,
       prompt: spec.rewritten_prompt,
       params: spec.params
@@ -78,7 +88,7 @@ export async function generateIllustration(
       params_hash = ck.params_hash;
     }
 
-    const gen = await generate(spec.target_model, {
+    const gen = await generate(apiModel, {
       prompt: spec.rewritten_prompt,
       width,
       height,

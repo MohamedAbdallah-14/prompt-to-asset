@@ -309,5 +309,7 @@ function envVarForKey(k: keyof ApiAvailability): string {
       return "CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID";
     case "replicate":
       return "REPLICATE_API_TOKEN";
+    case "comfyui":
+      return "PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL (+ optional PROMPT_TO_BUNDLE_MODAL_COMFYUI_TOKEN)";
   }
 }

@@ -10,7 +10,14 @@ import { computeCacheKey } from "../cache.js";
 import { CONFIG } from "../config.js";
 import { hashBundle } from "../brand.js";
 import { loadSharp } from "../pipeline/sharp.js";
-import { resolveMode, buildInlineSvgPlan, buildExternalPromptPlan } from "./mode-runtime.js";
+import {
+  resolveMode,
+  buildInlineSvgPlan,
+  buildExternalPromptPlan,
+  chooseApiTargetOrFallback
+} from "./mode-runtime.js";
+import { safeReadPath, safeWritePath } from "../security/paths.js";
+import { assertSafeSvg } from "../security/svg-sanitize.js";
 import type { GenerateFaviconInputT } from "../schemas.js";
 import type { AssetGenerationResult } from "../types.js";
 
@@ -63,16 +70,22 @@ async function runApi(
   input: GenerateFaviconInputT,
   spec: Awaited<ReturnType<typeof enhancePrompt>>
 ): Promise<AssetGenerationResult> {
-  const outDir = input.output_dir ?? resolve(CONFIG.outputDir, `favicon-${Date.now()}`);
+  const chosen = chooseApiTargetOrFallback("favicon", input.brief, spec);
+  if (chosen.kind === "external") return chosen.plan;
+  const apiModel = chosen.model;
+
+  const outDir = safeWritePath(
+    input.output_dir ?? resolve(CONFIG.outputDir, `favicon-${Date.now()}`)
+  );
   mkdirSync(outDir, { recursive: true });
 
-  const warnings: string[] = [...spec.warnings];
+  const warnings: string[] = [...spec.warnings, ...chosen.warnings];
   let masterPng: Buffer;
   let masterSvg: string | undefined;
 
   const seed = typeof spec.params["seed"] === "number" ? spec.params["seed"] : 0;
   const ck = computeCacheKey({
-    model: spec.target_model,
+    model: apiModel,
     seed,
     prompt: spec.rewritten_prompt,
     params: spec.params
@@ -80,13 +93,13 @@ async function runApi(
   const prompt_hash = ck.prompt_hash;
   const params_hash = ck.params_hash;
 
-  const gen = await generate(spec.target_model, {
+  const gen = await generate(apiModel, {
     prompt: spec.rewritten_prompt,
     width: 1024,
     height: 1024,
     seed,
     transparency: true,
-    output_format: spec.target_model.startsWith("recraft") ? "svg" : "png"
+    output_format: apiModel.startsWith("recraft") ? "svg" : "png"
   });
   const model = gen.model;
 
@@ -141,9 +154,13 @@ async function runApi(
 }
 
 async function runApiFromExistingSvg(input: GenerateFaviconInputT): Promise<AssetGenerationResult> {
-  const outDir = input.output_dir ?? resolve(CONFIG.outputDir, `favicon-${Date.now()}`);
+  const outDir = safeWritePath(
+    input.output_dir ?? resolve(CONFIG.outputDir, `favicon-${Date.now()}`)
+  );
   mkdirSync(outDir, { recursive: true });
-  const masterSvg = readFileSync(resolve(input.existing_mark_svg!), "utf-8");
+  const markPath = safeReadPath(input.existing_mark_svg!);
+  const masterSvg = readFileSync(markPath, "utf-8");
+  assertSafeSvg(masterSvg);
   const sharp = await loadSharp();
   const masterPng = sharp
     ? await sharp(Buffer.from(masterSvg)).resize(1024, 1024).png().toBuffer()

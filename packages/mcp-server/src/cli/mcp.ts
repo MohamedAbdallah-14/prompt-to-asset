@@ -5,8 +5,14 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { createServer } from "../server.js";
 import { CONFIG } from "../config.js";
 import { providerAvailability } from "../providers/index.js";
+import { assertDataIntegrityAtBoot } from "../data-integrity.js";
 
 export async function runMcp(): Promise<void> {
+  // Fail loud at boot if the shipped routing table references a model that
+  // isn't in the registry. Saves users from a confusing ProviderError at
+  // generate-time. Warnings (orphan models) are only surfaced when
+  // P2A_DATA_VERBOSE=1 to keep the stderr clean by default.
+  assertDataIntegrityAtBoot();
   const server = createServer();
 
   if (CONFIG.transport !== "stdio") {

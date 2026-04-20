@@ -1,0 +1,61 @@
+name: Evals
+
+# Deterministic regression gate for the router + rewriter + validator pipeline.
+# Pure-function checks against `evals/briefs/golden-set.json`; no provider
+# calls. Fails the PR if any brief that was passing in
+# `evals/snapshots/baseline.json` now fails.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/mcp-server/src/**"
+      - "data/**"
+      - "evals/**"
+      - ".github/workflows/evals.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/mcp-server/src/**"
+      - "data/**"
+      - "evals/**"
+      - ".github/workflows/evals.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evals-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evals:
+    name: regression-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run evals (regression-check)
+        run: node evals/scripts/run.mjs --check
+
+      - name: Upload snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-snapshot
+          path: evals/snapshots/
+          retention-days: 14

@@ -1,0 +1,306 @@
+{
+  "version": "0.1.0",
+  "run_at": "2026-04-20T12:58:15.040Z",
+  "total": 9,
+  "pass": 9,
+  "fail": 0,
+  "results": [
+    {
+      "id": "logo-wordmark-short",
+      "target_model": "gpt-image-1",
+      "modes_available": [
+        "inline_svg",
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [],
+      "transparency_required": true,
+      "vector_required": true,
+      "checks": [
+        {
+          "name": "route_matches",
+          "expected": "^(ideogram-3|ideogram-3-turbo|gpt-image-1|recraft-v3)$",
+          "actual": "gpt-image-1",
+          "pass": true
+        },
+        {
+          "name": "never_routes_to_any",
+          "expected": [
+            "imagen-3",
+            "imagen-4",
+            "sd-1.5"
+          ],
+          "actual": "gpt-image-1",
+          "pass": true
+        },
+        {
+          "name": "modes_include",
+          "expected": [
+            "inline_svg",
+            "external_prompt_only"
+          ],
+          "actual": [
+            "inline_svg",
+            "external_prompt_only"
+          ],
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "logo-wordmark-long",
+      "target_model": "composite",
+      "modes_available": [
+        "inline_svg",
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [
+        "long_wordmark"
+      ],
+      "transparency_required": true,
+      "vector_required": true,
+      "checks": [
+        {
+          "name": "modes_include",
+          "expected": [
+            "inline_svg"
+          ],
+          "actual": [
+            "inline_svg",
+            "external_prompt_only"
+          ],
+          "pass": true
+        },
+        {
+          "name": "clarifying_question_id",
+          "expected": "long_wordmark",
+          "actual": [
+            "long_wordmark"
+          ],
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "app-icon-ios",
+      "target_model": "recraft-v3",
+      "modes_available": [
+        "inline_svg",
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [],
+      "transparency_required": true,
+      "vector_required": false,
+      "checks": [
+        {
+          "name": "modes_include",
+          "expected": [
+            "inline_svg",
+            "external_prompt_only"
+          ],
+          "actual": [
+            "inline_svg",
+            "external_prompt_only"
+          ],
+          "pass": true
+        },
+        {
+          "name": "safe_zone",
+          "expected": {
+            "width": 824,
+            "height": 824
+          },
+          "actual": {
+            "width": 824,
+            "height": 824
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "favicon-bundle",
+      "target_model": "recraft-v3",
+      "modes_available": [
+        "inline_svg",
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [],
+      "transparency_required": true,
+      "vector_required": true,
+      "checks": [
+        {
+          "name": "modes_include",
+          "expected": [
+            "inline_svg"
+          ],
+          "actual": [
+            "inline_svg",
+            "external_prompt_only"
+          ],
+          "pass": true
+        },
+        {
+          "name": "safe_zone",
+          "expected": {
+            "width": 16,
+            "height": 16
+          },
+          "actual": {
+            "width": 16,
+            "height": 16
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "og-image-card",
+      "target_model": "satori_template",
+      "modes_available": [
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [
+        "long_wordmark"
+      ],
+      "transparency_required": false,
+      "vector_required": false,
+      "checks": [
+        {
+          "name": "modes_include",
+          "expected": [
+            "external_prompt_only"
+          ],
+          "actual": [
+            "external_prompt_only"
+          ],
+          "pass": true
+        },
+        {
+          "name": "modes_exclude",
+          "expected": [
+            "inline_svg"
+          ],
+          "actual": [
+            "external_prompt_only"
+          ],
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "illustration-empty-state",
+      "target_model": "flux-pro",
+      "modes_available": [
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [],
+      "transparency_required": false,
+      "vector_required": false,
+      "checks": [
+        {
+          "name": "modes_include",
+          "expected": [
+            "external_prompt_only"
+          ],
+          "actual": [
+            "external_prompt_only"
+          ],
+          "pass": true
+        },
+        {
+          "name": "modes_exclude",
+          "expected": [
+            "inline_svg"
+          ],
+          "actual": [
+            "external_prompt_only"
+          ],
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "transparent-mark-sticker",
+      "target_model": "gpt-image-1",
+      "modes_available": [
+        "inline_svg",
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [],
+      "transparency_required": true,
+      "vector_required": false,
+      "checks": [
+        {
+          "name": "never_routes_to_any",
+          "expected": [
+            "imagen-3",
+            "imagen-4"
+          ],
+          "actual": "gpt-image-1",
+          "pass": true
+        },
+        {
+          "name": "transparency_required",
+          "expected": true,
+          "actual": true,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "brief-underspecified",
+      "target_model": "recraft-v3",
+      "modes_available": [
+        "inline_svg",
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [
+        "brief_underspecified"
+      ],
+      "transparency_required": true,
+      "vector_required": true,
+      "checks": [
+        {
+          "name": "clarifying_question_id",
+          "expected": "brief_underspecified",
+          "actual": [
+            "brief_underspecified"
+          ],
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "id": "app-icon-no-palette",
+      "target_model": "recraft-v3",
+      "modes_available": [
+        "inline_svg",
+        "external_prompt_only"
+      ],
+      "clarifying_question_ids": [
+        "no_brand_palette"
+      ],
+      "transparency_required": true,
+      "vector_required": false,
+      "checks": [
+        {
+          "name": "clarifying_question_id",
+          "expected": "no_brand_palette",
+          "actual": [
+            "no_brand_palette"
+          ],
+          "pass": true
+        }
+      ],
+      "pass": true
+    }
+  ]
+}

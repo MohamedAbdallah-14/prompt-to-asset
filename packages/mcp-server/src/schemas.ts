@@ -62,7 +62,16 @@ export const GenerateLogoInput = z.object({
   brand_bundle: BrandBundleSchema.optional(),
   text_content: z.string().optional(),
   vector: z.boolean().optional().default(true),
-  output_dir: z.string().optional()
+  output_dir: z.string().optional(),
+  max_retries: z
+    .number()
+    .int()
+    .min(0)
+    .max(4)
+    .optional()
+    .describe(
+      "api mode only. Up to N regeneration attempts if tier-0 validation fails. On each attempt the server inspects the failure (alpha missing / checkerboard / palette drift / safe-zone / OCR / contrast) and applies a repair (re-route, palette hex pin, mark-only fallback). Default 0 (no retry). Cap 4 to bound cost."
+    )
 });
 
 export const GenerateAppIconInput = z.object({
@@ -174,6 +183,18 @@ export const ValidateAssetInput = z.object({
   asset_type: AssetTypeSchema,
   brand_bundle: BrandBundleSchema.optional(),
   intended_text: z.string().optional(),
+  prompt: z
+    .string()
+    .optional()
+    .describe(
+      "The generation prompt, used for tier-1 VQAScore alignment when PROMPT_TO_BUNDLE_VQA_URL is set. If omitted and intended_text is present, we use that. Tier-1 is skipped entirely when neither is available."
+    ),
+  run_vqa: z
+    .boolean()
+    .default(false)
+    .describe(
+      "When true, POST the image + prompt to PROMPT_TO_BUNDLE_VQA_URL for a 0..1 alignment score (VQAScore/Qwen-VL/CLIP-FlanT5). Graceful no-op if the URL isn't set."
+    ),
   run_vlm: z.boolean().default(false)
 });
 
@@ -181,6 +202,29 @@ export const BrandBundleParseInput = z.object({
   source: z
     .string()
     .describe("Path to brand.md, brand.json, DTCG tokens, or AdCP spec; or raw text to parse")
+});
+
+export const TrainBrandLoraInput = z.object({
+  name: z.string().min(1).describe("Brand slug. Becomes the LoRA id trigger token."),
+  base_model: z
+    .string()
+    .default("sdxl-1.0")
+    .describe(
+      "Base model to fine-tune. Supported by typical trainers: sdxl-1.0, flux-1-dev, sd-1.5."
+    ),
+  training_images: z
+    .array(z.string())
+    .min(5)
+    .max(200)
+    .describe(
+      "Local filesystem paths to 5-200 brand-consistent images. 20-50 is the sweet spot. Paths go through the same safeReadPath allow-list as the other tools."
+    ),
+  captions: z
+    .array(z.string())
+    .optional()
+    .describe("Per-image caption overrides. If omitted, the trainer auto-captions."),
+  rank: z.number().int().min(4).max(128).default(16).describe("LoRA rank."),
+  steps: z.number().int().min(100).max(8000).default(1200).describe("Training steps.")
 });
 
 export const CapabilitiesInput = z
@@ -277,6 +321,7 @@ export type VectorizeInputT = z.infer<typeof VectorizeInput>;
 export type UpscaleRefineInputT = z.infer<typeof UpscaleRefineInput>;
 export type ValidateAssetInputT = z.infer<typeof ValidateAssetInput>;
 export type BrandBundleParseInputT = z.infer<typeof BrandBundleParseInput>;
+export type TrainBrandLoraInputT = z.infer<typeof TrainBrandLoraInput>;
 export type CapabilitiesInputT = z.infer<typeof CapabilitiesInput>;
 export type IngestExternalInputT = z.infer<typeof IngestExternalInput>;
 export type SaveInlineSvgInputT = z.infer<typeof SaveInlineSvgInput>;

@@ -1474,6 +1474,82 @@
         "non-Latin wordmarks"
       ],
       "cost_hint": "$0.08/run (Ideogram passthrough)"
+    },
+    {
+      "id": "comfyui-sdxl",
+      "provider": "comfyui",
+      "family": "sd-derivative",
+      "text_encoder": "CLIP-L + OpenCLIP-G",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "negative_prompt_support": "native",
+      "ref_image_support": true,
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "self-host cost control at >200 img/day",
+        "LoRA load at inference time",
+        "ControlNet / IP-Adapter workflows"
+      ],
+      "weaknesses": [
+        "requires user-owned GPU endpoint",
+        "text rendering weak past one glyph"
+      ],
+      "never_use_for": ["wordmarks >1 word"],
+      "cost_hint": "user-owned (Modal: ~$0.004/img SDXL at A10G)"
+    },
+    {
+      "id": "comfyui-flux",
+      "provider": "comfyui",
+      "family": "flux",
+      "text_encoder": "T5-XXL + CLIP-L",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 30,
+      "negative_prompt_support": "error",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "self-host Flux.1-dev / Flux.1-schnell with brand LoRA",
+        "full workflow control (ControlNet, IP-Adapter, upscale)"
+      ],
+      "weaknesses": [
+        "requires user-owned endpoint",
+        "Flux-dev is non-commercial license"
+      ],
+      "never_use_for": ["negative_prompt usage"],
+      "cost_hint": "user-owned (Modal: ~$0.012/img Flux.1-dev at H100)"
+    },
+    {
+      "id": "comfyui-flux-lora",
+      "provider": "comfyui",
+      "family": "flux",
+      "text_encoder": "T5-XXL + CLIP-L",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 30,
+      "negative_prompt_support": "error",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "brand-locked output via trained LoRA (use with asset_train_brand_lora)",
+        "consistent mascot / character across an asset set"
+      ],
+      "weaknesses": [
+        "requires a trained LoRA to be meaningful",
+        "requires user-owned endpoint"
+      ],
+      "never_use_for": ["one-off assets with no brand history"],
+      "cost_hint": "user-owned (+ one-time LoRA training cost ~$2-4)"
     }
   ]
 }

@@ -5,7 +5,7 @@ This page shows the exact registration for every supported IDE. Every manifest b
 ## Prerequisites
 
 ```bash
-git clone https://github.com/yourorg/prompt-to-asset.git
+git clone https://github.com/MohamedAbdallah-14/prompt-to-asset.git
 cd prompt-to-asset
 npm install
 npm run build

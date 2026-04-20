@@ -1,0 +1,29 @@
+name: Dependency Review
+
+# Block PRs that introduce new vulnerable deps or licence-incompatible
+# dependencies. Fails on high-severity advisories and copyleft licences.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    name: dependency-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          # Block strong copyleft from sneaking into a permissively-licensed
+          # library. Our runtime is MIT; deps should stay liberal.
+          deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later, SSPL-1.0, BUSL-1.1
+          comment-summary-in-pr: on-failure

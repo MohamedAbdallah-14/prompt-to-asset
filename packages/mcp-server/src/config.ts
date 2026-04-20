@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import type { ModelInfo, RoutingRule } from "./types.js";
@@ -6,7 +6,28 @@ import type { ModelInfo, RoutingRule } from "./types.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DATA_DIR = resolve(__dirname, "../../..", "data");
+// `data/` ships alongside the compiled server. Two scenarios:
+//   1. Monorepo dev: `dist/` sits under packages/mcp-server, data/ lives at
+//      the monorepo root → ../../../data from dist/config.js.
+//   2. Published npm package: `data/` is copied into the tarball root via
+//      the prepack script, so package-root/data resolves from ../../data.
+// We try both and pick whichever exists. Easier than hard-coding a path
+// that breaks in one of the two shapes.
+function resolveDataDir(): string {
+  const candidates = [
+    // Published npm: dist/config.js → package root → data/ sits next to dist/
+    resolve(__dirname, "..", "data"),
+    // Monorepo dev: dist/config.js → package root → ../../ → repo root → data/
+    resolve(__dirname, "../../..", "data")
+  ];
+  for (const c of candidates) {
+    if (existsSync(resolve(c, "model-registry.json"))) return c;
+  }
+  // Fall back to the first so downstream readFileSync throws with a clear path.
+  return candidates[0]!;
+}
+
+const DATA_DIR = resolveDataDir();
 
 export const MODEL_REGISTRY: { models: ModelInfo[] } = JSON.parse(
   readFileSync(resolve(DATA_DIR, "model-registry.json"), "utf-8")

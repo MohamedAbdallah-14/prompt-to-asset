@@ -6,8 +6,14 @@ import { tier0 } from "../pipeline/validate.js";
 import { computeCacheKey } from "../cache.js";
 import { CONFIG } from "../config.js";
 import { hashBundle } from "../brand.js";
-import { resolveMode, buildExternalPromptPlan } from "./mode-runtime.js";
+import {
+  resolveMode,
+  buildExternalPromptPlan,
+  chooseApiTargetOrFallback
+} from "./mode-runtime.js";
 import { loadSharp } from "../pipeline/sharp.js";
+import { safeReadPath, safeWritePath } from "../security/paths.js";
+import { assertSafeSvg } from "../security/svg-sanitize.js";
 import type { GenerateSplashScreenInputT } from "../schemas.js";
 import type { AssetGenerationResult } from "../types.js";
 
@@ -54,7 +60,9 @@ export async function generateSplashScreen(
   }
 
   // api mode: produce a 1024² master mark, then fan out to platform sizes.
-  const outDir = input.output_dir ?? resolve(CONFIG.outputDir, `splash-${Date.now()}`);
+  const outDir = safeWritePath(
+    input.output_dir ?? resolve(CONFIG.outputDir, `splash-${Date.now()}`)
+  );
   mkdirSync(outDir, { recursive: true });
 
   const background = input.background_color ?? input.brand_bundle?.palette?.[0] ?? "#ffffff";
@@ -75,22 +83,28 @@ export async function generateSplashScreen(
   let params_hash = "";
 
   if (input.existing_mark_svg) {
-    const svgBuf = readFileSync(resolve(input.existing_mark_svg));
-    markPng = await sharp(svgBuf, { density: 600 })
+    const svgText = readFileSync(safeReadPath(input.existing_mark_svg), "utf-8");
+    assertSafeSvg(svgText);
+    markPng = await sharp(Buffer.from(svgText), { density: 600 })
       .resize(1024, 1024, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .png()
       .toBuffer();
   } else {
+    const chosen = chooseApiTargetOrFallback("splash_screen", input.brief, spec);
+    if (chosen.kind === "external") return chosen.plan;
+    const apiModel = chosen.model;
+    warnings.push(...chosen.warnings);
+
     const initialSeed = typeof spec.params["seed"] === "number" ? spec.params["seed"] : 0;
     const ck = computeCacheKey({
-      model: spec.target_model,
+      model: apiModel,
       seed: initialSeed,
       prompt: spec.rewritten_prompt,
       params: spec.params
     });
     prompt_hash = ck.prompt_hash;
     params_hash = ck.params_hash;
-    const gen = await generate(spec.target_model, {
+    const gen = await generate(apiModel, {
       prompt: spec.rewritten_prompt,
       width: 1024,
       height: 1024,

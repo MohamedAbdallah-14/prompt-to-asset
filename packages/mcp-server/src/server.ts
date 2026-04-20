@@ -21,7 +21,8 @@ import {
   BrandBundleParseInput,
   CapabilitiesInput,
   IngestExternalInput,
-  SaveInlineSvgInput
+  SaveInlineSvgInput,
+  TrainBrandLoraInput
 } from "./schemas.js";
 
 import { enhancePrompt } from "./tools/enhance-prompt.js";
@@ -40,6 +41,7 @@ import { brandBundleParse } from "./tools/brand-bundle-parse.js";
 import { capabilities } from "./tools/capabilities.js";
 import { ingestExternal } from "./tools/ingest-external.js";
 import { saveInlineSvg } from "./tools/save-inline-svg.js";
+import { trainBrandLora } from "./tools/train-brand-lora.js";
 
 export const TOOLS: Tool[] = [
   {
@@ -73,7 +75,7 @@ export const TOOLS: Tool[] = [
   {
     name: "asset_enhance_prompt",
     description:
-      "Classify an asset brief, route to the right model, rewrite the prompt in that model's dialect, and report which execution modes are available (inline_svg / external_prompt_only / api). Returns an AssetSpec JSON including modes_available, optional svg_brief (for inline_svg), and optional paste_targets (for external_prompt_only). Read-only; idempotent; no network.",
+      "Classify an asset brief, route to the right model, rewrite the prompt in that model's dialect, and report which execution modes are available (inline_svg / external_prompt_only / api). Returns an AssetSpec JSON including modes_available, optional svg_brief (for inline_svg), optional paste_targets (for external_prompt_only), and — when the brief leaves a material ambiguity — a `clarifying_questions[]` array the host LLM should surface via AskUserQuestion (or the equivalent) BEFORE calling a generator. Each entry has {id, header, question, options[], required, why}. Read-only; idempotent; no network.",
     inputSchema: {
       type: "object",
       properties: {
@@ -469,6 +471,37 @@ export const TOOLS: Tool[] = [
       required: ["image_path", "asset_type"]
     },
     annotations: { openWorldHint: false }
+  },
+  {
+    name: "asset_train_brand_lora",
+    description:
+      "Train a brand-consistent LoRA from 20-50 sample images, returning a `lora_id` the `comfyui-*` and SDXL-family providers can reference. Requires a user-owned training endpoint (Modal / Runpod / self-host) at PROMPT_TO_BUNDLE_MODAL_LORA_TRAIN_URL. Phase-4 scaffold: the MCP tool does the packaging, validation, and HTTP; the user owns the deployment and pricing. See docs/research/06-stable-diffusion-flux/6d-lora-training-for-brand-style.md.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Brand slug. Becomes the LoRA trigger token." },
+        base_model: {
+          type: "string",
+          description: "Base model to fine-tune (sdxl-1.0 / flux-1-dev / sd-1.5).",
+          default: "sdxl-1.0"
+        },
+        training_images: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Local filesystem paths (5-200). 20-50 is the sweet spot. Paths go through the safeReadPath allow-list."
+        },
+        captions: {
+          type: "array",
+          items: { type: "string" },
+          description: "Per-image caption overrides. Auto-captioned if omitted."
+        },
+        rank: { type: "number", default: 16 },
+        steps: { type: "number", default: 1200 }
+      },
+      required: ["name", "training_images"]
+    },
+    annotations: { openWorldHint: true }
   }
 ];
 
@@ -540,6 +573,9 @@ export function createServer(): Server {
           break;
         case "asset_save_inline_svg":
           result = await saveInlineSvg(SaveInlineSvgInput.parse(args ?? {}));
+          break;
+        case "asset_train_brand_lora":
+          result = await trainBrandLora(TrainBrandLoraInput.parse(args ?? {}));
           break;
         default:
           throw new Error(`Unknown tool: ${name}`);

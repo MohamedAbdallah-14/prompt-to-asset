@@ -15,7 +15,7 @@
 # The image is intentionally minimal — no provider SDK is bundled.
 # Credentials come in as environment variables at runtime, never at build.
 
-ARG NODE_VERSION=20
+ARG NODE_VERSION=22
 
 FROM node:${NODE_VERSION}-slim AS builder
 
@@ -24,7 +24,6 @@ WORKDIR /src
 # Install workspace manifests first for dependency-layer cache reuse.
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY packages/mcp-server/package.json ./packages/mcp-server/
-COPY apps/web/package.json ./apps/web/
 
 ARG WITH_SHARP=0
 RUN --mount=type=cache,target=/root/.npm \
@@ -47,7 +46,7 @@ FROM node:${NODE_VERSION}-slim AS runtime
 
 LABEL org.opencontainers.image.title="prompt-to-asset"
 LABEL org.opencontainers.image.description="MCP server that routes briefs to image models and runs a deterministic post-processing pipeline."
-LABEL org.opencontainers.image.source="https://github.com/yourorg/prompt-to-asset"
+LABEL org.opencontainers.image.source="https://github.com/MohamedAbdallah-14/prompt-to-asset"
 LABEL org.opencontainers.image.licenses="MIT"
 
 RUN groupadd --system mcp && useradd --system --gid mcp --home-dir /work --no-create-home mcp

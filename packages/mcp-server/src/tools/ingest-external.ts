@@ -7,6 +7,7 @@ import { vectorize } from "../pipeline/vectorize.js";
 import { tier0 } from "../pipeline/validate.js";
 import { loadSharp } from "../pipeline/sharp.js";
 import { computeCacheKey } from "../cache.js";
+import { safeReadPath, safeWritePath } from "../security/paths.js";
 import type { IngestExternalInputT } from "../schemas.js";
 import type { AssetBundle, AssetType } from "../types.js";
 
@@ -30,10 +31,17 @@ import type { AssetBundle, AssetType } from "../types.js";
  *   - docs/research/03-evaluation-metrics/3e-asset-specific-eval.md (validation)
  */
 export async function ingestExternal(input: IngestExternalInputT): Promise<AssetBundle> {
-  const outDir = input.output_dir ?? resolve(CONFIG.outputDir, `ingest-${Date.now()}`);
+  // Path-guard both the input (read) and the output (write) surface. These
+  // come straight from an untrusted MCP caller; without the guard, a crafted
+  // image_path lets the tool read arbitrary files, and a crafted output_dir
+  // lets it write anywhere on disk. See src/security/paths.ts.
+  const imagePath = safeReadPath(input.image_path);
+  const outDir = safeWritePath(
+    input.output_dir ?? resolve(CONFIG.outputDir, `ingest-${Date.now()}`)
+  );
   mkdirSync(outDir, { recursive: true });
 
-  const buf = Buffer.from(readFileSync(resolve(input.image_path)));
+  const buf = Buffer.from(readFileSync(imagePath));
   const assetType = input.asset_type;
 
   const transparencyExpected = input.transparent ?? defaultTransparency(assetType);
@@ -49,7 +57,7 @@ export async function ingestExternal(input: IngestExternalInputT): Promise<Asset
   // the subject in the output alpha). We re-encode to lossless PNG and
   // apply a mild unsharp-mask to restore edge contrast before matte.
   // Skip when the file is already a lossless PNG/WebP/TIFF.
-  const ext = extname(input.image_path).toLowerCase();
+  const ext = extname(imagePath).toLowerCase();
   const lossy = [".jpg", ".jpeg", ".heic", ".heif", ".avif"].includes(ext);
   if (lossy) {
     const sharp = await loadSharp();
@@ -129,7 +137,7 @@ export async function ingestExternal(input: IngestExternalInputT): Promise<Asset
   const ck = computeCacheKey({
     model: "external",
     seed: 0,
-    prompt: `external-ingest:${input.image_path}`,
+    prompt: `external-ingest:${imagePath}`,
     params: {
       asset_type: assetType,
       transparent: transparencyExpected,
@@ -140,7 +148,7 @@ export async function ingestExternal(input: IngestExternalInputT): Promise<Asset
   return {
     mode: "api",
     asset_type: assetType,
-    brief: `external:${input.image_path}`,
+    brief: `external:${imagePath}`,
     brand_bundle_hash: hashBundle(input.brand_bundle ?? null),
     variants,
     provenance: {
@@ -151,7 +159,7 @@ export async function ingestExternal(input: IngestExternalInputT): Promise<Asset
     },
     validations: validation,
     warnings: [
-      `ingested external image from ${input.image_path}`,
+      `ingested external image from ${imagePath}`,
       `matte: ${transparencyExpected ? "applied" : "skipped"}, vectorize: ${vectorExpected ? "applied" : "skipped"}`,
       ...warnings,
       ...validation.warnings

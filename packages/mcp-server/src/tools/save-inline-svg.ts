@@ -6,6 +6,8 @@ import { buildSvgBrief } from "../svg-briefs.js";
 import { tier0 } from "../pipeline/validate.js";
 import { loadSharp } from "../pipeline/sharp.js";
 import { exportFaviconBundle, exportAppIconBundle } from "../pipeline/export.js";
+import { safeWritePath } from "../security/paths.js";
+import { assertSafeSvg } from "../security/svg-sanitize.js";
 import type { SaveInlineSvgInputT } from "../schemas.js";
 import type { AssetBundle } from "../types.js";
 
@@ -32,16 +34,25 @@ export async function saveInlineSvg(input: SaveInlineSvgInputT): Promise<AssetBu
     ...(input.brand_bundle && { brand_bundle: input.brand_bundle })
   });
 
-  const outDir = input.output_dir ?? resolve(CONFIG.outputDir, `${assetType}-${Date.now()}`);
+  const outDir = safeWritePath(
+    input.output_dir ?? resolve(CONFIG.outputDir, `${assetType}-${Date.now()}`)
+  );
   mkdirSync(outDir, { recursive: true });
 
   const rawSvg = input.svg.trim();
+
+  // Unconditional XSS/SSRF guard. Runs BEFORE we persist or rasterize, so a
+  // caller can't smuggle <script>, event handlers, javascript: URIs, or
+  // external resource refs. This check does not depend on SVGO (optional
+  // dep), so the server remains safe even in a minimal install. See
+  // src/security/svg-sanitize.ts for the full policy.
+  assertSafeSvg(rawSvg);
+
   const validationWarnings = validateAgainstBrief(rawSvg, brief);
   const looksLikeSvg = /^\s*<svg[\s>]/i.test(rawSvg);
 
-  // Persist the SVG text verbatim regardless — the caller should still see
-  // exactly what they submitted. Downstream rasterization is skipped if
-  // the input is not really SVG.
+  // Persist the SVG text verbatim — the caller should see exactly what they
+  // submitted. Downstream rasterization is skipped if the input is not SVG.
   const svgPath = resolve(outDir, fileName(assetType, "svg"));
   writeFileSync(svgPath, rawSvg);
 

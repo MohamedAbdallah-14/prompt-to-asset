@@ -19,6 +19,7 @@ import { doctorCommand } from "./doctor.js";
 import { spriteSheetCommand } from "./sprite-sheet.js";
 import { nineSliceCommand } from "./nine-slice.js";
 import { modelsCommand } from "./models.js";
+import { pickCommand } from "./pick.js";
 import { runMcp } from "./mcp.js";
 
 const USAGE = `prompt-to-asset (p2a)
@@ -48,6 +49,9 @@ Usage:
                                --rgba         only models with native transparent output
                                --svg          only models with native SVG output
   p2a models inspect <id>    Full capability dump + paste targets + routing references.
+  p2a pick                   Interactive picker. Asks asset type + constraints,
+                             returns a ranked route (target model, paste targets,
+                             enhanced prompt, next-step commands). No keys needed.
   p2a sprite-sheet <dir>     Pack a directory of PNG frames into one sheet +
                              TexturePacker-compatible JSON atlas. For game devs.
                              Options:
@@ -62,10 +66,14 @@ Usage:
                                --guides L,T,R,B     pixels from each edge (required)
                                --android-9patch     also emit an Android .9.png
   p2a doctor                 Print dependency + API-key inventory. Read-only.
+                             Flags:
+                               --data  Check that model-registry.json and
+                                       routing-table.json agree (exits 1 on
+                                       broken refs; useful in CI).
   p2a --help, -h             Show this message.
 
 Environment: see .env.example for optional provider keys and pipeline URLs.
-Docs:        https://github.com/yourorg/prompt-to-asset
+Docs:        https://github.com/MohamedAbdallah-14/prompt-to-asset
 `;
 
 export async function main(argv: string[] = process.argv.slice(2)): Promise<void> {
@@ -92,12 +100,17 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
   }
 
   if (cmd === "doctor") {
-    await doctorCommand();
+    await doctorCommand(rest);
     return;
   }
 
   if (cmd === "models") {
     await modelsCommand(rest);
+    return;
+  }
+
+  if (cmd === "pick") {
+    await pickCommand(rest);
     return;
   }
 
@@ -112,14 +125,38 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
   }
 
   if (cmd === "--version" || cmd === "-v") {
-    // Resolve version from the package.json lazily so we don't embed a stale copy.
-    const { readFileSync } = await import("node:fs");
+    // Read the version from whichever package.json sits closest above this
+    // file. Two layouts to handle: monorepo dev (dist/cli/index.js is two up
+    // from packages/mcp-server/package.json) and published npm (dist/cli/
+    // index.js is two up from the package root's package.json). Walk up
+    // looking for the first package.json with a "version" — first hit wins.
+    const { readFileSync, existsSync } = await import("node:fs");
     const { resolve, dirname } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
     const here = dirname(fileURLToPath(import.meta.url));
-    const pkgPath = resolve(here, "../../../package.json");
-    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8")) as { version?: string };
-    process.stdout.write(`${pkg.version ?? "unknown"}\n`);
+    let dir = here;
+    let version = "unknown";
+    for (let i = 0; i < 6; i++) {
+      const pkgPath = resolve(dir, "package.json");
+      if (existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(readFileSync(pkgPath, "utf-8")) as {
+            name?: string;
+            version?: string;
+          };
+          if (pkg.name === "prompt-to-asset" && pkg.version) {
+            version = pkg.version;
+            break;
+          }
+        } catch {
+          /* keep walking */
+        }
+      }
+      const parent = dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+    process.stdout.write(`${version}\n`);
     return;
   }
 

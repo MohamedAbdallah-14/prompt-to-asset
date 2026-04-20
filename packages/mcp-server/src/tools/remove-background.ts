@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { matte } from "../pipeline/matte.js";
+import { safeReadPath, safeWritePath } from "../security/paths.js";
 import type { RemoveBackgroundInputT } from "../schemas.js";
 
 export async function removeBackground(input: RemoveBackgroundInputT): Promise<{
@@ -9,9 +10,10 @@ export async function removeBackground(input: RemoveBackgroundInputT): Promise<{
   method_used: string;
   warnings: string[];
 }> {
-  const buf = readFileSync(resolve(input.image));
+  const imagePath = safeReadPath(input.image);
+  const buf = readFileSync(imagePath);
   const result = await matte({ image: buf, mode: input.mode });
-  const out = resolve(input.output_dir ?? ".", `${basename(input.image)}.rgba.png`);
+  const out = safeWritePath(resolve(input.output_dir ?? ".", `${basename(input.image)}.rgba.png`));
   writeFileSync(out, result.image);
   return {
     output_path: out,

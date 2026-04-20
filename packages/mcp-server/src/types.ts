@@ -88,6 +88,35 @@ export interface BrandBundle {
   typography?: { primary?: string; secondary?: string };
 }
 
+/**
+ * A structured clarifying question the host LLM should surface (via
+ * AskUserQuestion in Claude Code, Cursor's own prompt, etc.) BEFORE
+ * proceeding, when the brief leaves an ambiguity that materially affects
+ * output quality.
+ *
+ * Populated by asset_enhance_prompt for two situations today:
+ *   - wordmark >3 words against a text-rendering model (Ideogram / gpt-image-1
+ *     are only reliable ≤3 words — "Halcyon Weather" fails silently at size 4+)
+ *   - brief too generic (no product noun, no visual anchor) — drives garbage in
+ *     every model equally; one clarifying question raises quality by ~30%.
+ *
+ * Machine keys for `id` are stable so a caller can persist answers across calls.
+ */
+export interface ClarifyingQuestion {
+  /** Stable machine id so callers can key-in an answer in a follow-up call. */
+  id: string;
+  /** Short chip label (≤12 chars) for AskUserQuestion-style UIs. */
+  header: string;
+  /** Full question text. */
+  question: string;
+  /** 2–4 mutually exclusive options. */
+  options: Array<{ label: string; description: string }>;
+  /** When true, the tool should refuse to proceed without an answer. */
+  required: boolean;
+  /** One-line reason the question is being asked — surfaced to the user. */
+  why: string;
+}
+
 export interface AssetSpec {
   asset_type: AssetType;
   brief: string;
@@ -130,6 +159,14 @@ export interface AssetSpec {
     fallback_chain: string[];
   };
   warnings: string[];
+  /**
+   * Non-empty when the brief leaves a materially ambiguous decision the
+   * router could resolve automatically but the answer depends on the user
+   * (e.g. "shorten the wordmark to 3 words?"). The host LLM should render
+   * these via AskUserQuestion (Claude Code) or the equivalent, collect
+   * answers, and re-call enhance_prompt with a refined brief.
+   */
+  clarifying_questions?: ClarifyingQuestion[];
 }
 
 export interface RoutingRule {
@@ -161,7 +198,7 @@ export interface RoutingRule {
 export interface ValidationResult {
   pass: boolean;
   tier0: Record<string, boolean | string | number>;
-  tier1?: Record<string, number | boolean>;
+  tier1?: Record<string, number | boolean | string>;
   tier2?: Record<string, boolean | string | number>;
   warnings: string[];
 }

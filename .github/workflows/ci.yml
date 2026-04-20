@@ -7,14 +7,21 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Default every job to read-only token. Jobs that need more (coverage upload,
+# annotations) raise their scope locally.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # Matrix build + test.
   build:
-    name: Build & test (${{ matrix.os }} / Node ${{ matrix.node }})
+    name: build/test (${{ matrix.os }} · Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -50,19 +57,113 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm test -- --run
+      - name: Data integrity (registry vs routing-table)
+        run: node packages/mcp-server/dist/index.js doctor --data
 
-      - name: Smoke test (MCP stdio list_tools)
+      - name: Test
+        run: npm run test:run
+
+      - name: Smoke test (MCP stdio + tool surface)
         if: runner.os != 'Windows'
         run: npm run smoke
 
-      - name: CLI help (smoke)
+      - name: CLI help
         run: node packages/mcp-server/dist/index.js --help
 
-      - name: CLI doctor (smoke)
+      - name: CLI doctor
         run: node packages/mcp-server/dist/index.js doctor
 
-      - name: Verify mirrors are in sync
+      - name: Verify cross-IDE mirrors are in sync
         if: runner.os != 'Windows'
         run: npm run verify
+
+  # Coverage + Codecov upload. Runs once on a single cell so we upload one
+  # authoritative report instead of five overlapping ones.
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+          verbose: true
+
+  # Belt-and-braces: pack the publishable tarball and assert its shape.
+  # Catches regressions in prepack.mjs without publishing.
+  pack-check:
+    name: pack-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: npm pack --dry-run
+        working-directory: packages/mcp-server
+        run: npm pack --dry-run 2>&1 | tee pack.log
+
+      - name: Assert staged files are present in the tarball
+        working-directory: packages/mcp-server
+        run: |
+          grep -q 'data/model-registry.json' pack.log
+          grep -q 'data/routing-table.json' pack.log
+          grep -q 'data/paste-targets.json' pack.log
+          grep -q 'README.md' pack.log
+          grep -q 'CHANGELOG.md' pack.log
+          grep -q 'LICENSE' pack.log
+
+  # npm audit. High-severity runtime advisories are blocking; moderate
+  # devDependency ones are advisory.
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit (advisory, all severities)
+        run: npm audit --audit-level=moderate --omit=dev || echo "::warning::npm audit surfaced advisories; see output above"
+
+      - name: npm audit (runtime, blocking on high+)
+        run: npm audit --audit-level=high --omit=dev

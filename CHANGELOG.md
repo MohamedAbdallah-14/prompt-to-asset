@@ -11,6 +11,93 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.2.0] — 2026-04-20 (follow-on pass)
+
+Second round of changes after the 0.2.0 hardening release — built on top of the same version so the 0.2.0 tag covers both. If you're consuming the npm publish, everything below is in 0.2.0.
+
+### Added
+
+- **`p2a init --register`**. Project-local auto-registration for `.cursor/mcp.json`, `.vscode/mcp.json`, `.windsurf/mcp.json`. Optionally runs `claude mcp add prompt-to-asset -- p2a` for Claude Code (user-global — gated behind an explicit prompt unless `--yes`). Answers the "ease-of-install" ask without asking users to hand-edit JSON.
+- **Regenerate-until-validated loop.** `asset_generate_logo` accepts `max_retries: 0..4`. On tier-0 validation failure the server inspects the diagnostic (alpha missing / checkerboard / palette drift / safe-zone / OCR / contrast) and applies a repair (re-route, hex pin, mark-only fallback) before retrying. Hard-capped for cost; stops on no-improvement convergence. Research: `26a` Reflexion / `26e` critique-to-prompt / `24a` multi-agent handoff. New module `src/pipeline/repair.ts` with a tight test suite.
+- **Tier-1 VQAScore validator.** `asset_validate` gains `run_vqa: true`. POSTs to `PROMPT_TO_BUNDLE_VQA_URL` with `{ image_base64, prompt, asset_type }`; expects `{ score: 0..1, notes? }`. Graceful no-op when unset. Research: `27b` VQAScore pipelines.
+- **Phase-4 ComfyUI + brand LoRA scaffold.** New `comfyui` provider calling `PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL` (user-owned Modal / Runpod / self-host endpoint). Three new model registry entries: `comfyui-sdxl`, `comfyui-flux`, `comfyui-flux-lora`. New MCP tool `asset_train_brand_lora` wraps a training endpoint (`PROMPT_TO_BUNDLE_MODAL_LORA_TRAIN_URL`) — the user owns the deployment; the MCP tool handles packaging + path-guarded image loading + HTTP + validation warnings. Seventeenth tool in the surface (`asset_train_brand_lora`).
+
+### Changed
+
+- **Monorepo version bumped to 0.2.0.** Keeps root `package.json` in lock-step with the publishable subpackage.
+- **Repo URL** across all docs + lockfile + Dockerfile + CI: `github.com/MohamedAbdallah-14/prompt-to-asset`.
+- **Dropped the `apps/web` workspace.** CLI-first — the route picker is `p2a pick`. Static marketing pages no longer shipped in-repo. `workspaces` now just `packages/*`.
+- **GETTING_STARTED.md** refreshed for the `npm i -g prompt-to-asset` / `npx prompt-to-asset` flow. Added a "What's new in 0.2" callout.
+- **examples/README.md** adds a per-IDE MCP usage section + a failure-recovery walkthrough (tier-0 diagnostics → repair suggestions → mode switch).
+
+### Fixed
+
+- `p2a --version` now walks upward looking for the closest `prompt-to-asset` `package.json`, so it works in monorepo dev and published npm layouts.
+- Smoke test count updated to 17 tools.
+- `modes.test.ts` updated to cover the new `comfyui` availability key.
+
+### CI
+
+- **`ci.yml` rewritten.** Adds a dedicated `coverage` job that uploads `coverage/lcov.info` to Codecov via `codecov/codecov-action@v5` (set `CODECOV_TOKEN` as a repo secret). Adds `pack-check` (runs `npm pack --dry-run` and asserts `data/` + `README.md` + `CHANGELOG.md` + `LICENSE` are in the tarball), an `audit` job (blocks on high-severity runtime advisories), and a `doctor --data` step on every matrix cell. Top-level `permissions: contents: read` so workflow tokens are least-privilege by default.
+- **`codeql.yml` added.** `javascript-typescript` analysis on push / PR / weekly cron. `security-and-quality` query pack. `security-events: write` raised locally.
+- **`dependency-review.yml` added.** Blocks PRs with new high-severity vulnerable dependencies or copyleft (GPL / AGPL / SSPL / BUSL) licences. Comments the summary on the PR only when it fails.
+- **`publish.yml` hardened.** Runs `doctor --data` + `smoke` before publishing. Keeps `id-token: write` + `--provenance` for OIDC trusted-publisher flow; `NPM_TOKEN` remains as a fallback.
+- **`sync.yml`** — timeout + explicit `permissions: contents: read`. Node bumped to 22.
+
+### Evals
+
+- **Deterministic regression harness** under `evals/`. Golden brief set at `evals/briefs/golden-set.json` (9 entries covering wordmark length, transparency routing, safe-zone assertions, and clarifying-question triggers). `node evals/scripts/run.mjs` runs the pipeline pure-function (no provider calls) and writes a snapshot. `--baseline` locks the current state; `--check` exits 1 on any brief that was passing and now fails.
+- **`.github/workflows/evals.yml`** gates every PR touching source or routing data. Separate from `ci.yml` so doc-only PRs skip it. Artifact upload retains daily snapshots for 14 days.
+- Pattern borrowed from the `unslop` repo's evaluator approach. Not the implementation — the idea of a pure-function regression snapshot that ships in the repo.
+
+### Docker + repo hygiene
+
+- **`.github/FUNDING.yml`** sponsor button.
+- **Dockerfile**: dropped the stale `apps/web/package.json` COPY (the workspace was removed in this release), bumped default `NODE_VERSION` to 22. Already had non-root `mcp` user + OCI labels + multi-stage build.
+- **PR template** now asks for `evals --check` and `doctor --data` on PRs that touch source.
+
+### Stats
+
+- 203 tests / 201 passing / 2 skipped (network integration). 0 npm audit vulns. Coverage: 33% lines / 28% branches (driven by the unit-tested security + validation + router core; the generator tools are mostly integration-exercised and sit at 0%, a known gap tracked for 0.3).
+- Evals: 9/9 golden briefs pass, baseline locked at `evals/snapshots/baseline.json`.
+- Package size 231 kB / 291 files for the npm tarball.
+
+## [0.2.0] — 2026-04-20
+
+Production-hardening release. Four audit streams (security, UX, docs-vs-code, research-vs-code) ran in parallel; this release closes every CRITICAL and HIGH finding.
+
+### Security
+
+- **Gemini API key moved from URL query string to `x-goog-api-key` header.** Query-string keys leaked into proxy logs, error bodies, and any URL echo. Also added error-body redaction so older deployments that still accept `?key=` don't leak either.
+- **Path-access allow-list.** `image_path`, `output_dir`, and `existing_mark_svg` are resolved through symlinks and rejected if they escape the project cwd + output dir + cache dir + OS tempdir. Widen with `P2A_ALLOWED_PATHS="/path1:/path2"`. New `src/security/paths.ts` — applied to all six path-accepting tools (ingest-external, save-inline-svg, remove-background, vectorize, upscale-refine, validate-asset) plus the favicon / splash-screen SVG ingestion paths.
+- **Unconditional SVG sanitizer.** `src/security/svg-sanitize.ts` rejects `<script>`, `<foreignObject>`, `<iframe>`, `<embed>`, `<object>`, `on*=` event handlers, `javascript:` URIs, external `<image href>` / `<use href>` / `<script src>`, and CSS `@import` from remote stylesheets — before any disk write. Runs regardless of whether SVGO (optional dep) is installed.
+- **Provider-error redaction.** `src/security/redact.ts` scrubs OpenAI `sk-…`, Google `AIza…`, Anthropic `sk-ant-…`, `Bearer …`, Replicate `r8_…`, HF `hf_…`, and query-string secrets from any string before it surfaces in a tool response.
+- **Cost guardrail.** Set `P2A_MAX_SPEND_USD_PER_RUN=5.00` to cap any single api-mode tool call. Pre-flight estimate refuses to call if over; zero-cost routes are always a no-op. Kept in `src/cost-guard.ts`.
+- **Data-integrity invariant at boot.** `assertDataIntegrityAtBoot()` refuses to start the MCP server if `data/routing-table.json` references a model id not in `data/model-registry.json`. New `p2a doctor --data` subcommand for CI.
+- **Build-dep CVEs closed.** vitest bumped 2.x → 4.1.x, transitively closing vite / esbuild / @vitest/mocker / @vitest/coverage-v8 advisories (GHSA-67mh-4wv8-2f99, GHSA-4w7w-66w2-5vf9). `npm audit`: 0 vulnerabilities.
+
+### Changed
+
+- **Paste-only providers no longer throw on `mode: "api"`.** Midjourney, Firefly, Krea now auto-fall-back to the first API-reachable model in the `fallback_models` chain and surface a warning explaining the swap. When the whole chain is paste-only, the tool returns an `ExternalPromptPlan` with paste-target URLs instead of failing. Behaviour covered by `packages/mcp-server/src/tools/soft-fallback.test.ts`.
+- **`asset_enhance_prompt` returns `clarifying_questions[]`** when the brief leaves a material ambiguity: long wordmark (>3 words against text-rendering models), missing brand palette on an app_icon request, or generic brief with no visual anchor. Each entry has `{id, header, question, options[], required, why}`; host LLMs should surface via AskUserQuestion (Claude Code) or the equivalent.
+- **`p2a doctor` free-route ranking.** Routes ordered best → worst (Gemini / HF / Cloudflare / Pollinations / Horde). Replaces the flat `on`/`off` list with quality-ranked guidance. New "What to try next" section adapts to zero-key / free-tier / paid-key states.
+
+### Added
+
+- **`p2a pick` — interactive TUI picker.** Asks asset type + constraints (wordmark, transparency, vector), calls the same router the MCP tools use, and prints a ranked route with cost/api-status/paste-target annotations. Zero-dep (readline). Answers the "UI for model selection" ask without adding a browser surface.
+- **`TROUBLESHOOTING.md`** — 16 common snags with copy-pasteable fixes (0 tools in IDE, sharp on Alpine, vectorize garbage, missing png-to-ico, `PathAccessError`, `SvgRejectedError`, `CostBudgetExceededError`, paste-only soft-fallback, Imagen checkerboard, OCR false-positives, …).
+- **npm publish prep.** `packages/mcp-server/package.json` wires `bin` (`p2a` + `prompt-to-asset`), `files` (`dist`, `data`, `README.md`, `CHANGELOG.md`, `LICENSE`), `prepublishOnly` (build + prepack), and a `scripts/prepack.mjs` that stages `data/` + `LICENSE` + `CHANGELOG.md` from the repo root into the package tarball. Verified via `npm pack --dry-run` (package-size 231 kB, 291 files). Data-dir resolution in `config.ts` / `paste-targets.ts` now supports both monorepo-dev and published-package layouts.
+- **Package-facing README** under `packages/mcp-server/README.md` — sized and written for the npm landing page; the monorepo README stays at the repo root.
+
+### Fixed
+
+- Test suite green on vitest 4 (163 → 190 → 192 tests; all passing).
+- The three failing `save-inline-svg` tests after the path guard landed — tempdir added to default allow-list (macOS `/var/folders` ↔ `/private/var/folders` symlink normalised; can be disabled with `P2A_DISABLE_TMPDIR_ACCESS=1`).
+
+## [0.1.0] — 2026-04-20
+
 ### Added — zero-key and free-tier providers
 
 - **Pollinations.ai** — truly zero-signup HTTP GET endpoint. Registered models: `pollinations-flux` (primary), `pollinations-turbo`, `pollinations-kontext`, `pollinations-sd`. `isAvailable()` is always true unless `POLLINATIONS_DISABLED=1`. RGB only (matte externally for transparency).
@@ -143,5 +230,5 @@ changelog notes otherwise.
   Windsurf, Cline, and GitHub Copilot.
 - Research compendium (`docs/research/`, 20 categories, 104 angle files).
 
-[Unreleased]: https://github.com/yourorg/prompt-to-asset/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/yourorg/prompt-to-asset/releases/tag/v0.1.0
+[Unreleased]: https://github.com/MohamedAbdallah-14/prompt-to-asset/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/MohamedAbdallah-14/prompt-to-asset/releases/tag/v0.1.0

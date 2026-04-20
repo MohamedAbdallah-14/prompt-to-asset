@@ -1,0 +1,101 @@
+{
+  "$schema": "../schema.json",
+  "version": "0.1.0",
+  "updated": "2026-04-20",
+  "note": "Golden brief set. Each entry drives the router + rewriter + validator pipeline. Keep this small (5-20 entries) and meaningful — one per routing rule, one per dialect, one per failure-mode-we-care-about. Grow by adding entries that would have caught a real regression.",
+  "briefs": [
+    {
+      "id": "logo-wordmark-short",
+      "brief": "flat vector logo mark for a dev-tools company called Forge, two-tone warm orange on white",
+      "asset_type": "logo",
+      "text_content": "Forge",
+      "transparent": true,
+      "vector": true,
+      "brand_bundle": { "palette": ["#EA580C", "#FDBA74"] },
+      "expect": {
+        "route_matches": "^(ideogram-3|ideogram-3-turbo|gpt-image-1|recraft-v3)$",
+        "never_routes_to_any": ["imagen-3", "imagen-4", "sd-1.5"],
+        "modes_include": ["inline_svg", "external_prompt_only"]
+      }
+    },
+    {
+      "id": "logo-wordmark-long",
+      "brief": "logo for an app called Halcyon Weather Report Daily, minimal line art",
+      "asset_type": "logo",
+      "text_content": "Halcyon Weather Report Daily",
+      "transparent": true,
+      "vector": true,
+      "expect": {
+        "clarifying_question_id": "long_wordmark",
+        "modes_include": ["inline_svg"]
+      }
+    },
+    {
+      "id": "app-icon-ios",
+      "brief": "iOS app icon for a weather app called Halcyon — flat, calm, airy, blues and warm off-white",
+      "asset_type": "app_icon",
+      "brand_bundle": { "palette": ["#0EA5E9", "#FEF3C7"] },
+      "expect": {
+        "modes_include": ["inline_svg", "external_prompt_only"],
+        "safe_zone": { "width": 824, "height": 824 }
+      }
+    },
+    {
+      "id": "favicon-bundle",
+      "brief": "favicon for a markdown-focused writing app called Quill, dark serif 'Q' on off-white",
+      "asset_type": "favicon",
+      "text_content": "Q",
+      "transparent": true,
+      "vector": true,
+      "brand_bundle": { "palette": ["#0F172A", "#FAFAF9"] },
+      "expect": {
+        "safe_zone": { "width": 16, "height": 16 },
+        "modes_include": ["inline_svg"]
+      }
+    },
+    {
+      "id": "og-image-card",
+      "brief": "OG card for a blog post titled 'Routing is the whole game'",
+      "asset_type": "og_image",
+      "expect": {
+        "modes_exclude": ["inline_svg"],
+        "modes_include": ["external_prompt_only"]
+      }
+    },
+    {
+      "id": "illustration-empty-state",
+      "brief": "empty-state illustration of an inbox with one friendly cloud, soft pastel",
+      "asset_type": "illustration",
+      "expect": {
+        "modes_exclude": ["inline_svg"],
+        "modes_include": ["external_prompt_only"]
+      }
+    },
+    {
+      "id": "transparent-mark-sticker",
+      "brief": "sticker-style mascot mark for a CLI tool called Tusk, chunky, stroke-based",
+      "asset_type": "sticker",
+      "transparent": true,
+      "expect": {
+        "transparency_required": true,
+        "never_routes_to_any": ["imagen-3", "imagen-4"]
+      }
+    },
+    {
+      "id": "brief-underspecified",
+      "brief": "a logo",
+      "asset_type": "logo",
+      "expect": {
+        "clarifying_question_id": "brief_underspecified"
+      }
+    },
+    {
+      "id": "app-icon-no-palette",
+      "brief": "app icon for a weather app",
+      "asset_type": "app_icon",
+      "expect": {
+        "clarifying_question_id": "no_brand_palette"
+      }
+    }
+  ]
+}

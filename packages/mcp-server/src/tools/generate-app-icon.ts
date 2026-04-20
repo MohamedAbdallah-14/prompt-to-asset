@@ -8,7 +8,12 @@ import { exportAppIconBundle } from "../pipeline/export.js";
 import { computeCacheKey } from "../cache.js";
 import { CONFIG } from "../config.js";
 import { hashBundle } from "../brand.js";
-import { resolveMode, buildInlineSvgPlan, buildExternalPromptPlan } from "./mode-runtime.js";
+import {
+  resolveMode,
+  buildInlineSvgPlan,
+  buildExternalPromptPlan,
+  chooseApiTargetOrFallback
+} from "./mode-runtime.js";
 import type { GenerateAppIconInputT } from "../schemas.js";
 import type { AssetGenerationResult } from "../types.js";
 
@@ -47,18 +52,22 @@ export async function generateAppIcon(
   }
 
   // api mode
+  const chosen = chooseApiTargetOrFallback("app_icon", input.brief, spec);
+  if (chosen.kind === "external") return chosen.plan;
+  const apiModel = chosen.model;
+
   const outDir = input.output_dir ?? resolve(CONFIG.outputDir, `app-icon-${Date.now()}`);
   mkdirSync(outDir, { recursive: true });
 
   const seed = typeof spec.params["seed"] === "number" ? spec.params["seed"] : 0;
   const cacheKey = computeCacheKey({
-    model: spec.target_model,
+    model: apiModel,
     seed,
     prompt: spec.rewritten_prompt,
     params: spec.params
   });
 
-  const genResult = await generate(spec.target_model, {
+  const genResult = await generate(apiModel, {
     prompt: spec.rewritten_prompt,
     width: 1024,
     height: 1024,
@@ -108,6 +117,11 @@ export async function generateAppIcon(
       params_hash: cacheKey.params_hash
     },
     validations: validation,
-    warnings: [...spec.warnings, ...validation.warnings, ...exportResult.warnings]
+    warnings: [
+      ...spec.warnings,
+      ...chosen.warnings,
+      ...validation.warnings,
+      ...exportResult.warnings
+    ]
   };
 }

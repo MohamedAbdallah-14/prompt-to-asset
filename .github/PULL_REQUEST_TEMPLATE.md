@@ -23,14 +23,19 @@ Thanks for contributing. A few checks before you open this PR:
 - [ ] `npm run typecheck` passes
 - [ ] `npm run lint` passes
 - [ ] `npm run format:check` passes
-- [ ] `npm test` passes
+- [ ] `npm run test:run` passes
 - [ ] `npm run verify` passes (mirrors in sync, no drift)
+- [ ] `node evals/scripts/run.mjs --check` passes (routing/clarifying-question regression gate; skip if docs-only)
+- [ ] `node packages/mcp-server/dist/index.js doctor --data` exits 0 (registry ↔ routing-table consistency)
 - [ ] Updated `CHANGELOG.md` under `[Unreleased]` if this is user-visible
 - [ ] Updated docs / research pointers where relevant
 - [ ] If this adds or changes an MCP tool, the schema in
       `packages/mcp-server/src/schemas.ts` is also updated
 - [ ] If this adds or changes a provider, `data/model-registry.json` and
       `data/routing-table.json` reflect the new capability matrix
+- [ ] If this changes routing behaviour intentionally, also run
+      `node evals/scripts/run.mjs --baseline` and commit the updated
+      `evals/snapshots/baseline.json` in the same PR
 
 ## Test plan
 

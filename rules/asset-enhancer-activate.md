@@ -39,13 +39,18 @@ Every asset request resolves to one of three modes. Call `asset_capabilities()` 
 
 1. Call `asset_capabilities()` — read `free_api.routes` before anything else.
 2. Call `asset_enhance_prompt({ brief })`.
-3. Look at `modes_available` + `routing_trace.never_models` (explains which models the router refuses for this brief) + `routing_trace.research_sources` (the evidence behind the decision).
-4. If `inline_svg` is present: mention it first — it's instant, zero-key, deterministic. Then free `api` routes. Paid `api` last unless the brief genuinely needs a paid-only capability.
-5. Ask the user which mode they want. Keep the question short.
-6. Call the relevant `asset_generate_*` tool with `mode: "<user's choice>"`.
-7. For `inline_svg` results: read `svg_brief` and `instructions_to_host_llm`, emit the `<svg>` inline as a code block, **then immediately call `asset_save_inline_svg({ svg, asset_type })`** so the server writes the file (and the platform bundle for favicon/app_icon). Report the `variants[].path` list to the user so they know where the files landed.
-8. For `external_prompt_only` results: present `enhanced_prompt` to the user, list the top paste targets with URLs (free-first), and tell them to call `asset_ingest_external` after saving the generated image.
-9. For `api` results: present the bundle paths (`variants[].path`) and any validation warnings.
+3. **If the response contains a `clarifying_questions[]` array, surface each entry via AskUserQuestion (or the equivalent) BEFORE calling a generator.** These questions gate material output quality — long wordmark (>3 words), missing brand palette on app_icon, underspecified brief. Each entry has `{id, header, question, options[], required, why}`. Skip only when all entries are `required: false` and the user has expressed preference for speed over quality.
+4. Look at `modes_available` + `routing_trace.never_models` (explains which models the router refuses for this brief) + `routing_trace.research_sources` (the evidence behind the decision).
+5. If `inline_svg` is present: mention it first — it's instant, zero-key, deterministic. Then free `api` routes. Paid `api` last unless the brief genuinely needs a paid-only capability.
+6. Ask the user which mode they want. Keep the question short.
+7. Call the relevant `asset_generate_*` tool with `mode: "<user's choice>"`.
+8. For `inline_svg` results: read `svg_brief` and `instructions_to_host_llm`, emit the `<svg>` inline as a code block, **then immediately call `asset_save_inline_svg({ svg, asset_type })`** so the server writes the file (and the platform bundle for favicon/app_icon). Report the `variants[].path` list to the user so they know where the files landed.
+9. For `external_prompt_only` results: present `enhanced_prompt` to the user, list the top paste targets with URLs (free-first), and tell them to call `asset_ingest_external` after saving the generated image.
+10. For `api` results: present the bundle paths (`variants[].path`) and any validation warnings.
+
+**Paste-only providers (Midjourney, Firefly, Krea) with `mode: "api"` no longer throw (as of 0.2).** The server auto-swaps to the first API-reachable model in the fallback chain and surfaces a warning explaining the swap. If the whole chain is paste-only, you receive an `ExternalPromptPlan` rather than an error — relay the paste targets to the user.
+
+**Cost guardrail.** If the user has set `P2A_MAX_SPEND_USD_PER_RUN`, an api-mode call may throw `CostBudgetExceededError` before hitting the provider. Relay the estimate + cap verbatim — do not paper over with a retry loop.
 
 ## MCP tool surface (16 tools)
 

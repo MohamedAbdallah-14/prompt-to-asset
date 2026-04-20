@@ -1,5 +1,18 @@
 name: Publish MCP server to npm
 
+# Publishes `prompt-to-asset` to npm with OIDC-backed provenance.
+#
+# Trigger: push a tag shaped `mcp-server-vX.Y.Z` (e.g. `mcp-server-v0.2.0`).
+# The `environment: npm-publish` gate lets you require manual approval in
+# GitHub → Settings → Environments before the publish step runs.
+#
+# Two paths for auth:
+#   1. Trusted Publisher (recommended — no NPM_TOKEN secret needed). Set up
+#      at https://www.npmjs.com/package/prompt-to-asset → Settings →
+#      Publishing access. `id-token: write` below is what OIDC needs.
+#   2. Fallback: provide an npm automation token as NPM_TOKEN. Less secure
+#      (long-lived), but works without trusted-publisher setup.
+
 on:
   push:
     tags:
@@ -14,14 +27,16 @@ jobs:
   publish:
     name: Publish prompt-to-asset
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: npm-publish
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org/"
           cache: "npm"
 
@@ -32,13 +47,21 @@ jobs:
         run: npm run typecheck
 
       - name: Test
-        run: npm test -- --run
+        run: npm run test:run
 
       - name: Build
         run: npm run build
 
-      - name: Publish (npm provenance)
+      - name: Data integrity
+        run: node packages/mcp-server/dist/index.js doctor --data
+
+      - name: Smoke
+        run: npm run smoke
+
+      - name: Publish with provenance
         working-directory: packages/mcp-server
+        # `--provenance` requires OIDC (id-token: write). NODE_AUTH_TOKEN is
+        # a fallback when a trusted publisher is not configured.
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

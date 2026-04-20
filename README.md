@@ -2,7 +2,7 @@
 
 > Turn a one-line brief into a complete, ship-ready asset bundle — app icons, favicons, OG images, illustrations, splash screens, sprite sheets. Route to the right model, matte / vectorize / validate, and fan out to every platform from one 1024² master. Works **without any API key** via Pollinations, Stable Horde, HF free-tier, or inline SVG from your AI assistant.
 
-[![CI](https://github.com/yourorg/prompt-to-asset/actions/workflows/ci.yml/badge.svg)](https://github.com/yourorg/prompt-to-asset/actions/workflows/ci.yml)
+[![CI](https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/ci.yml/badge.svg)](https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20.11-brightgreen.svg)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-1.0-8b5cf6.svg)](https://modelcontextprotocol.io)
@@ -71,43 +71,43 @@ Three modes ship in the box, and every single one can finish on $0:
 ## 60-second install
 
 ```bash
-git clone https://github.com/yourorg/prompt-to-asset.git
-cd prompt-to-asset
-npm install
-npm run build
+# Zero install — every command works via npx
+npx prompt-to-asset doctor
+npx prompt-to-asset pick          # interactive route picker
+npx prompt-to-asset init          # scaffold brand.json + IDE registration hints
+
+# Or global install for daily use
+npm i -g prompt-to-asset
+p2a doctor
+
+# Or per-project (reproducible in CI)
+npm i -D prompt-to-asset
+npx p2a export ./master.png --platforms all --app-name Halcyon --ios18
 ```
 
-Use the CLI directly:
-
-```bash
-# What's live in this shell? (free + paid + paste-only, all bucketed)
-node packages/mcp-server/dist/index.js doctor
-
-# List only zero-key / free-tier models
-node packages/mcp-server/dist/index.js models list --free
-
-# Full capability dump for one model
-node packages/mcp-server/dist/index.js models inspect gpt-image-1
-
-# Fan a 1024² master out to every platform (no API key needed)
-node packages/mcp-server/dist/index.js export brand.png --app-name Halcyon --ios18
-
-# Interactive setup in any project dir
-cd ~/src/my-app
-node /path/to/prompt-to-asset/packages/mcp-server/dist/index.js init
-```
-
-Or register as an MCP server so your AI assistant drives it:
+Register as an MCP server so your AI assistant drives it:
 
 ```bash
 # Claude Code
-claude mcp add prompt-to-asset -- node "$PWD/packages/mcp-server/dist/index.js"
+claude mcp add prompt-to-asset -- p2a
 
-# Cursor / Windsurf / Codex / Gemini CLI / Cline / VS Code / Copilot
-npm run sync   # regenerates every IDE's manifest
+# Cursor / VS Code / Windsurf — edit .cursor/mcp.json / .vscode/mcp.json:
+#   "prompt-to-asset": { "command": "p2a" }
+
+# Codex / Gemini CLI / Cline — see docs/install.md for the exact stanzas
 ```
 
-Restart your IDE. The assistant now has **16 `asset_*` tools**. See [GETTING_STARTED.md](./GETTING_STARTED.md) for the full on-ramp, [docs/install.md](./docs/install.md) for per-IDE details.
+Restart your IDE. The assistant now has **16 `asset_*` tools**. See [GETTING_STARTED.md](./GETTING_STARTED.md) for the full on-ramp, [docs/install.md](./docs/install.md) for per-IDE details, and [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for the common snags.
+
+### From a clone (contributors)
+
+```bash
+git clone https://github.com/MohamedAbdallah-14/prompt-to-asset.git
+cd prompt-to-asset
+npm install
+npm run build
+npm run test:run
+```
 
 ---
 
@@ -152,10 +152,13 @@ p2a export ./master.png --platforms android      # copy android/ into app/src/ma
 
 ```bash
 p2a export ./master.png --platforms visionos
-# Emits the 1024² master + three parallax layers + a README explaining the hand-split workflow.
+# Emits the 1024² master + a README explaining the 3-layer parallax workflow.
+# Layer separation is manual (foreground / mid / background): the Vision Pro
+# design guidelines intentionally keep this a human decision. We ship the
+# scaffold, not the split.
 ```
 
-### Games (any engine)
+### Games (any engine) — CLI-only today
 
 ```bash
 p2a sprite-sheet ./frames --layout grid --padding 2 --out build/hero.png --atlas build/hero.json
@@ -163,6 +166,8 @@ p2a nine-slice ./panel.png --guides 16,16,16,16 --android-9patch
 ```
 
 Atlas output is TexturePacker-compatible; Phaser, PixiJS, Godot, Three.js all load it. Nine-slice emits a JSON config + CSS `border-image` + Unity/Godot/Phaser/PixiJS numbers + (optionally) an Android `.9.png`.
+
+> **Note.** These two game-dev helpers are CLI-only in 0.2; the MCP server does not expose `asset_generate_sprite_sheet` / `asset_generate_nine_slice` yet. Drive them from a shell or a npm-script and feed the output back to your MCP host if you want the LLM to know about it.
 
 ---
 
@@ -185,8 +190,8 @@ In a new chat:
 
 | Tool                           | Purpose                                                                                                                                                     |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `asset_capabilities`           | Inventory — which modes + providers are live. Now buckets paid / free-tier / paste-only and surfaces the free zero-key routes prominently. Read-only.       |
-| `asset_enhance_prompt`         | Classify, route, rewrite, list modes + `svg_brief` + `paste_targets` + **`routing_trace { research_sources, never_models, fallback_chain }`**. Read-only.   |
+| `asset_capabilities`           | Inventory — which modes + providers are live. Buckets paid / free-tier / paste-only and surfaces the free zero-key routes prominently. Read-only.           |
+| `asset_enhance_prompt`         | Classify, route, rewrite. Returns modes + `svg_brief` + `paste_targets` + **`routing_trace { research_sources, never_models, fallback_chain }`** + **`clarifying_questions[]`** when the brief is ambiguous (host LLM should surface via AskUserQuestion). Read-only. |
 | `asset_generate_logo`          | `inline_svg` / `external_prompt_only` / `api`. Returns `InlineSvgPlan` / `ExternalPromptPlan` / `AssetBundle`.                                              |
 | `asset_generate_app_icon`      | Same three modes. `api` produces full iOS / Android / PWA / visionOS / Flutter fan-out. Set `ios_18_appearances: true` for dark + tinted variants.          |
 | `asset_generate_favicon`       | `favicon-{16,32,48}.png` + `icon.svg` + `icon-dark.svg` + `apple-touch` + PWA 192/512/512-maskable + `<link>` snippet + `manifest.webmanifest`.             |
@@ -211,7 +216,9 @@ p2a                        # default — MCP stdio server (keeps existing IDE re
 p2a mcp                    # same, explicit
 p2a export <master.png>    # offline platform fan-out: iOS AppIconSet + Android adaptive (monochrome included) + PWA + visionOS + favicon + Flutter
 p2a init                   # interactive brand.json + framework detection + IDE registration hints
+p2a pick                   # interactive model picker — asset type + constraints → ranked route
 p2a doctor                 # read-only inventory: sharp, vtracer, potrace, providers (free + paid + paste-only), pipeline URLs
+p2a doctor --data          # check data/model-registry.json ↔ data/routing-table.json consistency (CI-friendly)
 p2a models list            # browse the registry. Flags: --free | --paid | --paste-only | --rgba | --svg
 p2a models inspect <id>    # full capability dump + paste targets + routing rules + research pointers
 p2a sprite-sheet <dir>     # pack frames → PNG + TexturePacker atlas (Phaser / PixiJS / Godot / Unity)
@@ -229,7 +236,7 @@ Router decisions come from [`data/routing-table.json`](./data/routing-table.json
 
 **Free-tier / zero-key:** `pollinations-flux`, `pollinations-turbo`, `pollinations-kontext`, `pollinations-sd`, `horde-sdxl`, `horde-flux`, `hf-sdxl`, `hf-sd3`, `hf-flux-schnell`, `hf-flux-dev`.
 
-**Paste-only surfaces:** `midjourney-v6`, `midjourney-v7`, `firefly-3`, `krea-image-1`.
+**Paste-only surfaces:** `midjourney-v6`, `midjourney-v7`, `firefly-3`, `krea-image-1`. Calling an `asset_generate_*` tool with `mode: "api"` and a paste-only primary soft-falls-back to the first API-reachable model in the fallback chain and surfaces a warning; if the whole chain is paste-only, the server returns an `ExternalPromptPlan` instead of throwing.
 
 Headline routing:
 
@@ -247,7 +254,22 @@ Headline routing:
 
 ## Zero-sticky-note policy
 
-Every routing rule, dialect switch, safe-zone size, and text ceiling is backed by a file under [`docs/research/`](./docs/research/). `asset_enhance_prompt` returns a `routing_trace.research_sources` array on every call. See [`docs/RESEARCH_MAP.md`](./docs/RESEARCH_MAP.md) for the angle → code pointer map.
+Every routing rule, dialect switch, safe-zone size, and text ceiling that's implemented is backed by a file under [`docs/research/`](./docs/research/). `asset_enhance_prompt` returns a `routing_trace.research_sources` array on every call. See [`docs/RESEARCH_MAP.md`](./docs/RESEARCH_MAP.md) for the angle → code pointer map — and for an honest ledger of what's wired, what's deferred, and why.
+
+---
+
+## Security
+
+This tool handles API keys for up to 15 different providers. A couple of non-negotiables:
+
+- **Keys live in env vars only.** Never written to disk, never logged, never echoed in MCP responses. Provider error bodies go through a `redact()` filter (`packages/mcp-server/src/security/redact.ts`) that scrubs common key patterns before the error reaches the host LLM.
+- **Path access is allow-listed.** `image_path` / `output_dir` / `existing_mark_svg` inputs are resolved through symlinks and rejected if they escape the project cwd + configured output dir + cache dir + OS tempdir. A malicious MCP client can't read `/etc/passwd` or write to `/etc/cron.d`. Widen with `P2A_ALLOWED_PATHS=/path1:/path2`.
+- **SVG is XSS-sanitized before any write.** `<script>`, `<foreignObject>`, `on*=` handlers, `javascript:` URIs, external `<image href>` / `<use href>`, CSS `@import` over the network — all rejected. The check runs unconditionally; SVGO is not required.
+- **Cost guardrail.** Set `P2A_MAX_SPEND_USD_PER_RUN=5.00` to cap any single tool call. Pre-flight estimate (best-effort from published pricing, kept in `src/cost-guard.ts`) refuses to call if over. Free-tier routes are always $0. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#10-cost_budget_exceeded-on-an-expected-cheap-call) if it misfires.
+- **Data integrity at boot.** The MCP server runs `assertDataIntegrityAtBoot()` on start. If a routing rule points at a model id that isn't in the registry, the server refuses to start with a clear error — this is a packaging bug we'd rather surface loud than silently fail at generate time. Check in CI with `p2a doctor --data`.
+- **No telemetry. No remote calls unless the routed provider explicitly requires one.**
+
+Full policy: [SECURITY.md](./SECURITY.md).
 
 ---
 

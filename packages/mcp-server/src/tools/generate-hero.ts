@@ -6,7 +6,11 @@ import { tier0 } from "../pipeline/validate.js";
 import { computeCacheKey } from "../cache.js";
 import { CONFIG } from "../config.js";
 import { hashBundle } from "../brand.js";
-import { resolveMode, buildExternalPromptPlan } from "./mode-runtime.js";
+import {
+  resolveMode,
+  buildExternalPromptPlan,
+  chooseApiTargetOrFallback
+} from "./mode-runtime.js";
 import type { GenerateHeroInputT } from "../schemas.js";
 import type { AssetGenerationResult } from "../types.js";
 
@@ -39,6 +43,12 @@ export async function generateHero(input: GenerateHeroInputT): Promise<AssetGene
     return buildExternalPromptPlan("hero", input.brief, spec);
   }
 
+  const chosen = chooseApiTargetOrFallback("hero", input.brief, spec, {
+    images: input.count
+  });
+  if (chosen.kind === "external") return chosen.plan;
+  const apiModel = chosen.model;
+
   const outDir = input.output_dir ?? resolve(CONFIG.outputDir, `hero-${Date.now()}`);
   mkdirSync(outDir, { recursive: true });
 
@@ -49,8 +59,8 @@ export async function generateHero(input: GenerateHeroInputT): Promise<AssetGene
     height?: number;
     bytes?: number;
   }> = [];
-  const warnings: string[] = [...spec.warnings];
-  let modelUsed = spec.target_model;
+  const warnings: string[] = [...spec.warnings, ...chosen.warnings];
+  let modelUsed = apiModel;
   let firstSeed = 0;
   let prompt_hash = "";
   let params_hash = "";
@@ -58,7 +68,7 @@ export async function generateHero(input: GenerateHeroInputT): Promise<AssetGene
   for (let i = 0; i < input.count; i++) {
     const seed = (typeof spec.params["seed"] === "number" ? spec.params["seed"] : 0) + i * 1000003;
     const ck = computeCacheKey({
-      model: spec.target_model,
+      model: apiModel,
       seed,
       prompt: spec.rewritten_prompt,
       params: spec.params
@@ -69,7 +79,7 @@ export async function generateHero(input: GenerateHeroInputT): Promise<AssetGene
       params_hash = ck.params_hash;
     }
 
-    const gen = await generate(spec.target_model, {
+    const gen = await generate(apiModel, {
       prompt: spec.rewritten_prompt,
       width,
       height,

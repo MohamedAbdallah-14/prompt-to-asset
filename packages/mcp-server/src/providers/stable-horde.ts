@@ -51,7 +51,7 @@ export const StableHordeProvider: Provider = {
       headers: {
         apikey,
         "Content-Type": "application/json",
-        "Client-Agent": "prompt-to-asset:0.1:https://github.com/yourorg/prompt-to-asset"
+        "Client-Agent": "prompt-to-asset:0.1:https://github.com/MohamedAbdallah-14/prompt-to-asset"
       },
       body: JSON.stringify({
         prompt: req.prompt,

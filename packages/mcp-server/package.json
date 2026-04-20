@@ -1,45 +1,65 @@
 {
   "name": "prompt-to-asset",
-  "version": "0.1.0",
-  "description": "prompt-to-asset MCP server — generate production-grade software assets (logos, app icons, favicons, OG images, illustrations, vectors, transparent marks) via routed model providers and a deterministic post-processing pipeline.",
+  "version": "0.2.0",
+  "description": "Prompt enhancer + asset pipeline for developers. One brief → a validated bundle (iOS AppIconSet, Android adaptive, PWA, favicon, OG, visionOS) via routed image models. Three modes: inline_svg (zero-key), external_prompt_only (paste into your subscription), api (server-driven). MCP + CLI.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "p2a": "./dist/index.js"
+    "p2a": "dist/index.js",
+    "prompt-to-asset": "dist/index.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "data",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourorg/prompt-to-asset.git",
+    "url": "git+https://github.com/MohamedAbdallah-14/prompt-to-asset.git",
     "directory": "packages/mcp-server"
   },
-  "homepage": "https://github.com/yourorg/prompt-to-asset#readme",
+  "homepage": "https://github.com/MohamedAbdallah-14/prompt-to-asset#readme",
   "bugs": {
-    "url": "https://github.com/yourorg/prompt-to-asset/issues"
+    "url": "https://github.com/MohamedAbdallah-14/prompt-to-asset/issues"
   },
   "keywords": [
     "mcp",
     "model-context-protocol",
     "claude-code",
     "cursor",
+    "windsurf",
+    "codex",
+    "gemini-cli",
     "prompt-engineering",
     "image-generation",
     "logo",
     "app-icon",
     "favicon",
-    "og-image"
+    "og-image",
+    "svg",
+    "transparent-png",
+    "flutter",
+    "react-native",
+    "expo",
+    "ideogram",
+    "recraft",
+    "flux",
+    "gpt-image-1",
+    "nano-banana",
+    "pollinations"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "start": "node dist/index.js",
-    "smoke": "node dist/smoke.js"
+    "smoke": "node dist/smoke.js",
+    "prepack": "node scripts/prepack.mjs",
+    "prepublishOnly": "npm run build && node scripts/prepack.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -62,7 +82,6 @@
     "node": ">=20.11.0"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

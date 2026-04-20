@@ -81,6 +81,8 @@ export interface ApiAvailability {
   cloudflare: boolean;
   /** Replicate — universal catalog; signup credit then paid. */
   replicate: boolean;
+  /** User-owned ComfyUI endpoint (Modal / self-host) for Phase-4 brand LoRA. */
+  comfyui: boolean;
 }
 
 export function detectApiAvailability(): ApiAvailability {
@@ -99,7 +101,8 @@ export function detectApiAvailability(): ApiAvailability {
     cloudflare: Boolean(
       process.env["CLOUDFLARE_API_TOKEN"] && process.env["CLOUDFLARE_ACCOUNT_ID"]
     ),
-    replicate: Boolean(process.env["REPLICATE_API_TOKEN"] || process.env["REPLICATE_API_KEY"])
+    replicate: Boolean(process.env["REPLICATE_API_TOKEN"] || process.env["REPLICATE_API_KEY"]),
+    comfyui: Boolean(process.env["PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL"])
   };
 }
 
@@ -125,6 +128,7 @@ export function providerKeyForModel(modelId: string): keyof ApiAvailability | nu
   if (modelId.startsWith("horde-")) return "horde";
   if (modelId.startsWith("cf-")) return "cloudflare";
   if (modelId.startsWith("replicate-")) return "replicate";
+  if (modelId.startsWith("comfyui-")) return "comfyui";
   // midjourney, firefly-*, krea-* and strategy ids resolve to null on purpose —
   // there is no first-class API for them. external_prompt_only is the path.
   return null;

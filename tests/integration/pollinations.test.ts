@@ -52,6 +52,7 @@ maybe("Pollinations live (zero-key)", () => {
 
   it(
     "feeds the pixels through asset_ingest_external — restoration pre-pass fires on JPEG input",
+    { timeout: 60_000 },
     async () => {
       const outDir = mkdtempSync(join(tmpdir(), "p2a-pollinations-"));
       const inputExt = generated.format === "jpeg" ? "jpg" : generated.format;
@@ -77,7 +78,6 @@ maybe("Pollinations live (zero-key)", () => {
       if (generated.format === "jpeg") {
         expect(bundle.warnings.some((w) => /restoration pre-pass/i.test(w))).toBe(true);
       }
-    },
-    { timeout: 60_000 }
+    }
   );
 });
