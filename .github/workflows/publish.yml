@@ -43,10 +43,16 @@ jobs:
       # Node 22 LTS ships with npm 10.9.x. Trusted Publisher OIDC support
       # landed in npm 11.5.1 (Aug 2025) — older npm responds with ENEEDAUTH
       # because it doesn't know to exchange ACTIONS_ID_TOKEN_REQUEST_* for
-      # a short-lived publish token. Pin the latest 11.x explicitly.
-      - name: Upgrade npm to 11+ (Trusted Publisher OIDC)
+      # a short-lived publish token.
+      #
+      # `npm install -g npm@latest` breaks mid-upgrade on GH runners
+      # (@npmcli/arborist can't find promise-retry during the self-replace).
+      # corepack ships with Node 22, atomically swaps the active npm
+      # version, and bypasses the self-upgrade bootstrap bug.
+      - name: Activate npm 11+ via corepack (Trusted Publisher OIDC)
         run: |
-          npm install -g npm@latest
+          corepack enable
+          corepack prepare npm@latest --activate
           npm --version
 
       - name: Install dependencies
