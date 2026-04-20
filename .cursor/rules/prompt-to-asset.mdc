@@ -1,0 +1,80 @@
+---
+description: Asset generation — route, rewrite, generate, validate. Never send transparency requests to Imagen/Gemini.
+alwaysApply: true
+---
+
+# Asset generation — always-on rule
+
+When the user asks for a **logo, app icon, favicon, OG image, illustration, splash screen, icon pack, transparent mark, hero image, sticker, or any other software-development asset**, the single most important fact to apply is:
+
+> **Producing production-grade software assets is a routing + post-processing problem, not a prompt-engineering problem.**
+
+And the second most important fact:
+
+> **The user may not have an image-model API key. The plugin must work anyway — there are real zero-key paths.**
+
+This means:
+
+1. **Do NOT just forward the user's brief to whichever image model is handy.** No amount of prompt polish makes Imagen 3/4 or Gemini Flash Image produce a real transparent PNG — they render a grey-and-white checkerboard **as RGB pixels** because their VAE is RGB-only. Transparency is a capability routing decision. Route transparent requests to `gpt-image-1` (with `background: "transparent"`), Ideogram 3 Turbo (`style: "transparent"`), Recraft V3, or LayerDiffuse-enabled Flux/SDXL. For every other model, matte with BiRefNet or BRIA RMBG-2.0 *after* generation.
+
+2. **Do NOT render brand text in a diffusion sampler past 3 words.** Even Ideogram 3 and `gpt-image-1` (the two best text renderers) misspell past ~3 words; Imagen and SD garble anything longer than a single glyph. Generate a text-free mark; composite real SVG / Canvas / Skia typography in the application layer using the brand font.
+
+3. **Do NOT expect a raster model to emit SVG.** None do. The three real paths: (a) Recraft V3 native vector, (b) LLM-author SVG for simple geometry (fixed viewBox, no `<image>`, palette hex list, ≤40 paths) — **this is what `mode: "inline_svg"` does**, (c) raster → BiRefNet matte → K-means 6-color → `vtracer`/`potrace` → SVGO.
+
+4. **Do NOT use `negative_prompt` on Flux — it errors.** Imagen and `gpt-image-1` silently ignore it. SD / SDXL / SD3 / Leonardo / Stability-hosted DO support it natively. The universally-portable "negative" is a positive anchor: write `"pure white background"` not `"no checkerboard"`.
+
+5. **Do NOT ship a generated asset without validation.** Every output runs through tier-0 deterministic checks: dimensions exact; alpha channel present when required; no checkerboard FFT signature; subject tight-bbox fits inside the platform safe zone (iOS 824px center of 1024; Android 72dp of 108dp; PWA 80% of maskable); OCR Levenshtein ≤1 against intended wordmark; palette ΔE2000 ≤10 vs brand palette.
+
+6. **Always surface the free, zero-key routes first.** Before suggesting a paid key, call `asset_capabilities()` and read `free_api.routes`. Pollinations.ai is literally zero-signup (HTTP GET to `image.pollinations.ai`). `GEMINI_API_KEY` from `https://aistudio.google.com/apikey` is free with no credit card and gives ~1,500 Nano Banana images/day. HF Inference (free `HF_TOKEN`) and Stable Horde (anonymous queue) also work.
+
+## Three execution modes (four paths including free api)
+
+Every asset request resolves to one of three modes. Call `asset_capabilities()` to see which are available for the current env, then call `asset_enhance_prompt({ brief })` — the response includes `modes_available` for that specific asset type plus a `routing_trace` that reports `never_models` and `fallback_chain`. Offer the user the choice before generating. Do not pick silently.
+
+| Mode | Key required? | Best for | How it works |
+|---|---|---|---|
+| **`inline_svg`** | **No** | `logo`, `favicon`, `icon_pack`, `sticker`, `transparent_mark`, simple `app_icon` masters | Server returns an SVG-authoring brief (`svg_brief`). **You (the LLM) emit the `<svg>…</svg>` inline in your reply, THEN call `asset_save_inline_svg` with that SVG so the user gets a real file on disk** (plus favicon.ico / apple-touch / AppIconSet / PWA bundle where applicable). No network. ≤40 paths per asset. |
+| **`external_prompt_only`** | **No** | Anything; best for `illustration`, `hero`, text-heavy logos | Server returns the dialect-correct prompt plus a list of paste targets. Free-first ordering: **Pollinations**, **HF Inference**, **Stable Horde**, **Google AI Studio / Nano Banana (free tier)**, then paid UIs (Ideogram web, Recraft web, Midjourney, fal.ai, BFL Playground, ChatGPT). User generates externally, saves the file, then calls `asset_ingest_external({ image_path, asset_type })` to run the matte / vectorize / validate pipeline. |
+| **`api` (free)** | **No** | Automation without a paid key | Routes to Pollinations (`pollinations-flux` et al. — zero-signup HTTP GET), Stable Horde (`horde-sdxl`, `horde-flux` — anonymous queue), or HF Inference (`hf-sdxl`, `hf-sd3`, `hf-flux-schnell` — free `HF_TOKEN`). Rate-limited; Pollinations is RGB-only. Same pipeline as paid api. |
+| **`api` (paid)** | **Yes** (one of: `OPENAI_API_KEY`, `IDEOGRAM_API_KEY`, `RECRAFT_API_KEY`, `BFL_API_KEY`, `GEMINI_API_KEY`, `STABILITY_API_KEY`, `LEONARDO_API_KEY`, `FAL_API_KEY`) | Full-fidelity, no rate limits | Server calls the routed provider, mattes, vectorizes, exports, validates. Writes a content-addressed `AssetBundle`. |
+
+**Always prefer zero-key paths first when recommending a mode.** Call `asset_capabilities` to see `free_api.routes`. Only recommend a paid key when the task demands a capability no free route delivers (real native RGBA → `gpt-image-1` or Ideogram 3 Turbo; native SVG → Recraft V3; brand-locked illustration set → Flux.2 with 8 refs; strict 1–3-word wordmark fidelity → Ideogram 3 Turbo).
+
+**Recommended default flow for each asset request:**
+
+1. Call `asset_capabilities()` — read `free_api.routes` before anything else.
+2. Call `asset_enhance_prompt({ brief })`.
+3. Look at `modes_available` + `routing_trace.never_models` (explains which models the router refuses for this brief) + `routing_trace.research_sources` (the evidence behind the decision).
+4. If `inline_svg` is present: mention it first — it's instant, zero-key, deterministic. Then free `api` routes. Paid `api` last unless the brief genuinely needs a paid-only capability.
+5. Ask the user which mode they want. Keep the question short.
+6. Call the relevant `asset_generate_*` tool with `mode: "<user's choice>"`.
+7. For `inline_svg` results: read `svg_brief` and `instructions_to_host_llm`, emit the `<svg>` inline as a code block, **then immediately call `asset_save_inline_svg({ svg, asset_type })`** so the server writes the file (and the platform bundle for favicon/app_icon). Report the `variants[].path` list to the user so they know where the files landed.
+8. For `external_prompt_only` results: present `enhanced_prompt` to the user, list the top paste targets with URLs (free-first), and tell them to call `asset_ingest_external` after saving the generated image.
+9. For `api` results: present the bundle paths (`variants[].path`) and any validation warnings.
+
+## MCP tool surface (16 tools)
+
+- `asset_capabilities()` — read-only inventory of modes, paid/free/paste-only providers, unconfigured env vars, and zero-key routes (`free_api.routes` enumerates Pollinations, Stable Horde, HF, Google AI Studio free tier, local ComfyUI).
+- `asset_enhance_prompt({ brief, asset_type?, brand_bundle? })` → AssetSpec + modes_available + svg_brief? + paste_targets? + `routing_trace { never_models, fallback_chain, research_sources }`.
+- `asset_generate_logo`, `asset_generate_app_icon`, `asset_generate_favicon`, `asset_generate_og_image`, `asset_generate_illustration` — each takes `mode?: "inline_svg" | "external_prompt_only" | "api"`. Omit for auto-select.
+- `asset_generate_splash_screen`, `asset_generate_hero` — cross-platform splash bundle + marketing hero art. `external_prompt_only` / `api` only (no inline_svg — path budget too small for composed scenes; generate a mark inline_svg first, then pass it via `existing_mark_svg`).
+- `asset_save_inline_svg({ svg, asset_type })` — **round-trip endpoint for `inline_svg` mode.** Call immediately after emitting the `<svg>` in chat. Writes master.svg and, for favicon/app_icon, the full platform bundle. Returns file paths.
+- `asset_ingest_external({ image_path, asset_type })` — round-trip endpoint for `external_prompt_only` mode. Runs matte → vectorize → validate → bundle.
+- `asset_remove_background`, `asset_vectorize`, `asset_upscale_refine` — pipeline primitives.
+- `asset_validate({ image, asset_type, brand_bundle? })` — tier-0/1/2 QA stack.
+- `asset_brand_bundle_parse({ source })` → canonical BrandBundle.
+
+The tools are annotated `readOnlyHint` / `idempotentHint` where appropriate so Cursor auto-approves without prompting.
+
+## Fallback when MCP is unavailable
+
+If the `asset_*` tools are not registered, still apply the six facts above in whatever generation flow is available:
+
+- Pick the right model (use `data/routing-table.json` as a reference).
+- Rewrite the prompt in that model's dialect (tag-salad for SD, prose for Flux/Imagen/`gpt-image-1`, quoted strings for Ideogram text, `--flags` for Midjourney).
+- If no key at all: author simple marks as SVG inline, OR point the user at Pollinations (`curl -o out.png "https://image.pollinations.ai/prompt/<urlencoded>?model=flux&nologo=true"`), OR send them to `https://aistudio.google.com/apikey` for a free `GEMINI_API_KEY`.
+- If the user has a web-tool account: give them the prompt + the URL, tell them where it goes.
+- Matte externally before declaring an asset "done."
+- Validate against the target platform's spec (iOS 824², Android 72dp, PWA 80% maskable, favicon 16×16 legibility) before handing the file to the user.
+
+**Never declare an asset ready without alpha validation, safe-zone bbox check, and — if text is involved — an OCR/Levenshtein check of the wordmark.**

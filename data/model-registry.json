@@ -1,0 +1,1479 @@
+{
+  "$schema": "./schemas/model-registry.schema.json",
+  "version": "1.1.0",
+  "updated": "2026-04-20",
+  "source": "docs/research/SYNTHESIS.md § Model Capability Matrix",
+  "models": [
+    {
+      "id": "gpt-image-1",
+      "provider": "openai",
+      "family": "gpt-image",
+      "text_encoder": "gpt-4-class",
+      "native_rgba": true,
+      "native_svg": false,
+      "text_ceiling_chars": 50,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "1536x1024",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "transparent backgrounds",
+        "best photoreal text rendering",
+        "edit with input_fidelity"
+      ],
+      "weaknesses": [
+        "invisible provider-side rewriter",
+        "moderation false positives"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.04/img (low quality) — up to $0.19 (high)"
+    },
+    {
+      "id": "gpt-image-1.5",
+      "provider": "openai",
+      "family": "gpt-image",
+      "text_encoder": "gpt-4-class",
+      "native_rgba": true,
+      "native_svg": false,
+      "text_ceiling_chars": 50,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "2048x2048",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "sharper output than 1.0",
+        "better instruction-following"
+      ],
+      "weaknesses": [
+        "same moderation stack"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.04–0.19/img (parity with 1.0)"
+    },
+    {
+      "id": "dall-e-3",
+      "provider": "openai",
+      "family": "dalle",
+      "text_encoder": "gpt-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 12,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "deprecated": "2026-05-12",
+      "strengths": [],
+      "weaknesses": [
+        "hard-enforced prompt rewriter",
+        "deprecated"
+      ],
+      "never_use_for": [
+        "production",
+        "anything `gpt-image-1` can do"
+      ],
+      "cost_hint": "$0.04/img (1024²) — deprecated 2026-05-12"
+    },
+    {
+      "id": "imagen-3",
+      "provider": "google",
+      "family": "imagen",
+      "text_encoder": "T5",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 10,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": "limited",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "photoreal landscapes and product shots"
+      ],
+      "weaknesses": [
+        "renders checkerboard for transparency",
+        "default rewriter below 30 words"
+      ],
+      "never_use_for": [
+        "transparent background",
+        "wordmark >10 chars"
+      ],
+      "cost_hint": "$0.03/img (Vertex AI)"
+    },
+    {
+      "id": "imagen-4",
+      "provider": "google",
+      "family": "imagen",
+      "text_encoder": "T5",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 15,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": "limited",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "strongest Google photoreal"
+      ],
+      "weaknesses": [
+        "same transparency failure as 3"
+      ],
+      "never_use_for": [
+        "transparent background",
+        "wordmark >15 chars"
+      ],
+      "cost_hint": "$0.04/img (Vertex AI)"
+    },
+    {
+      "id": "gemini-3-flash-image",
+      "provider": "google",
+      "family": "gemini",
+      "text_encoder": "gemini-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "multimodal",
+      "api": "REST",
+      "paste_only": false,
+      "aka": [
+        "nano-banana",
+        "nano-banana-2",
+        "gemini-3.1-flash-image-preview"
+      ],
+      "canonical_api_id": "gemini-3.1-flash-image-preview",
+      "strengths": [
+        "multimodal edit with in-context image refs",
+        "turn-by-turn coherence",
+        "up to 3 ref images"
+      ],
+      "weaknesses": [
+        "same checkerboard failure as Imagen"
+      ],
+      "never_use_for": [
+        "transparent background"
+      ],
+      "cost_hint": "free tier ~1,500/day; then $0.039/img"
+    },
+    {
+      "id": "gemini-3-pro-image",
+      "provider": "google",
+      "family": "gemini",
+      "text_encoder": "gemini-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 30,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "multimodal",
+      "api": "REST",
+      "paste_only": false,
+      "aka": [
+        "nano-banana-pro",
+        "gemini-3-pro-image-preview"
+      ],
+      "canonical_api_id": "gemini-3-pro-image-preview",
+      "strengths": [
+        "higher-quality variant of nano-banana",
+        "Vertex AI surface"
+      ],
+      "weaknesses": [
+        "same transparency failure as Imagen/Gemini family"
+      ],
+      "never_use_for": [
+        "transparent background"
+      ],
+      "cost_hint": "free tier limited; then ~$0.12/img"
+    },
+    {
+      "id": "sd-1.5",
+      "provider": "stability",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 4,
+      "token_budget": 77,
+      "cfg_default": 7.5,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet",
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "huge ecosystem",
+        "LoRA friendly"
+      ],
+      "weaknesses": [
+        "CLIP 77-token limit",
+        "photoreal plastic skin"
+      ],
+      "never_use_for": [
+        "wordmarks",
+        "production-grade photoreal"
+      ],
+      "cost_hint": "$0.01/img (Stability Core)"
+    },
+    {
+      "id": "sdxl",
+      "provider": "stability",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "token_budget": 77,
+      "cfg_default": 6,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet+ip-adapter",
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "custom brand LoRAs",
+        "open-weight hero art",
+        "LayerDiffuse adapter"
+      ],
+      "weaknesses": [
+        "BREAK token fragility"
+      ],
+      "never_use_for": [
+        "typography",
+        "literal wordmarks"
+      ],
+      "cost_hint": "$0.04/img (Stability Core)"
+    },
+    {
+      "id": "sd3-large",
+      "provider": "stability",
+      "family": "sd",
+      "text_encoder": "T5+CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 30,
+      "token_budget": 256,
+      "cfg_default": 4.5,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "improved text rendering over SDXL",
+        "prose-friendly input"
+      ],
+      "weaknesses": [
+        "restricted license on commercial use without Stability membership"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.065/img (Stability SD3)"
+    },
+    {
+      "id": "flux-schnell",
+      "provider": "bfl",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "token_budget": 512,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "license": "Apache-2.0",
+      "strengths": [
+        "fast open-weight Flux variant",
+        "Apache 2.0"
+      ],
+      "weaknesses": [
+        "distilled — poor text rendering",
+        "lower aesthetic than pro"
+      ],
+      "never_use_for": [
+        "wordmarks",
+        "production-grade hero art"
+      ],
+      "cost_hint": "$0.003/img (BFL)"
+    },
+    {
+      "id": "flux-dev",
+      "provider": "bfl",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "token_budget": 512,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "license": "Flux-Dev-Non-Commercial",
+      "strengths": [
+        "open-weight Flux variant",
+        "LoRA trainable"
+      ],
+      "weaknesses": [
+        "non-commercial license"
+      ],
+      "never_use_for": [
+        "commercial use without BFL Dev license"
+      ],
+      "cost_hint": "$0.025/img (BFL, non-commercial)"
+    },
+    {
+      "id": "flux-pro",
+      "provider": "bfl",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 25,
+      "token_budget": 512,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "strongest open-weight text rendering",
+        "photoreal hero",
+        "Kontext edit variant"
+      ],
+      "weaknesses": [
+        "rejects negative_prompt field"
+      ],
+      "never_use_for": [
+        "tag-salad prompts"
+      ],
+      "cost_hint": "$0.04/img (BFL Pro 1.1)"
+    },
+    {
+      "id": "flux-2",
+      "provider": "bfl",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 25,
+      "token_budget": 512,
+      "cfg_default": 3.5,
+      "max_reference_images": 8,
+      "negative_prompt_support": "error",
+      "ref_image_support": "up_to_8_refs",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "multi-ref brand consistency (up to 8 refs)",
+        "improved prompt adherence"
+      ],
+      "weaknesses": [
+        "early platform; SDK variance"
+      ],
+      "never_use_for": [
+        "tag-salad prompts"
+      ],
+      "cost_hint": "$0.05/img (BFL Flux.2)"
+    },
+    {
+      "id": "flux-kontext-pro",
+      "provider": "bfl",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 60,
+      "token_budget": 512,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": "required",
+      "dialect": "prose+instruction",
+      "mode": "edit_only",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "in-context image editing preserving identity",
+        "quoted-string text replacement",
+        "iterative asset family from one master"
+      ],
+      "weaknesses": [
+        "edit-only — not for cold-start generation",
+        "stylized fonts can drift across edits"
+      ],
+      "never_use_for": [
+        "cold-start text-to-image without input reference"
+      ],
+      "cost_hint": "$0.04/edit (BFL Kontext)"
+    },
+    {
+      "id": "midjourney-v6",
+      "provider": "midjourney",
+      "family": "mj",
+      "text_encoder": "mj-class",
+      "native_rgba": "partial",
+      "native_svg": false,
+      "text_ceiling_chars": 12,
+      "negative_prompt_support": "--no flag",
+      "ref_image_support": "--sref/--cref",
+      "dialect": "prose+flags",
+      "mode": "text-to-image",
+      "api": null,
+      "paste_only": true,
+      "strengths": [
+        "distinctive aesthetic",
+        "legacy --style raw + style codes"
+      ],
+      "weaknesses": [
+        "no official API",
+        "Discord-only surface"
+      ],
+      "never_use_for": [
+        "automation pipelines"
+      ],
+      "cost_hint": "paste-only — subscription, no per-call cost"
+    },
+    {
+      "id": "midjourney-v7",
+      "provider": "midjourney",
+      "family": "mj",
+      "text_encoder": "mj-class",
+      "native_rgba": "partial",
+      "native_svg": false,
+      "text_ceiling_chars": 15,
+      "negative_prompt_support": "--no flag",
+      "ref_image_support": "--sref/--cref/--mref",
+      "dialect": "prose+flags",
+      "mode": "text-to-image",
+      "api": null,
+      "paste_only": true,
+      "strengths": [
+        "highest aesthetic among v7-class",
+        "improved typography"
+      ],
+      "weaknesses": [
+        "no official API",
+        "Discord- or web-only"
+      ],
+      "never_use_for": [
+        "automation pipelines"
+      ],
+      "cost_hint": "paste-only — subscription, no per-call cost"
+    },
+    {
+      "id": "ideogram-3",
+      "provider": "ideogram",
+      "family": "ideogram",
+      "text_encoder": "ideogram-class",
+      "native_rgba": true,
+      "native_svg": false,
+      "text_ceiling_chars": 80,
+      "negative_prompt_support": "supported",
+      "ref_image_support": true,
+      "dialect": "prose+quoted",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "best-in-class typography",
+        "strong wordmark fidelity",
+        "style presets"
+      ],
+      "weaknesses": [
+        "Magic Prompt expands literal prompts",
+        "non-Latin broken"
+      ],
+      "never_use_for": [
+        "non-Latin wordmarks"
+      ],
+      "cost_hint": "$0.06/img (direct API)"
+    },
+    {
+      "id": "ideogram-3-turbo",
+      "provider": "ideogram",
+      "family": "ideogram",
+      "text_encoder": "ideogram-class",
+      "native_rgba": true,
+      "native_svg": false,
+      "text_ceiling_chars": 60,
+      "negative_prompt_support": "supported",
+      "ref_image_support": true,
+      "dialect": "prose+quoted",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "fast + cheap",
+        "style:\"transparent\" for RGBA",
+        "posters/dense text"
+      ],
+      "weaknesses": [
+        "Magic Prompt expands literal prompts",
+        "non-Latin broken"
+      ],
+      "never_use_for": [
+        "non-Latin wordmarks"
+      ],
+      "cost_hint": "$0.03/img direct; free: 10/wk on web (watermark)"
+    },
+    {
+      "id": "recraft-v3",
+      "provider": "recraft",
+      "family": "recraft",
+      "text_encoder": "recraft-class",
+      "native_rgba": true,
+      "native_svg": true,
+      "text_ceiling_chars": 30,
+      "negative_prompt_support": "supported",
+      "ref_image_support": "style_id",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "only production model with native SVG output",
+        "style_id brand lock",
+        "controls.colors palette"
+      ],
+      "weaknesses": [
+        "V4 removed some V3 styles"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.04/img (direct)"
+    },
+    {
+      "id": "playground-v3",
+      "provider": "stability",
+      "family": "sd-derivative",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "token_budget": 77,
+      "cfg_default": 3,
+      "negative_prompt_support": "native",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "high aesthetic score",
+        "commercial license"
+      ],
+      "weaknesses": [
+        "smaller ecosystem than SDXL"
+      ],
+      "never_use_for": [
+        "transparent background"
+      ],
+      "cost_hint": "$0.04/img (Stability Core passthrough)"
+    },
+    {
+      "id": "leonardo-phoenix",
+      "provider": "leonardo",
+      "family": "sd-derivative",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 15,
+      "cfg_default": 7,
+      "negative_prompt_support": "native",
+      "ref_image_support": "image_guidance",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "production-tuned SDXL derivative",
+        "style presets"
+      ],
+      "weaknesses": [
+        "text rendering still weak"
+      ],
+      "never_use_for": [
+        "transparent background",
+        "wordmarks >15 chars"
+      ],
+      "cost_hint": "free: 150 tokens/day; then metered"
+    },
+    {
+      "id": "leonardo-diffusion-xl",
+      "provider": "leonardo",
+      "family": "sd-derivative",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 10,
+      "cfg_default": 7,
+      "negative_prompt_support": "native",
+      "ref_image_support": "image_guidance",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "SDXL + Leonardo style presets"
+      ],
+      "weaknesses": [
+        "aesthetic drift vs Phoenix"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "free: 150 tokens/day; then metered"
+    },
+    {
+      "id": "krea-image-1",
+      "provider": "krea",
+      "family": "krea",
+      "text_encoder": "krea-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 15,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": null,
+      "paste_only": true,
+      "strengths": [
+        "realtime editing UX",
+        "strong aesthetic"
+      ],
+      "weaknesses": [
+        "no stable public API; paste-only"
+      ],
+      "never_use_for": [
+        "automation pipelines"
+      ],
+      "cost_hint": "paste-only — no public API"
+    },
+    {
+      "id": "firefly-3",
+      "provider": "adobe",
+      "family": "firefly",
+      "text_encoder": "firefly-class",
+      "native_rgba": "partial",
+      "native_svg": false,
+      "text_ceiling_chars": 15,
+      "negative_prompt_support": "supported",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "enterprise-ims-oauth",
+      "paste_only": true,
+      "strengths": [
+        "commercial indemnity",
+        "enterprise-safe"
+      ],
+      "weaknesses": [
+        "limited style library",
+        "enterprise-only API"
+      ],
+      "never_use_for": [],
+      "cost_hint": "paste-only in core — enterprise Firefly API is billed per-credit"
+    },
+    {
+      "id": "fal-flux-pro",
+      "provider": "fal",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 25,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "fal aggregator path to Flux Pro when BFL keys unavailable"
+      ],
+      "weaknesses": [
+        "relayed latency"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.05/img (fal.ai)"
+    },
+    {
+      "id": "fal-flux-2",
+      "provider": "fal",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 25,
+      "cfg_default": 3.5,
+      "max_reference_images": 8,
+      "negative_prompt_support": "error",
+      "ref_image_support": "up_to_8_refs",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "fal aggregator path to Flux.2"
+      ],
+      "weaknesses": [
+        "relayed latency"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.06/img (fal.ai)"
+    },
+    {
+      "id": "fal-sdxl",
+      "provider": "fal",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "token_budget": 77,
+      "cfg_default": 6,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet",
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "fal's fast-sdxl — cheap iteration"
+      ],
+      "weaknesses": [
+        "same SDXL text-rendering ceiling"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "$0.005/img (fal.ai fast-sdxl)"
+    },
+    {
+      "id": "pollinations-flux",
+      "provider": "pollinations",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "ZERO signup, ZERO key — HTTP GET only",
+        "Flux backend quality"
+      ],
+      "weaknesses": [
+        "rate-limited ~1 req/15s anonymous",
+        "RGB only (matte externally)"
+      ],
+      "never_use_for": [
+        "high-volume automation without POLLINATIONS_TOKEN"
+      ],
+      "cost_hint": "free, zero-signup — ~1 req/15s anonymous"
+    },
+    {
+      "id": "pollinations-turbo",
+      "provider": "pollinations",
+      "family": "sd-derivative",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "cfg_default": 6,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "fastest Pollinations preset"
+      ],
+      "weaknesses": [
+        "lowest aesthetic among Pollinations models"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "free, zero-signup — fastest Pollinations preset"
+    },
+    {
+      "id": "pollinations-kontext",
+      "provider": "pollinations",
+      "family": "flux",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "dialect": "prose+instruction",
+      "mode": "edit_only",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "free in-context image edit — zero-key"
+      ],
+      "weaknesses": [
+        "Pollinations rate limit",
+        "lower identity preservation than BFL Kontext"
+      ],
+      "never_use_for": [],
+      "cost_hint": "free, zero-signup — edit endpoint"
+    },
+    {
+      "id": "pollinations-sd",
+      "provider": "pollinations",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 4,
+      "token_budget": 77,
+      "cfg_default": 7.5,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "zero-key SD1.5-class path"
+      ],
+      "weaknesses": [
+        "weakest Pollinations model"
+      ],
+      "never_use_for": [
+        "wordmarks",
+        "production-grade photoreal"
+      ],
+      "cost_hint": "free, zero-signup — SD 1.5 preset"
+    },
+    {
+      "id": "horde-sdxl",
+      "provider": "stable-horde",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "token_budget": 77,
+      "cfg_default": 6,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet",
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "anonymous use works — distributed GPUs",
+        "LoRA support depending on workers"
+      ],
+      "weaknesses": [
+        "queue-based — anonymous waits can be minutes"
+      ],
+      "never_use_for": [
+        "latency-sensitive automation"
+      ],
+      "cost_hint": "free — anonymous kudos queue"
+    },
+    {
+      "id": "horde-flux",
+      "provider": "stable-horde",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "Flux.1 Schnell fp8 on the horde — free"
+      ],
+      "weaknesses": [
+        "worker availability varies"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "free — anonymous kudos queue"
+    },
+    {
+      "id": "hf-flux-schnell",
+      "provider": "huggingface",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "license": "Apache-2.0",
+      "strengths": [
+        "HF Inference free tier — no credit card",
+        "Apache 2.0 Flux variant"
+      ],
+      "weaknesses": [
+        "cold-start latency",
+        "rate-limited"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "free with HF_TOKEN — rate-limited"
+    },
+    {
+      "id": "hf-sdxl",
+      "provider": "huggingface",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "token_budget": 77,
+      "cfg_default": 6,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet",
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "HF Inference free tier SDXL 1.0"
+      ],
+      "weaknesses": [
+        "cold-start latency"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "free with HF_TOKEN — rate-limited"
+    },
+    {
+      "id": "hf-sd3",
+      "provider": "huggingface",
+      "family": "sd",
+      "text_encoder": "T5+CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 30,
+      "token_budget": 256,
+      "cfg_default": 4.5,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "SD3 Medium via HF Inference free tier"
+      ],
+      "weaknesses": [
+        "research license on SD3 Medium — check before commercial use"
+      ],
+      "never_use_for": [],
+      "cost_hint": "free with HF_TOKEN — rate-limited"
+    },
+    {
+      "id": "hf-flux-dev",
+      "provider": "huggingface",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "license": "Flux-Dev-Non-Commercial",
+      "strengths": [
+        "Flux Dev via HF Inference free tier"
+      ],
+      "weaknesses": [
+        "non-commercial license",
+        "cold-start latency"
+      ],
+      "never_use_for": [
+        "commercial use without BFL Dev license"
+      ],
+      "cost_hint": "free with HF_TOKEN — rate-limited (non-commercial)"
+    },
+    {
+      "id": "cf-flux-1-schnell",
+      "provider": "cloudflare",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "license": "Apache-2.0",
+      "strengths": [
+        "Cloudflare Workers AI free tier (10k neurons/day)",
+        "~11 neurons per image"
+      ],
+      "weaknesses": [
+        "distilled — weak text rendering"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "~11 neurons/img (free: 10k neurons/day)"
+    },
+    {
+      "id": "cf-flux-2-klein-4b",
+      "provider": "cloudflare",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 15,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "Flux.2 klein 4B — distilled for speed",
+        "runs at 8 steps"
+      ],
+      "weaknesses": [
+        "quality ceiling lower than Flux.2 dev"
+      ],
+      "never_use_for": [],
+      "cost_hint": "~8 neurons/img (free: 10k/day)"
+    },
+    {
+      "id": "cf-flux-2-klein-9b",
+      "provider": "cloudflare",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "Flux.2 klein 9B — distilled larger variant"
+      ],
+      "weaknesses": [
+        "still distilled vs flux-2-dev"
+      ],
+      "never_use_for": [],
+      "cost_hint": "~12 neurons/img (free: 10k/day)"
+    },
+    {
+      "id": "cf-flux-2-dev",
+      "provider": "cloudflare",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 25,
+      "cfg_default": 3.5,
+      "max_reference_images": 8,
+      "negative_prompt_support": "error",
+      "ref_image_support": "up_to_8_refs",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "Flux.2 dev on CF free tier — accepts reference images for brand consistency"
+      ],
+      "weaknesses": [
+        "highest neuron cost among CF image models"
+      ],
+      "never_use_for": [
+        "tag-salad prompts"
+      ],
+      "cost_hint": "~24 neurons/img (free: 10k/day)"
+    },
+    {
+      "id": "cf-sdxl",
+      "provider": "cloudflare",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "token_budget": 77,
+      "cfg_default": 6,
+      "negative_prompt_support": "native",
+      "ref_image_support": false,
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "SDXL base 1.0 on CF free tier"
+      ],
+      "weaknesses": [
+        "same SDXL text ceiling"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "~6 neurons/img (free: 10k/day)"
+    },
+    {
+      "id": "cf-sdxl-lightning",
+      "provider": "cloudflare",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "token_budget": 77,
+      "cfg_default": 1.5,
+      "negative_prompt_support": "native",
+      "ref_image_support": false,
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "ByteDance SDXL-Lightning — 4-step inference, ~2 neurons per image"
+      ],
+      "weaknesses": [
+        "lightning trades quality for speed"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "~2 neurons/img (free: 10k/day — cheapest CF option)"
+    },
+    {
+      "id": "cf-dreamshaper-8-lcm",
+      "provider": "cloudflare",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 4,
+      "token_budget": 77,
+      "cfg_default": 2,
+      "negative_prompt_support": "native",
+      "ref_image_support": false,
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "DreamShaper 8 LCM — photoreal focus, 4-step"
+      ],
+      "weaknesses": [
+        "SD 1.5-class ceiling"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "~3 neurons/img (free: 10k/day)"
+    },
+    {
+      "id": "cf-leonardo-phoenix",
+      "provider": "cloudflare",
+      "family": "sd-derivative",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 15,
+      "cfg_default": 7,
+      "negative_prompt_support": "native",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "Leonardo Phoenix 1.0 on CF free tier"
+      ],
+      "weaknesses": [
+        "text rendering still weak"
+      ],
+      "never_use_for": [
+        "wordmarks >15 chars"
+      ],
+      "cost_hint": "~10 neurons/img (free: 10k/day)"
+    },
+    {
+      "id": "cf-leonardo-lucid-origin",
+      "provider": "cloudflare",
+      "family": "sd-derivative",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 12,
+      "cfg_default": 7,
+      "negative_prompt_support": "native",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "free_tier": true,
+      "strengths": [
+        "Leonardo Lucid Origin — Leonardo's most adaptable preset"
+      ],
+      "weaknesses": [],
+      "never_use_for": [],
+      "cost_hint": "~10 neurons/img (free: 10k/day)"
+    },
+    {
+      "id": "replicate-flux-1.1-pro",
+      "provider": "replicate",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 25,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "Replicate-hosted Flux 1.1 Pro; good fallback when BFL keys unavailable"
+      ],
+      "weaknesses": [
+        "metered per-run"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.04/run (Replicate markup on BFL)"
+    },
+    {
+      "id": "replicate-flux-schnell",
+      "provider": "replicate",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "license": "Apache-2.0",
+      "strengths": [
+        "cheap Replicate path"
+      ],
+      "weaknesses": [
+        "distilled — weak text rendering"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "$0.003/run"
+    },
+    {
+      "id": "replicate-flux-dev",
+      "provider": "replicate",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "error",
+      "ref_image_support": true,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "license": "Flux-Dev-Non-Commercial",
+      "strengths": [
+        "Flux Dev via Replicate — LoRA-trainable upstream"
+      ],
+      "weaknesses": [
+        "non-commercial license"
+      ],
+      "never_use_for": [
+        "commercial use without BFL Dev license"
+      ],
+      "cost_hint": "$0.025/run (non-commercial)"
+    },
+    {
+      "id": "replicate-sdxl",
+      "provider": "replicate",
+      "family": "sd",
+      "text_encoder": "CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 8,
+      "token_budget": 77,
+      "cfg_default": 6,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet",
+      "dialect": "tag-salad",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "canonical SDXL via Replicate"
+      ],
+      "weaknesses": [
+        "SDXL text ceiling"
+      ],
+      "never_use_for": [
+        "wordmarks"
+      ],
+      "cost_hint": "~$0.00725/run"
+    },
+    {
+      "id": "replicate-sd3",
+      "provider": "replicate",
+      "family": "sd",
+      "text_encoder": "T5+CLIP",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 30,
+      "token_budget": 256,
+      "cfg_default": 4.5,
+      "negative_prompt_support": "native",
+      "ref_image_support": "controlnet",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "SD3 Large / Medium via Replicate"
+      ],
+      "weaknesses": [
+        "SD3 commercial license applies"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.035/run"
+    },
+    {
+      "id": "replicate-recraft-v3",
+      "provider": "replicate",
+      "family": "recraft",
+      "text_encoder": "recraft-class",
+      "native_rgba": true,
+      "native_svg": true,
+      "text_ceiling_chars": 30,
+      "negative_prompt_support": "supported",
+      "ref_image_support": "style_id",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "Recraft V3 native SVG output via Replicate — fallback when no direct Recraft key"
+      ],
+      "weaknesses": [
+        "metered"
+      ],
+      "never_use_for": [],
+      "cost_hint": "$0.04/run (Recraft passthrough)"
+    },
+    {
+      "id": "replicate-ideogram-3",
+      "provider": "replicate",
+      "family": "ideogram",
+      "text_encoder": "ideogram-class",
+      "native_rgba": true,
+      "native_svg": false,
+      "text_ceiling_chars": 80,
+      "negative_prompt_support": "supported",
+      "ref_image_support": true,
+      "dialect": "prose+quoted",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "Ideogram 3 via Replicate — alt path when direct Ideogram key is unavailable"
+      ],
+      "weaknesses": [
+        "Replicate markup on per-run cost"
+      ],
+      "never_use_for": [
+        "non-Latin wordmarks"
+      ],
+      "cost_hint": "$0.08/run (Ideogram passthrough)"
+    }
+  ]
+}

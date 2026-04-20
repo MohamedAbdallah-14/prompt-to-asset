@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "prompt-to-asset": {
+      "command": "node",
+      "args": ["${workspaceFolder}/packages/mcp-server/dist/index.js"]
+    }
+  }
+}

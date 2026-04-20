@@ -1,0 +1,21 @@
+{
+  "name": "Halcyon",
+  "version": "0.1.0",
+  "palette": ["#2563eb", "#0ea5e9", "#f8fafc", "#0f172a"],
+  "fonts": {
+    "display": { "family": "Inter", "weights": [700, 800] },
+    "body": { "family": "Inter", "weights": [400, 500] }
+  },
+  "style_refs": ["https://example.com/brand/halcyon-hero.png", "./refs/halcyon-secondary.png"],
+  "do_not": [
+    "drop shadows",
+    "heavy gradients",
+    "skeuomorphic bevels",
+    "more than three colors per asset",
+    "serif typography"
+  ],
+  "lora": "halcyon-flux-v2",
+  "sref_code": "--sref 1234567890",
+  "style_id": "rc_halcyon_01",
+  "notes": "Weather app. Calm, confident, never kitschy. Sunrise-through-glass mood, not cartoon weather. Never sun-with-a-face."
+}

@@ -1,0 +1,437 @@
+{
+  "generated_at": "2026-04-19",
+  "total_categories": 20,
+  "total_angle_files": 104,
+  "categories": [
+    {
+      "id": "01-prompt-engineering-theory",
+      "title": "Prompt Engineering Theory",
+      "summary": "Foundations of CFG, negative prompts, cross-attention control, weighting syntax, LLM-based prompt rewriting, and survey-paper grounding; the user's prompt is never what the model was trained on.",
+      "index_path": "docs/research/01-prompt-engineering-theory/INDEX.md",
+      "angles": [
+        {"id": "1a-cfg-and-negative-prompts", "title": "Classifier-free guidance, CFG scaling, negative prompts", "path": "docs/research/01-prompt-engineering-theory/1a-cfg-and-negative-prompts.md", "tags": ["cfg", "negative-prompt", "guidance"]},
+        {"id": "1b-compositional-attention-control", "title": "Compositional prompting and attention control", "path": "docs/research/01-prompt-engineering-theory/1b-compositional-attention-control.md", "tags": ["cross-attention", "compositional", "attend-and-excite"]},
+        {"id": "1c-llm-prompt-expansion", "title": "LLM-based prompt expansion and rewriting", "path": "docs/research/01-prompt-engineering-theory/1c-llm-prompt-expansion.md", "tags": ["rewriter", "promptist", "hunyuan"]},
+        {"id": "1d-prompt-weighting-syntax", "title": "Prompt weighting and parser syntax (A1111, Compel, ComfyUI, MJ)", "path": "docs/research/01-prompt-engineering-theory/1d-prompt-weighting-syntax.md", "tags": ["weighting", "syntax", "parsers"]},
+        {"id": "1e-survey-papers", "title": "Survey papers on prompt engineering for T2I", "path": "docs/research/01-prompt-engineering-theory/1e-survey-papers.md", "tags": ["survey", "literature"]}
+      ]
+    },
+    {
+      "id": "02-image-generation-models",
+      "title": "Image Generation Models",
+      "summary": "Architectural landscape from diffusion foundations through DiT/MM-DiT and rectified flow to autoregressive transformers, plus Imagen-family technical reports.",
+      "index_path": "docs/research/02-image-generation-models/INDEX.md",
+      "angles": [
+        {"id": "2a-diffusion-foundations", "title": "Diffusion foundations (DDPM, EDM, LDM)", "path": "docs/research/02-image-generation-models/2a-diffusion-foundations.md", "tags": ["diffusion", "ddpm", "ldm"]},
+        {"id": "2b-autoregressive-transformer-t2i", "title": "Autoregressive transformer T2I (Parti, Muse, VAR, gpt-image-1)", "path": "docs/research/02-image-generation-models/2b-autoregressive-transformer-t2i.md", "tags": ["autoregressive", "parti", "muse", "gpt-image"]},
+        {"id": "2c-flow-matching-rectified-flow", "title": "Flow matching and rectified flow (SD3, Flux, SANA)", "path": "docs/research/02-image-generation-models/2c-flow-matching-rectified-flow.md", "tags": ["flow-matching", "rectified-flow", "flux", "sd3"]},
+        {"id": "2d-dit-mmdit-architectures", "title": "DiT and MM-DiT architectures", "path": "docs/research/02-image-generation-models/2d-dit-mmdit-architectures.md", "tags": ["dit", "mmdit", "transformer"]},
+        {"id": "2e-imagen-technical-reports", "title": "Imagen technical reports (1/2/3/4)", "path": "docs/research/02-image-generation-models/2e-imagen-technical-reports.md", "tags": ["imagen", "google", "technical-report"]}
+      ]
+    },
+    {
+      "id": "03-evaluation-metrics",
+      "title": "Evaluation Metrics",
+      "summary": "CLIP alignment, FID/CMMD/FD-DINOv2 perceptual, human-preference models (HPSv3, PickScore, ImageReward, MPS), compositional benchmarks, and asset-specific evaluation; no single metric suffices.",
+      "index_path": "docs/research/03-evaluation-metrics/INDEX.md",
+      "angles": [
+        {"id": "3a-clip-alignment-metrics", "title": "CLIPScore, VQAScore, and alignment metrics", "path": "docs/research/03-evaluation-metrics/3a-clip-alignment-metrics.md", "tags": ["clipscore", "vqascore", "alignment"]},
+        {"id": "3b-fid-perceptual-metrics", "title": "FID, CMMD, FD-DINOv2 and perceptual metrics", "path": "docs/research/03-evaluation-metrics/3b-fid-perceptual-metrics.md", "tags": ["fid", "cmmd", "dinov2"]},
+        {"id": "3c-human-preference-models", "title": "HPSv2/v3, PickScore, ImageReward, MPS", "path": "docs/research/03-evaluation-metrics/3c-human-preference-models.md", "tags": ["hpsv3", "pickscore", "imagereward", "mps"]},
+        {"id": "3d-compositional-benchmarks", "title": "T2I-CompBench, GenEval, ConceptMix, Gecko", "path": "docs/research/03-evaluation-metrics/3d-compositional-benchmarks.md", "tags": ["t2i-compbench", "geneval", "compositional"]},
+        {"id": "3e-asset-specific-eval", "title": "Asset-specific evaluation (text rendering, alpha, logos, icons)", "path": "docs/research/03-evaluation-metrics/3e-asset-specific-eval.md", "tags": ["ocrgenbench", "alpha-eval", "logo-eval", "vlm-as-judge"]}
+      ]
+    },
+    {
+      "id": "04-gemini-imagen-prompting",
+      "title": "Gemini / Imagen Prompting",
+      "summary": "Google's two stacks (Imagen T2I, Gemini multimodal edit), the checkerboard transparency failure as architectural limit, quirks, and Vertex SDK integration details.",
+      "index_path": "docs/research/04-gemini-imagen-prompting/INDEX.md",
+      "angles": [
+        {"id": "4a-imagen-official-prompt-guides", "title": "Imagen official prompt guides (Imagen 3/4)", "path": "docs/research/04-gemini-imagen-prompting/4a-imagen-official-prompt-guides.md", "tags": ["imagen", "vertex", "prompt-guide"]},
+        {"id": "4b-gemini-flash-image-nano-banana", "title": "Gemini 2.5/3 Flash Image and 'Nano Banana'", "path": "docs/research/04-gemini-imagen-prompting/4b-gemini-flash-image-nano-banana.md", "tags": ["gemini", "flash-image", "nano-banana"]},
+        {"id": "4c-transparent-background-checker-problem", "title": "The transparent-background checkerboard problem on Google stacks", "path": "docs/research/04-gemini-imagen-prompting/4c-transparent-background-checker-problem.md", "tags": ["transparency", "checkerboard", "failure-mode"]},
+        {"id": "4d-quirks-and-artifacts", "title": "Documented quirks and artifacts in Imagen/Gemini output", "path": "docs/research/04-gemini-imagen-prompting/4d-quirks-and-artifacts.md", "tags": ["artifacts", "quirks"]},
+        {"id": "4e-vertex-sdk-integration", "title": "Vertex / Gemini SDK integration details", "path": "docs/research/04-gemini-imagen-prompting/4e-vertex-sdk-integration.md", "tags": ["sdk", "vertex", "integration"]}
+      ]
+    },
+    {
+      "id": "05-openai-dalle-gpt-image",
+      "title": "OpenAI DALL·E / gpt-image",
+      "summary": "DALL·E 3 recaptioning and deprecation, gpt-image-1/1.5 native RGBA + input_fidelity, system style behavior, failure modes and moderation stack, cookbook workflows, and production integrations.",
+      "index_path": "docs/research/05-openai-dalle-gpt-image/INDEX.md",
+      "angles": [
+        {"id": "5a-dalle3-prompt-guide-and-rewriter", "title": "DALL·E 3 prompt guide and rewriter behavior", "path": "docs/research/05-openai-dalle-gpt-image/5a-dalle3-prompt-guide-and-rewriter.md", "tags": ["dalle3", "rewriter", "revised-prompt"]},
+        {"id": "5a-dalle3-recaptioning", "title": "DALL·E 3 recaptioning training recipe", "path": "docs/research/05-openai-dalle-gpt-image/5a-dalle3-recaptioning.md", "tags": ["dalle3", "recaptioning", "training"]},
+        {"id": "5b-gpt-image-1-api-and-transparency", "title": "gpt-image-1 API and transparency support", "path": "docs/research/05-openai-dalle-gpt-image/5b-gpt-image-1-api-and-transparency.md", "tags": ["gpt-image-1", "api", "transparency", "rgba"]},
+        {"id": "5b-gpt-image-1-api", "title": "gpt-image-1 API surface", "path": "docs/research/05-openai-dalle-gpt-image/5b-gpt-image-1-api.md", "tags": ["gpt-image-1", "api", "input-fidelity"]},
+        {"id": "5c-logo-icon-generation", "title": "Logo and icon generation with gpt-image-1", "path": "docs/research/05-openai-dalle-gpt-image/5c-logo-icon-generation.md", "tags": ["gpt-image-1", "logo", "icon"]},
+        {"id": "5c-openai-cookbook-asset-workflows", "title": "OpenAI cookbook asset workflows", "path": "docs/research/05-openai-dalle-gpt-image/5c-openai-cookbook-asset-workflows.md", "tags": ["cookbook", "workflows"]},
+        {"id": "5d-failure-modes-text-and-moderation", "title": "Failure modes: text rendering and moderation", "path": "docs/research/05-openai-dalle-gpt-image/5d-failure-modes-text-and-moderation.md", "tags": ["failure-modes", "text", "moderation"]},
+        {"id": "5d-system-style-behavior", "title": "System / style behavior of gpt-image-1", "path": "docs/research/05-openai-dalle-gpt-image/5d-system-style-behavior.md", "tags": ["system", "style"]},
+        {"id": "5e-production-integrations", "title": "Production integrations and C2PA/pricing", "path": "docs/research/05-openai-dalle-gpt-image/5e-production-integrations.md", "tags": ["c2pa", "pricing", "integration"]}
+      ]
+    },
+    {
+      "id": "06-stable-diffusion-flux",
+      "title": "Stable Diffusion / Flux",
+      "summary": "SD 1.5/2.1/XL fundamentals, Flux family prompting contracts, ControlNet + IP-Adapter + PuLID, LoRA training for brand style, and local pipelines (Diffusers, ComfyUI).",
+      "index_path": "docs/research/06-stable-diffusion-flux/INDEX.md",
+      "angles": [
+        {"id": "6a-sd-15-21-xl-prompting-fundamentals", "title": "SD 1.5/2.1/XL prompting fundamentals", "path": "docs/research/06-stable-diffusion-flux/6a-sd-15-21-xl-prompting-fundamentals.md", "tags": ["stable-diffusion", "sdxl", "prompting"]},
+        {"id": "6b-flux-family-prompting", "title": "Flux family prompting (Flux.1/Pro/Kontext/Flux.2)", "path": "docs/research/06-stable-diffusion-flux/6b-flux-family-prompting.md", "tags": ["flux", "t5", "prose-prompts"]},
+        {"id": "6c-controlnet-ipadapter-reference-conditioning", "title": "ControlNet, IP-Adapter, PuLID reference conditioning", "path": "docs/research/06-stable-diffusion-flux/6c-controlnet-ipadapter-reference-conditioning.md", "tags": ["controlnet", "ip-adapter", "pulid"]},
+        {"id": "6d-lora-training-for-brand-style", "title": "LoRA training for brand style", "path": "docs/research/06-stable-diffusion-flux/6d-lora-training-for-brand-style.md", "tags": ["lora", "dreambooth", "brand-style"]},
+        {"id": "6e-local-pipelines-diffusers-comfyui-etc", "title": "Local pipelines: Diffusers, ComfyUI, InvokeAI", "path": "docs/research/06-stable-diffusion-flux/6e-local-pipelines-diffusers-comfyui-etc.md", "tags": ["diffusers", "comfyui", "invokeai"]}
+      ]
+    },
+    {
+      "id": "07-midjourney-ideogram-recraft",
+      "title": "Midjourney / Ideogram / Recraft",
+      "summary": "Commercial closed-source T2I specialists: Midjourney for aesthetic/concept (no API), Ideogram for in-image text, Recraft for native vector SVG and brand styles.",
+      "index_path": "docs/research/07-midjourney-ideogram-recraft/INDEX.md",
+      "angles": [
+        {"id": "7a-midjourney-v6-v7-prompting", "title": "Midjourney v6/v7 prompting and style codes", "path": "docs/research/07-midjourney-ideogram-recraft/7a-midjourney-v6-v7-prompting.md", "tags": ["midjourney", "sref", "cref"]},
+        {"id": "7b-ideogram-text-rendering-for-logos", "title": "Ideogram text rendering for logos", "path": "docs/research/07-midjourney-ideogram-recraft/7b-ideogram-text-rendering-for-logos.md", "tags": ["ideogram", "text-rendering", "logo"]},
+        {"id": "7c-recraft-v3-vector-and-brand-styles", "title": "Recraft V3 native vector and brand styles", "path": "docs/research/07-midjourney-ideogram-recraft/7c-recraft-v3-vector-and-brand-styles.md", "tags": ["recraft", "svg", "brand-style"]},
+        {"id": "7d-leonardo-playground-krea-firefly", "title": "Leonardo, Playground, Krea, Firefly", "path": "docs/research/07-midjourney-ideogram-recraft/7d-leonardo-playground-krea-firefly.md", "tags": ["leonardo", "playground", "krea", "firefly"]},
+        {"id": "7e-commercial-tool-asset-workflows", "title": "Commercial tool asset workflows", "path": "docs/research/07-midjourney-ideogram-recraft/7e-commercial-tool-asset-workflows.md", "tags": ["workflows", "commercial"]}
+      ]
+    },
+    {
+      "id": "08-logo-generation",
+      "title": "Logo Generation",
+      "summary": "Logo design theory, prompt patterns by style, text rendering hardness, monograms and palette control, and the SVG vector logo pipeline — a routing + post-processing problem.",
+      "index_path": "docs/research/08-logo-generation/INDEX.md",
+      "angles": [
+        {"id": "8a-logo-design-theory-and-brand-fundamentals", "title": "Logo design theory and brand fundamentals", "path": "docs/research/08-logo-generation/8a-logo-design-theory-and-brand-fundamentals.md", "tags": ["logo-theory", "brand"]},
+        {"id": "8b-prompt-patterns-by-logo-style", "title": "Prompt patterns by logo style", "path": "docs/research/08-logo-generation/8b-prompt-patterns-by-logo-style.md", "tags": ["prompt-patterns", "style"]},
+        {"id": "8c-text-rendering-in-logos", "title": "Text rendering in logos (wordmarks, lettermarks)", "path": "docs/research/08-logo-generation/8c-text-rendering-in-logos.md", "tags": ["text-rendering", "wordmark"]},
+        {"id": "8d-monograms-and-color-palette-control", "title": "Monograms and color palette control", "path": "docs/research/08-logo-generation/8d-monograms-and-color-palette-control.md", "tags": ["monogram", "palette", "hex"]},
+        {"id": "8e-svg-vector-logo-pipeline", "title": "SVG vector logo pipeline", "path": "docs/research/08-logo-generation/8e-svg-vector-logo-pipeline.md", "tags": ["svg", "vectorization", "pipeline"]}
+      ]
+    },
+    {
+      "id": "09-app-icon-generation",
+      "title": "App Icon Generation",
+      "summary": "iOS HIG specs, Android adaptive + themed icons, PWA manifest + maskable, icon-generation tools survey, and prompt patterns — one 1024² master fans out to every platform variant.",
+      "index_path": "docs/research/09-app-icon-generation/INDEX.md",
+      "angles": [
+        {"id": "9a-ios-app-icon-hig-specs", "title": "iOS app icon HIG specs and Icon Composer", "path": "docs/research/09-app-icon-generation/9a-ios-app-icon-hig-specs.md", "tags": ["ios", "hig", "squircle"]},
+        {"id": "9b-android-adaptive-themed-icons", "title": "Android adaptive and themed icons", "path": "docs/research/09-app-icon-generation/9b-android-adaptive-themed-icons.md", "tags": ["android", "adaptive-icon", "themed"]},
+        {"id": "9c-pwa-web-app-manifest-icons", "title": "PWA web app manifest and maskable icons", "path": "docs/research/09-app-icon-generation/9c-pwa-web-app-manifest-icons.md", "tags": ["pwa", "manifest", "maskable"]},
+        {"id": "9d-icon-generation-tools-survey", "title": "Icon generation tools survey", "path": "docs/research/09-app-icon-generation/9d-icon-generation-tools-survey.md", "tags": ["tools", "survey"]},
+        {"id": "9e-prompt-patterns-for-app-icons", "title": "Prompt patterns for app icons", "path": "docs/research/09-app-icon-generation/9e-prompt-patterns-for-app-icons.md", "tags": ["prompt-patterns", "app-icon"]}
+      ]
+    },
+    {
+      "id": "10-ui-illustrations-graphics",
+      "title": "UI Illustrations & Graphics",
+      "summary": "Empty-state/onboarding illustrations, hero images, spot illustrations and icon packs, 3D/isometric/clay/glass, and the illustration-to-production pipeline — consistency is the primary problem.",
+      "index_path": "docs/research/10-ui-illustrations-graphics/INDEX.md",
+      "angles": [
+        {"id": "10a-empty-state-onboarding-illustrations", "title": "Empty-state and onboarding illustrations", "path": "docs/research/10-ui-illustrations-graphics/10a-empty-state-onboarding-illustrations.md", "tags": ["empty-state", "onboarding"]},
+        {"id": "10b-hero-images-and-marketing-banners", "title": "Hero images and marketing banners", "path": "docs/research/10-ui-illustrations-graphics/10b-hero-images-and-marketing-banners.md", "tags": ["hero", "marketing"]},
+        {"id": "10c-spot-illustrations-and-icon-packs", "title": "Spot illustrations and icon packs", "path": "docs/research/10-ui-illustrations-graphics/10c-spot-illustrations-and-icon-packs.md", "tags": ["spot-illustration", "icon-pack"]},
+        {"id": "10d-3d-isometric-clay-glass", "title": "3D, isometric, clay, glassmorphism", "path": "docs/research/10-ui-illustrations-graphics/10d-3d-isometric-clay-glass.md", "tags": ["3d", "isometric", "clay", "glassmorphism"]},
+        {"id": "10e-illustration-to-production-pipeline", "title": "Illustration-to-production pipeline", "path": "docs/research/10-ui-illustrations-graphics/10e-illustration-to-production-pipeline.md", "tags": ["pipeline", "production"]}
+      ]
+    },
+    {
+      "id": "11-favicon-web-assets",
+      "title": "Favicon & Web Assets",
+      "summary": "Modern favicon spec, OG/Twitter card dynamic images (Satori + resvg), adjacent web assets (email/chat/README), OSS favicon generators, and performance/SEO/accessibility.",
+      "index_path": "docs/research/11-favicon-web-assets/INDEX.md",
+      "angles": [
+        {"id": "11a-modern-favicon-complete-spec", "title": "Modern favicon complete spec", "path": "docs/research/11-favicon-web-assets/11a-modern-favicon-complete-spec.md", "tags": ["favicon", "spec", "ico", "svg"]},
+        {"id": "11b-og-twitter-card-dynamic-images", "title": "OG / Twitter card dynamic images", "path": "docs/research/11-favicon-web-assets/11b-og-twitter-card-dynamic-images.md", "tags": ["og", "twitter-card", "satori"]},
+        {"id": "11c-adjacent-web-assets-email-chat-readme", "title": "Adjacent web assets: email, chat unfurlers, README", "path": "docs/research/11-favicon-web-assets/11c-adjacent-web-assets-email-chat-readme.md", "tags": ["email", "readme", "unfurler"]},
+        {"id": "11d-open-source-favicon-generators", "title": "Open-source favicon generators", "path": "docs/research/11-favicon-web-assets/11d-open-source-favicon-generators.md", "tags": ["generators", "oss"]},
+        {"id": "11e-performance-seo-accessibility", "title": "Performance, SEO, accessibility for web assets", "path": "docs/research/11-favicon-web-assets/11e-performance-seo-accessibility.md", "tags": ["performance", "seo", "accessibility"]}
+      ]
+    },
+    {
+      "id": "12-vector-svg-generation",
+      "title": "Vector / SVG Generation",
+      "summary": "Native vector generation papers (StarVector, SVGDreamer, Chat2SVG), raster-to-SVG tracers (vtracer, potrace), SVG spec features, LLM-authored SVG, and hybrid vector pipelines.",
+      "index_path": "docs/research/12-vector-svg-generation/INDEX.md",
+      "angles": [
+        {"id": "12a-native-vector-generation-papers", "title": "Native vector generation papers", "path": "docs/research/12-vector-svg-generation/12a-native-vector-generation-papers.md", "tags": ["starvector", "svgdreamer", "chat2svg"]},
+        {"id": "12b-raster-to-svg-tracers", "title": "Raster-to-SVG tracers (vtracer, potrace)", "path": "docs/research/12-vector-svg-generation/12b-raster-to-svg-tracers.md", "tags": ["vtracer", "potrace", "tracer"]},
+        {"id": "12c-svg-spec-features-for-assets", "title": "SVG spec features for assets", "path": "docs/research/12-vector-svg-generation/12c-svg-spec-features-for-assets.md", "tags": ["svg-spec", "svgo", "resvg"]},
+        {"id": "12d-llm-direct-svg-code-generation", "title": "LLM direct SVG code generation", "path": "docs/research/12-vector-svg-generation/12d-llm-direct-svg-code-generation.md", "tags": ["llm-svg", "code-generation"]},
+        {"id": "12e-hybrid-vector-pipeline-architectures", "title": "Hybrid vector pipeline architectures", "path": "docs/research/12-vector-svg-generation/12e-hybrid-vector-pipeline-architectures.md", "tags": ["hybrid", "pipeline"]}
+      ]
+    },
+    {
+      "id": "13-transparent-backgrounds",
+      "title": "Transparent Backgrounds",
+      "summary": "The #1 pain: RGBA architecture and LayerDiffuse, difference matting, the checkerboard-drawn-as-pixels failure, matting models (BiRefNet, BRIA RMBG, U²-Net), and end-to-end transparent pipelines.",
+      "index_path": "docs/research/13-transparent-backgrounds/INDEX.md",
+      "angles": [
+        {"id": "13a-rgba-architecture-layer-diffuse", "title": "RGBA architecture and LayerDiffuse", "path": "docs/research/13-transparent-backgrounds/13a-rgba-architecture-layer-diffuse.md", "tags": ["rgba", "layerdiffuse", "vae"]},
+        {"id": "13b-difference-matting-and-chroma-keying", "title": "Difference matting and chroma keying", "path": "docs/research/13-transparent-backgrounds/13b-difference-matting-and-chroma-keying.md", "tags": ["matting", "chroma-key", "difference"]},
+        {"id": "13c-checkerboard-pixel-drawing-failure", "title": "Checkerboard-drawn-into-pixels failure", "path": "docs/research/13-transparent-backgrounds/13c-checkerboard-pixel-drawing-failure.md", "tags": ["checkerboard", "failure-mode", "gemini"]},
+        {"id": "13d-matting-models-birefnet-rmbg-u2net", "title": "Matting models: BiRefNet, BRIA RMBG, U²-Net", "path": "docs/research/13-transparent-backgrounds/13d-matting-models-birefnet-rmbg-u2net.md", "tags": ["birefnet", "rmbg", "u2net"]},
+        {"id": "13e-end-to-end-transparent-pipelines", "title": "End-to-end transparent pipelines", "path": "docs/research/13-transparent-backgrounds/13e-end-to-end-transparent-pipelines.md", "tags": ["pipeline", "transparent", "validation"]}
+      ]
+    },
+    {
+      "id": "14-negative-prompting-artifacts",
+      "title": "Negative Prompting & Artifacts",
+      "summary": "Negative prompts for assets, artifact taxonomy, regenerate-vs-repair strategies, automated quality scoring (ML + VLM), and deterministic validation checks — a multi-stage QA loop.",
+      "index_path": "docs/research/14-negative-prompting-artifacts/INDEX.md",
+      "angles": [
+        {"id": "14a-negative-prompts-for-assets", "title": "Negative prompts for asset generation", "path": "docs/research/14-negative-prompting-artifacts/14a-negative-prompts-for-assets.md", "tags": ["negative-prompt", "cfg"]},
+        {"id": "14b-artifact-taxonomy", "title": "Artifact taxonomy for AI-generated assets", "path": "docs/research/14-negative-prompting-artifacts/14b-artifact-taxonomy.md", "tags": ["artifacts", "taxonomy"]},
+        {"id": "14c-regenerate-vs-repair-strategies", "title": "Regenerate vs repair strategies", "path": "docs/research/14-negative-prompting-artifacts/14c-regenerate-vs-repair-strategies.md", "tags": ["regenerate", "inpaint", "repair"]},
+        {"id": "14d-automated-quality-scoring", "title": "Automated quality scoring (ML + VLM-as-judge)", "path": "docs/research/14-negative-prompting-artifacts/14d-automated-quality-scoring.md", "tags": ["scoring", "vlm", "quality"]},
+        {"id": "14e-deterministic-validation-checks", "title": "Deterministic validation checks", "path": "docs/research/14-negative-prompting-artifacts/14e-deterministic-validation-checks.md", "tags": ["validation", "deterministic"]}
+      ]
+    },
+    {
+      "id": "15-style-consistency-brand",
+      "title": "Style Consistency & Brand",
+      "summary": "Consistent character/mascot, style transfer via --sref / B-LoRA, brand color palette enforcement, machine-readable brand bundles (DTCG, brand.md, AdCP), and full asset-set consistency.",
+      "index_path": "docs/research/15-style-consistency-brand/INDEX.md",
+      "angles": [
+        {"id": "15a-consistent-character-and-mascot", "title": "Consistent character and mascot (PuLID, DreamBooth-LoRA)", "path": "docs/research/15-style-consistency-brand/15a-consistent-character-and-mascot.md", "tags": ["character", "mascot", "pulid"]},
+        {"id": "15b-style-transfer-sref-b-lora", "title": "Style transfer: --sref, B-LoRA, style_id", "path": "docs/research/15-style-consistency-brand/15b-style-transfer-sref-b-lora.md", "tags": ["style-transfer", "sref", "b-lora"]},
+        {"id": "15c-brand-color-palette-enforcement", "title": "Brand color palette enforcement", "path": "docs/research/15-style-consistency-brand/15c-brand-color-palette-enforcement.md", "tags": ["palette", "delta-e", "hex"]},
+        {"id": "15d-machine-readable-brand-bundle", "title": "Machine-readable brand bundle (DTCG, brand.md, AdCP)", "path": "docs/research/15-style-consistency-brand/15d-machine-readable-brand-bundle.md", "tags": ["brand-bundle", "dtcg", "brand.md"]},
+        {"id": "15e-full-asset-set-consistency", "title": "Full asset-set consistency", "path": "docs/research/15-style-consistency-brand/15e-full-asset-set-consistency.md", "tags": ["asset-set", "consistency"]}
+      ]
+    },
+    {
+      "id": "16-background-removal-vectorization",
+      "title": "Background Removal & Vectorization",
+      "summary": "rembg ecosystem (BiRefNet, ISNet, U²-Net), SAM family segmentation, vectorization tooling (vtracer, potrace), commercial BG-removal APIs, and the matte → refine → optimize → export pipeline.",
+      "index_path": "docs/research/16-background-removal-vectorization/INDEX.md",
+      "angles": [
+        {"id": "16a-rembg-ecosystem", "title": "rembg ecosystem", "path": "docs/research/16-background-removal-vectorization/16a-rembg-ecosystem.md", "tags": ["rembg", "birefnet", "u2net", "isnet"]},
+        {"id": "16b-sam-family-segmentation", "title": "SAM family segmentation", "path": "docs/research/16-background-removal-vectorization/16b-sam-family-segmentation.md", "tags": ["sam", "segmentation", "grounding-dino"]},
+        {"id": "16c-vectorization-tooling-production", "title": "Vectorization tooling in production", "path": "docs/research/16-background-removal-vectorization/16c-vectorization-tooling-production.md", "tags": ["vtracer", "potrace", "vectorization"]},
+        {"id": "16d-commercial-bg-removal-apis", "title": "Commercial BG-removal APIs", "path": "docs/research/16-background-removal-vectorization/16d-commercial-bg-removal-apis.md", "tags": ["photoroom", "bria", "cloudinary"]},
+        {"id": "16e-matte-refine-optimize-export", "title": "Matte → refine → optimize → export pipeline", "path": "docs/research/16-background-removal-vectorization/16e-matte-refine-optimize-export.md", "tags": ["pipeline", "svgo", "export"]}
+      ]
+    },
+    {
+      "id": "17-upscaling-refinement",
+      "title": "Upscaling & Refinement",
+      "summary": "ESRGAN/SwinIR/HAT family, SUPIR/CCSR/DiffBIR refinement, face/text/hand targeted refinement, logo/icon sharpness and snap-to-grid, and deployment patterns (WebGPU, CoreML, serverless GPU).",
+      "index_path": "docs/research/17-upscaling-refinement/INDEX.md",
+      "angles": [
+        {"id": "17a-esrgan-swinir-hat-family", "title": "ESRGAN, SwinIR, HAT, DAT2, DRCT family", "path": "docs/research/17-upscaling-refinement/17a-esrgan-swinir-hat-family.md", "tags": ["real-esrgan", "swinir", "hat", "dat2"]},
+        {"id": "17b-supir-ccsr-diffbir-refinement", "title": "SUPIR, CCSR, DiffBIR diffusion refinement", "path": "docs/research/17-upscaling-refinement/17b-supir-ccsr-diffbir-refinement.md", "tags": ["supir", "ccsr", "diffbir", "diffusion-sr"]},
+        {"id": "17c-face-text-hand-targeted-refinement", "title": "Face / text / hand targeted refinement", "path": "docs/research/17-upscaling-refinement/17c-face-text-hand-targeted-refinement.md", "tags": ["adetailer", "codeformer", "handrefiner"]},
+        {"id": "17d-logo-icon-sharpness-refinement", "title": "Logo / icon sharpness and snap-to-grid", "path": "docs/research/17-upscaling-refinement/17d-logo-icon-sharpness-refinement.md", "tags": ["logo-upscale", "snap-to-grid"]},
+        {"id": "17e-deployment-patterns-upscaling", "title": "Deployment patterns for upscaling (WebGPU, CoreML, serverless)", "path": "docs/research/17-upscaling-refinement/17e-deployment-patterns-upscaling.md", "tags": ["webgpu", "coreml", "serverless"]}
+      ]
+    },
+    {
+      "id": "18-asset-pipeline-tools",
+      "title": "Asset Pipeline Tools",
+      "summary": "appicon.co teardown, framework-native generators (@capacitor/assets, flutter_launcher_icons, tauri icon), splash screen generators, image-processing libs (sharp, resvg, Pillow), and production pipeline architecture.",
+      "index_path": "docs/research/18-asset-pipeline-tools/INDEX.md",
+      "angles": [
+        {"id": "18a-appicon-co-teardown-and-oss-replacement", "title": "appicon.co teardown and OSS replacement", "path": "docs/research/18-asset-pipeline-tools/18a-appicon-co-teardown-and-oss-replacement.md", "tags": ["appicon.co", "teardown", "oss"]},
+        {"id": "18b-framework-native-asset-generators", "title": "Framework-native asset generators", "path": "docs/research/18-asset-pipeline-tools/18b-framework-native-asset-generators.md", "tags": ["capacitor-assets", "expo", "flutter", "tauri"]},
+        {"id": "18c-splash-screen-generators", "title": "Splash screen generators (Android 12+, iOS, PWA)", "path": "docs/research/18-asset-pipeline-tools/18c-splash-screen-generators.md", "tags": ["splash", "pwa-asset-generator", "android-12"]},
+        {"id": "18d-image-processing-libraries", "title": "Image processing libraries (sharp, resvg, Pillow, ImageMagick)", "path": "docs/research/18-asset-pipeline-tools/18d-image-processing-libraries.md", "tags": ["sharp", "libvips", "resvg", "pillow"]},
+        {"id": "18e-production-pipeline-architecture", "title": "Production pipeline architecture (BullMQ, R2, prompt-hash cache)", "path": "docs/research/18-asset-pipeline-tools/18e-production-pipeline-architecture.md", "tags": ["bullmq", "r2", "prompt-hash-cache"]}
+      ]
+    },
+    {
+      "id": "19-agentic-mcp-skills-architectures",
+      "title": "Agentic / MCP / Skills / Cross-IDE Architectures",
+      "summary": "Per-IDE manifest schemas, MCP server design for asset gen, Gemini/Codex/Copilot integration, the prompt-enhancement agent pattern, and cross-IDE plugin packaging (Humazier SSOT).",
+      "index_path": "docs/research/19-agentic-mcp-skills-architectures/INDEX.md",
+      "angles": [
+        {"id": "19a-claude-skills-cursor-rules-formats", "title": "Claude Skills, Cursor Rules, Windsurf, Cline formats", "path": "docs/research/19-agentic-mcp-skills-architectures/19a-claude-skills-cursor-rules-formats.md", "tags": ["skills", "rules", "claude", "cursor", "windsurf", "cline"]},
+        {"id": "19b-mcp-server-design-for-asset-gen", "title": "MCP server design for asset generation", "path": "docs/research/19-agentic-mcp-skills-architectures/19b-mcp-server-design-for-asset-gen.md", "tags": ["mcp", "stdio", "streamable-http", "oauth"]},
+        {"id": "19c-gemini-codex-copilot-integration", "title": "Gemini CLI / Codex / Copilot integration", "path": "docs/research/19-agentic-mcp-skills-architectures/19c-gemini-codex-copilot-integration.md", "tags": ["gemini-cli", "codex", "copilot"]},
+        {"id": "19d-prompt-enhancement-agent-pattern", "title": "Prompt-enhancement agent pattern (13-node state machine)", "path": "docs/research/19-agentic-mcp-skills-architectures/19d-prompt-enhancement-agent-pattern.md", "tags": ["agent", "state-machine", "asset-spec"]},
+        {"id": "19e-cross-ide-plugin-packaging", "title": "Cross-IDE plugin packaging (SSOT, sync-mirrors, Humazier)", "path": "docs/research/19-agentic-mcp-skills-architectures/19e-cross-ide-plugin-packaging.md", "tags": ["ssot", "sync-mirrors", "humazier"]}
+      ]
+    },
+    {
+      "id": "20-open-source-repos-landscape",
+      "title": "Open-Source Repos Landscape",
+      "summary": "OSS prompt-enhancement repos, full-stack asset generators, image-gen SDK wrappers (Vercel AI SDK, OpenRouter), ComfyUI workflow ecosystem, and agent-native webapp gap analysis.",
+      "index_path": "docs/research/20-open-source-repos-landscape/INDEX.md",
+      "angles": [
+        {"id": "20a-prompt-enhancement-oss-repos", "title": "Prompt-enhancement OSS repos (Hunyuan, Promptist, SuperPrompt)", "path": "docs/research/20-open-source-repos-landscape/20a-prompt-enhancement-oss-repos.md", "tags": ["hunyuan", "promptist", "superprompt", "oss"]},
+        {"id": "20b-asset-generator-fullstack-repos", "title": "Asset-generator full-stack repos", "path": "docs/research/20-open-source-repos-landscape/20b-asset-generator-fullstack-repos.md", "tags": ["logocreator", "brandkit", "fullstack"]},
+        {"id": "20c-image-gen-sdk-wrappers", "title": "Image-gen SDK wrappers (Vercel AI SDK, OpenRouter)", "path": "docs/research/20-open-source-repos-landscape/20c-image-gen-sdk-wrappers.md", "tags": ["vercel-ai-sdk", "openrouter", "replicate", "fal"]},
+        {"id": "20d-comfyui-workflow-ecosystem", "title": "ComfyUI workflow ecosystem", "path": "docs/research/20-open-source-repos-landscape/20d-comfyui-workflow-ecosystem.md", "tags": ["comfyui", "layerdiffuse", "serverless"]},
+        {"id": "20e-agent-native-webapps-and-gap-analysis", "title": "Agent-native webapps and gap analysis", "path": "docs/research/20-open-source-repos-landscape/20e-agent-native-webapps-and-gap-analysis.md", "tags": ["mcp", "figma", "linear", "gap-analysis"]}
+      ]
+    }
+  ],
+  "key_findings": [
+    {
+      "finding": "Transparent-background generation from Imagen 3/4 and Gemini 2.5/3 Flash Image returns a checkerboard pattern rendered as RGB pixels, not real alpha. This is an architectural limit of RGB-only VAEs plus training-data contamination and cannot be fixed by any prompt phrasing. Fix by routing to gpt-image-1 (background: 'transparent'), Ideogram 3 Turbo (style: 'transparent'), or LayerDiffuse-enabled SDXL/Flux, or by post-process matting with BiRefNet/BRIA RMBG-2.0.",
+      "categories": ["04-gemini-imagen-prompting", "13-transparent-backgrounds", "16-background-removal-vectorization"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Flux models reject `negative_prompt` outright (API error); Imagen and gpt-image-1 silently ignore it. The only universally-portable 'negative' is positive anchors ('pure white background' instead of 'no checkerboard'). Negative prompts remain valid on SD 1.5 / SDXL via CFG.",
+      "categories": ["01-prompt-engineering-theory", "06-stable-diffusion-flux", "14-negative-prompting-artifacts"],
+      "confidence": "high"
+    },
+    {
+      "finding": "No raster diffusion model emits native SVG. The three real paths are: (1) LLM-authored SVG (Claude/GPT) for simple geometric marks, (2) Recraft V3 native-vector API, (3) raster + BiRefNet matte + K-means + vtracer/potrace + SVGO. StarVector/SVGDreamer/Chat2SVG are not production-ready.",
+      "categories": ["12-vector-svg-generation", "16-background-removal-vectorization", "07-midjourney-ideogram-recraft"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Ideogram 3 and gpt-image-1 are the two best in-image text renderers in 2026; both spell reliably up to ~30–50 characters. All other models drop below useful at ~3 words. For brand wordmarks, do not render text in the diffusion sampler — generate a text-free mark and composite real SVG/Canvas typography in the application layer.",
+      "categories": ["08-logo-generation", "07-midjourney-ideogram-recraft", "05-openai-dalle-gpt-image", "17-upscaling-refinement"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Every major provider inserts an invisible LLM prompt rewriter (DALL·E 3, Imagen < 30 words, gpt-image-1 multi-layer, Ideogram 'Magic Prompt'). The plugin must rewrite the user's prompt first so the provider's hidden rewriter has less surface to mangle, and must know the target model's dialect (tag-salad for SD, prose for Flux/Imagen/gpt-image-1).",
+      "categories": ["01-prompt-engineering-theory", "05-openai-dalle-gpt-image", "04-gemini-imagen-prompting", "20-open-source-repos-landscape"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Every framework-native icon generator converges on one 1024×1024 RGBA PNG as the input contract. The agent's job is to guarantee this master, with the subject inside the inner 66% safe zone; all platform fan-out (iOS squircle, Android adaptive layers, PWA maskable, visionOS parallax, favicons, .ico/.icns) is deterministic CPU work from that single artifact.",
+      "categories": ["09-app-icon-generation", "18-asset-pipeline-tools", "11-favicon-web-assets"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Android adaptive icons reserve the outer 18 dp of the 108 dp canvas for system parallax + mask clipping; only the inner 72 dp (~66%) is safe. Most AI outputs fill the whole canvas and get clipped on Pixel launchers. Validation must check tight-bbox of the foreground layer before accepting.",
+      "categories": ["09-app-icon-generation", "18-asset-pipeline-tools"],
+      "confidence": "high"
+    },
+    {
+      "finding": "iOS App Store Connect rejects the 1024 marketing icon if it contains an alpha channel. Every pipeline must emit an icon-opaque.png variant pre-flattened onto a user-picked background color in addition to the RGBA master.",
+      "categories": ["09-app-icon-generation", "18-asset-pipeline-tools"],
+      "confidence": "high"
+    },
+    {
+      "finding": "sharp (libvips) is ~27× faster than jimp and ~7.7× faster than ImageMagick on resize-crop-sharpen pipelines, and ships prebuilt libvips binaries — no node-gyp or system installs. @resvg/resvg-js is the correct SVG rasterizer (deterministic cross-OS, no system fonts) rather than sharp's built-in librsvg path.",
+      "categories": ["18-asset-pipeline-tools"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Content-addressed storage + prompt-hash caching is the single highest-leverage engineering investment for a hosted asset pipeline. SHA-256 over a canonicalized (prompt, model, aspect_ratio, seed, params) tuple collapses 20–40% of consumer traffic into one model call. At 1M assets/mo × 25% hit rate × $0.02 blended cost ≈ $5,000/mo saved. Using the hash as BullMQ jobId also deduplicates concurrent identical requests for free.",
+      "categories": ["18-asset-pipeline-tools", "19-agentic-mcp-skills-architectures"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Brand consistency across an asset set is a 'brand bundle' injection problem. Store DTCG design tokens + style reference images + LoRA/--sref/style_id handle + do_not[] list + canonical logo-mark.svg in a machine-readable bundle (brand.md / AdCP brand.json) and inject at every generation. Validate palette adherence with K-means in LAB + ΔE2000 on each output.",
+      "categories": ["15-style-consistency-brand", "10-ui-illustrations-graphics", "20-open-source-repos-landscape"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Upscaler choice is asset-type-dependent, not image-dependent. DAT2 fine-tunes (4x-UltraSharpV2, 4xNomos2_hq_dat2, 4x-IllustrationJaNai_V1_DAT2) are the 2026 generalist default. Never run SUPIR or Magnific creative mode on a flat logo — they hallucinate paper texture and gradient banding. For truly flat assets, vectorize-then-rasterize beats raster upscaling.",
+      "categories": ["17-upscaling-refinement", "16-background-removal-vectorization"],
+      "confidence": "high"
+    },
+    {
+      "finding": "A VLM-as-judge pass (Claude Sonnet or GPT-4o-mini vision at ~$0.003/call) against 5–7 hard criteria catches ~70% of asset failures and feeds a diff back into the regenerate loop. This is the highest-ROI step in the pipeline and should run after every generation.",
+      "categories": ["14-negative-prompting-artifacts", "19-agentic-mcp-skills-architectures", "03-evaluation-metrics"],
+      "confidence": "high"
+    },
+    {
+      "finding": "MCP is the only true lingua franca for execution across Claude Code, Cursor, Windsurf, Cline, Codex, Gemini CLI, and VS Code Copilot. Target MCP spec 2025-06-18 minimum (stable); HTTP+SSE is deprecated. One TypeScript MCP binary + stdio transport serves every host, with Streamable HTTP + OAuth 2.1 + PKCE + RFC 9728 for hosted multi-tenant offerings.",
+      "categories": ["19-agentic-mcp-skills-architectures"],
+      "confidence": "high"
+    },
+    {
+      "finding": "A single SSOT (one SKILL.md per intent + one un-frontmattered rules body) plus a ~60-line sync script (scripts/sync-mirrors.sh) plus a byte-identity CI test (tests/verify_repo.py) is sufficient to satisfy all six coding-agent surfaces (Claude Code, Cursor, Windsurf, Cline, Codex, Gemini CLI) plus two Copilot surfaces. Humazier is the on-disk reference.",
+      "categories": ["19-agentic-mcp-skills-architectures"],
+      "confidence": "high"
+    },
+    {
+      "finding": "The open-source landscape has mature execution (ComfyUI + LayerDiffuse), SDK abstraction (Vercel AI SDK v5 generateImage), post-processing (rembg/BRIA/BiRefNet, vtracer, pwa-asset-generator, capacitor-assets), platform shape (website + hosted MCP + cross-IDE skills), and brand-bundle formats (brand.md, brandspec, AdCP) — but nothing stitches them into an asset-correctness-first, research-grounded, multi-model, agent-parity product. That is the whitespace.",
+      "categories": ["20-open-source-repos-landscape", "18-asset-pipeline-tools", "19-agentic-mcp-skills-architectures"],
+      "confidence": "high"
+    },
+    {
+      "finding": "Cloudflare R2 + Cloudflare CDN is a ~25× cost lever over S3 + CloudFront at scale. 1 M assets/mo × 8 MB × 50 views ≈ 300 TB egress costs ~$25,400/mo on CloudFront and $0 on R2 (egress-free). Combined with content-addressed keys, this delivers the reliability budget the rest of the pipeline needs.",
+      "categories": ["18-asset-pipeline-tools"],
+      "confidence": "medium"
+    },
+    {
+      "finding": "OG images should be rendered via Satori + @resvg/resvg-js + @vercel/og (deterministic, template-based, no T2I hallucination of typography), not via diffusion. Twitter / LinkedIn / Slack / Discord unfurlers flatten alpha and cache aggressively; absolute HTTPS URLs and cache-busting are non-optional.",
+      "categories": ["11-favicon-web-assets", "18-asset-pipeline-tools"],
+      "confidence": "high"
+    }
+  ],
+  "recommended_tool_surface": [
+    {
+      "name": "asset_enhance_prompt",
+      "description": "Classify user intent into a closed asset_type enum, select target model by capability (transparency/vector/text-length/license), rewrite prompt in the target model's dialect (tag-salad for SD vs prose for Flux/Imagen/gpt-image-1), return a structured AssetSpec with {positive, negative, weights, aspect_ratio, model_family, post_processing[]}.",
+      "depends_on": ["01-prompt-engineering-theory", "04-gemini-imagen-prompting", "05-openai-dalle-gpt-image", "06-stable-diffusion-flux", "07-midjourney-ideogram-recraft", "19-agentic-mcp-skills-architectures"],
+      "mcp_annotations": ["readOnlyHint", "idempotentHint"]
+    },
+    {
+      "name": "asset_generate_logo",
+      "description": "Generate a logo asset end-to-end: route to Recraft V3 (native SVG) for vector requests, Ideogram 3 / gpt-image-1 for text-bearing marks, or SDXL + LoRA for brand-locked styles; run BiRefNet matte; vectorize; validate ≤200 paths; return {svg_path, raster_url, master_png_url, mono_variant}.",
+      "depends_on": ["08-logo-generation", "15-style-consistency-brand", "12-vector-svg-generation", "16-background-removal-vectorization"],
+      "mcp_annotations": ["openWorldHint"]
+    },
+    {
+      "name": "asset_generate_app_icon",
+      "description": "Generate a single 1024×1024 RGBA master (subject inside 676×676 safe zone) and fan out deterministically to iOS AppIcon.appiconset (incl. opaque marketing 1024), Android adaptive (foreground + background + monochrome for Android 13) + play-store 512, PWA 192/512/512-maskable, visionOS 3-layer parallax, favicon bundle, .icns, .ico. Validate safe zone, alpha, App Store opaque requirement.",
+      "depends_on": ["09-app-icon-generation", "15-style-consistency-brand", "18-asset-pipeline-tools", "13-transparent-backgrounds"],
+      "mcp_annotations": ["openWorldHint"]
+    },
+    {
+      "name": "asset_generate_favicon",
+      "description": "Emit a minimal modern favicon bundle: favicon.ico (16/32/48), icon.svg with dark/light prefers-color-scheme, apple-touch-icon.png (180×180 opaque), 192/512 + 512-maskable manifest icons, plus the exact HTML <head> snippet. Reuse brand mark SVG; rasterize per size independently for correct anti-aliasing at each slot.",
+      "depends_on": ["11-favicon-web-assets", "18-asset-pipeline-tools"],
+      "mcp_annotations": ["openWorldHint"]
+    },
+    {
+      "name": "asset_generate_og_image",
+      "description": "Render a 1200×630 Open Graph image via Satori + @resvg/resvg-js (not diffusion) from a JSON template (headline, subhead, brand bundle, optional generated illustration). Deterministic typography, no hallucinated text. Emit Twitter summary_large_image variant simultaneously.",
+      "depends_on": ["11-favicon-web-assets", "15-style-consistency-brand", "18-asset-pipeline-tools"],
+      "mcp_annotations": ["readOnlyHint"]
+    },
+    {
+      "name": "asset_generate_illustration",
+      "description": "Generate brand-locked UI illustration (empty state, onboarding, hero) with consistent style across a set. Inject brand bundle via IP-Adapter / --sref / Recraft style_id / Together FLUX.2 brand refs. Validate palette ΔE2000 ≤ 10 on each output; regenerate on drift.",
+      "depends_on": ["10-ui-illustrations-graphics", "15-style-consistency-brand", "06-stable-diffusion-flux", "07-midjourney-ideogram-recraft"],
+      "mcp_annotations": ["openWorldHint"]
+    },
+    {
+      "name": "asset_remove_background",
+      "description": "Alpha-aware background removal. Route by mode: native (gpt-image-1 background:transparent, Ideogram 3 Turbo style:transparent), layerdiffuse (in-loop RGBA on SDXL/Flux), birefnet (default post-process), rmbg (BRIA RMBG-2.0 hosted for commercial), difference (matte via white-vs-black pair), sam (interactive). Validate no checkerboard pattern and alpha coverage.",
+      "depends_on": ["13-transparent-backgrounds", "16-background-removal-vectorization"],
+      "mcp_annotations": ["readOnlyHint"]
+    },
+    {
+      "name": "asset_vectorize",
+      "description": "Raster → SVG. Route by mode: vtracer (full-color), potrace (1-bit), recraft (hosted native vector). Constrain max_paths and palette_size. Post-process with SVGO (conservative preset, preserve viewBox, strip metadata). Return {svg, path_count, size_bytes}.",
+      "depends_on": ["12-vector-svg-generation", "16-background-removal-vectorization"],
+      "mcp_annotations": ["readOnlyHint"]
+    },
+    {
+      "name": "asset_upscale_refine",
+      "description": "Asset-type-aware refinement. Vectorize-then-rasterize for logos/icons; DAT2 fine-tunes (4x-UltraSharpV2, 4x-IllustrationJaNai-DAT2) for flat illustrations; Real-HAT-sharper + CCSR v2 for photos; Flux img2img denoise 0.12–0.20 for polish only. Never SUPIR / Magnific creative on brand assets. Split alpha before RGB upscale, Lanczos upscale alpha, merge.",
+      "depends_on": ["17-upscaling-refinement"],
+      "mcp_annotations": ["readOnlyHint"]
+    },
+    {
+      "name": "asset_validate",
+      "description": "Tier-0 deterministic validators (dimensions, alpha present/absent, checkerboard FFT signature, safe-zone bbox, file-size budget, JPEG-in-PNG detection) + Tier-1 metrics (VQAScore, OCR Levenshtein vs intended wordmark, K-means + ΔE2000 palette check, 16² contrast) + optional Tier-2 VLM-as-judge rubric. Return structured violations + suggested repair prompt.",
+      "depends_on": ["03-evaluation-metrics", "14-negative-prompting-artifacts", "13-transparent-backgrounds"],
+      "mcp_annotations": ["readOnlyHint", "idempotentHint"]
+    },
+    {
+      "name": "asset_brand_bundle_parse",
+      "description": "Ingest brand.md, brandspec.dev, AdCP brand.json, or raw DTCG tokens file; auto-configure canonical brand bundle (palette hex, typography, style reference image paths, LoRA/--sref/style_id handles, do_not[] list, canonical logo-mark.svg). Supports URL ingestion (dembrandt-style) for on-the-fly extraction from a live site.",
+      "depends_on": ["15-style-consistency-brand", "20-open-source-repos-landscape"],
+      "mcp_annotations": ["readOnlyHint"]
+    },
+    {
+      "name": "asset_export_icon_set",
+      "description": "Standalone OSS replacement for appicon.co: given a 1024×1024 RGBA source, emit the full cross-platform ZIP (iOS AppIcon.appiconset/Contents.json, Android mipmap-* + adaptive XML + monochrome, PWA manifest icons + maskable, .icns, .ico, favicon bundle) with deterministic CPU work via sharp + @capacitor/assets + icon-gen + custom emitters. Gateway-drug tool; runs in browser via jSquash + JSZip for zero-upload UX.",
+      "depends_on": ["18-asset-pipeline-tools", "09-app-icon-generation", "11-favicon-web-assets"],
+      "mcp_annotations": ["readOnlyHint"]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "prompt-to-asset",
+  "version": "0.1.0",
+  "contextFileName": ["GEMINI.md", "skills/**/SKILL.md"],
+  "mcpServers": {
+    "prompt-to-asset": {
+      "command": "node",
+      "args": ["packages/mcp-server/dist/index.js"]
+    }
+  }
+}

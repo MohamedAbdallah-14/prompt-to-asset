@@ -1,0 +1,566 @@
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  type Tool
+} from "@modelcontextprotocol/sdk/types.js";
+
+import {
+  EnhancePromptInput,
+  GenerateLogoInput,
+  GenerateAppIconInput,
+  GenerateFaviconInput,
+  GenerateOgImageInput,
+  GenerateIllustrationInput,
+  GenerateSplashScreenInput,
+  GenerateHeroInput,
+  RemoveBackgroundInput,
+  VectorizeInput,
+  UpscaleRefineInput,
+  ValidateAssetInput,
+  BrandBundleParseInput,
+  CapabilitiesInput,
+  IngestExternalInput,
+  SaveInlineSvgInput
+} from "./schemas.js";
+
+import { enhancePrompt } from "./tools/enhance-prompt.js";
+import { generateLogo } from "./tools/generate-logo.js";
+import { generateAppIcon } from "./tools/generate-app-icon.js";
+import { generateFavicon } from "./tools/generate-favicon.js";
+import { generateOgImage } from "./tools/generate-og-image.js";
+import { generateIllustration } from "./tools/generate-illustration.js";
+import { generateSplashScreen } from "./tools/generate-splash-screen.js";
+import { generateHero } from "./tools/generate-hero.js";
+import { removeBackground } from "./tools/remove-background.js";
+import { vectorizeImage } from "./tools/vectorize.js";
+import { upscaleRefine } from "./tools/upscale-refine.js";
+import { validateAsset } from "./tools/validate-asset.js";
+import { brandBundleParse } from "./tools/brand-bundle-parse.js";
+import { capabilities } from "./tools/capabilities.js";
+import { ingestExternal } from "./tools/ingest-external.js";
+import { saveInlineSvg } from "./tools/save-inline-svg.js";
+
+export const TOOLS: Tool[] = [
+  {
+    name: "asset_capabilities",
+    description:
+      "Report which of the three execution modes this server can run RIGHT NOW given the current env: inline_svg (zero key — hosting LLM authors the SVG), external_prompt_only (zero key — paste prompt into Ideogram/Nano Banana/Midjourney/Recraft/Flux UIs, then asset_ingest_external), api (requires provider key). Read-only; no network. Call before offering the user options.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        asset_type: {
+          type: "string",
+          enum: [
+            "logo",
+            "app_icon",
+            "favicon",
+            "og_image",
+            "splash_screen",
+            "illustration",
+            "icon_pack",
+            "hero",
+            "sticker",
+            "transparent_mark"
+          ],
+          description: "Narrow the modes-by-asset-type section to one type."
+        }
+      },
+      required: []
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false }
+  },
+  {
+    name: "asset_enhance_prompt",
+    description:
+      "Classify an asset brief, route to the right model, rewrite the prompt in that model's dialect, and report which execution modes are available (inline_svg / external_prompt_only / api). Returns an AssetSpec JSON including modes_available, optional svg_brief (for inline_svg), and optional paste_targets (for external_prompt_only). Read-only; idempotent; no network.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string", description: "Plain-English description of the desired asset" },
+        asset_type: {
+          type: "string",
+          enum: [
+            "logo",
+            "app_icon",
+            "favicon",
+            "og_image",
+            "splash_screen",
+            "illustration",
+            "icon_pack",
+            "hero",
+            "sticker",
+            "transparent_mark"
+          ]
+        },
+        target_model: {
+          type: "string",
+          description: "Force a specific model; otherwise selected by router"
+        },
+        brand_bundle: { type: "object" },
+        transparent: { type: "boolean" },
+        vector: { type: "boolean" },
+        text_content: { type: "string", description: "Literal text to render in the asset" }
+      },
+      required: ["brief"]
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false }
+  },
+  {
+    name: "asset_generate_logo",
+    description:
+      "Generate a logo. Three modes: inline_svg (Claude emits SVG — zero key), external_prompt_only (returns prompt + paste targets — zero key), api (server runs the provider pipeline — requires key). Omit mode to auto-select. Returns an AssetBundle / InlineSvgPlan / ExternalPromptPlan discriminated by the mode field.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string" },
+        mode: {
+          type: "string",
+          enum: ["inline_svg", "external_prompt_only", "api"],
+          description:
+            "Execution mode. Omit for auto-select (prefers inline_svg → api → external_prompt_only)."
+        },
+        brand_bundle: { type: "object" },
+        text_content: { type: "string" },
+        vector: { type: "boolean", default: true },
+        output_dir: { type: "string" }
+      },
+      required: ["brief"]
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_generate_app_icon",
+    description:
+      "Generate an app icon (iOS AppIconSet, Android adaptive, PWA maskable, visionOS 1024² master + placeholder parallax layers). Three modes (inline_svg / external_prompt_only / api). In non-api modes only the master mark is produced; call asset_ingest_external afterwards to run the platform fan-out. Set ios_18_appearances=true to also emit dark and tinted 1024² variants for iOS 18 tintable icons.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string" },
+        mode: {
+          type: "string",
+          enum: ["inline_svg", "external_prompt_only", "api"]
+        },
+        brand_bundle: { type: "object" },
+        platforms: {
+          type: "array",
+          items: { type: "string", enum: ["ios", "android", "pwa", "visionos", "all"] },
+          default: ["all"]
+        },
+        ios_18_appearances: {
+          type: "boolean",
+          default: false,
+          description:
+            "Also emit iOS 18 dark (flattened on #000) and tinted (greyscale luminance map) 1024² variants and add `appearances` to Contents.json."
+        },
+        output_dir: { type: "string" }
+      },
+      required: ["brief"]
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_generate_favicon",
+    description:
+      "Generate a favicon bundle (favicon-{16,32,48}.png + icon.svg + icon-dark.svg + apple-touch + PWA 192/512/512-maskable + <link> snippet). Three modes — inline_svg is the best fit for simple glyph marks (legible at 16×16).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string" },
+        mode: {
+          type: "string",
+          enum: ["inline_svg", "external_prompt_only", "api"]
+        },
+        brand_bundle: { type: "object" },
+        existing_mark_svg: { type: "string" },
+        dark_mode: { type: "boolean", default: true },
+        output_dir: { type: "string" }
+      },
+      required: ["brief"]
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_generate_og_image",
+    description:
+      "Render a 1200×630 OG image via Satori template (deterministic typography, no diffusion). Default mode=api renders server-side without any API key. external_prompt_only is only meaningful when with_background_image is set. inline_svg is not supported (web-font loading + precise text layout beyond LLM reach).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        mode: {
+          type: "string",
+          enum: ["inline_svg", "external_prompt_only", "api"]
+        },
+        subtitle: { type: "string" },
+        template: {
+          type: "string",
+          enum: ["centered_hero", "left_title", "minimal", "quote", "product_card"],
+          default: "centered_hero"
+        },
+        brand_bundle: { type: "object" },
+        with_background_image: { type: "boolean", default: false },
+        background_brief: { type: "string" },
+        output_dir: { type: "string" }
+      },
+      required: ["title"]
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_generate_illustration",
+    description:
+      "Generate one or more brand-locked illustrations. Two modes (external_prompt_only / api); inline_svg is not supported — path budget too small for a composed scene. Injects brand bundle (palette, style_refs, LoRA, style_id) where supported.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string" },
+        mode: {
+          type: "string",
+          enum: ["external_prompt_only", "api"]
+        },
+        brand_bundle: { type: "object" },
+        count: { type: "integer", minimum: 1, maximum: 20, default: 1 },
+        aspect_ratio: {
+          type: "string",
+          enum: ["1:1", "4:3", "16:9", "2:1", "3:2"],
+          default: "4:3"
+        },
+        output_dir: { type: "string" }
+      },
+      required: ["brief"]
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_generate_splash_screen",
+    description:
+      "Generate a cross-platform splash-screen bundle from a brand mark. Two modes (external_prompt_only / api); inline_svg is not supported (splash screens are PNG bundles — generate a logo inline_svg first, then call this with existing_mark_svg). api mode composites the mark onto background_color and emits ios/LaunchScreen-2732.png, android/mipmap-*dpi/splash.png, android/themes-splash.xml, pwa/splash-1200.png, and a README describing how to wire each.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string" },
+        mode: {
+          type: "string",
+          enum: ["external_prompt_only", "api"]
+        },
+        brand_bundle: { type: "object" },
+        existing_mark_svg: {
+          type: "string",
+          description:
+            "Path to an existing brand-mark SVG to center on the splash. Preferred over regenerating."
+        },
+        platforms: {
+          type: "array",
+          items: { type: "string", enum: ["ios", "android", "pwa", "all"] },
+          default: ["all"]
+        },
+        background_color: { type: "string" },
+        output_dir: { type: "string" }
+      },
+      required: ["brief"]
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_generate_hero",
+    description:
+      "Generate marketing-hero / landing-page banner art. Two modes (external_prompt_only / api); inline_svg is not supported. Accepts aspect_ratio (16:9 / 21:9 / 3:2 / 2:1). Injects brand bundle where supported. Returns N variants if count>1.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string" },
+        mode: {
+          type: "string",
+          enum: ["external_prompt_only", "api"]
+        },
+        brand_bundle: { type: "object" },
+        aspect_ratio: {
+          type: "string",
+          enum: ["16:9", "21:9", "3:2", "2:1"],
+          default: "16:9"
+        },
+        count: { type: "integer", minimum: 1, maximum: 8, default: 1 },
+        output_dir: { type: "string" }
+      },
+      required: ["brief"]
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_remove_background",
+    description:
+      "Matte an image to transparent background (BiRefNet / BRIA RMBG / U²-Net via remote endpoint; local white-chroma fallback). Returns RGBA PNG path.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        image: { type: "string", description: "Path or URL to input image" },
+        mode: {
+          type: "string",
+          enum: ["auto", "birefnet", "rmbg", "layerdiffuse", "difference", "u2net"],
+          default: "auto"
+        },
+        output_dir: { type: "string" }
+      },
+      required: ["image"]
+    },
+    annotations: { readOnlyHint: true }
+  },
+  {
+    name: "asset_vectorize",
+    description:
+      "Convert a raster image to SVG. Tries in order: Recraft /vectorize (if PROMPT_TO_BUNDLE_RECRAFT_VECTORIZE_URL is set), vtracer on PATH, potrace on PATH, then a built-in posterize run-length fallback. Passes all output through SVGO when installed.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        image: { type: "string" },
+        mode: {
+          type: "string",
+          enum: ["auto", "recraft", "vtracer", "potrace", "posterize"],
+          default: "auto"
+        },
+        palette_size: { type: "integer", default: 6 },
+        max_paths: { type: "integer", default: 200 },
+        output_dir: { type: "string" }
+      },
+      required: ["image"]
+    },
+    annotations: { readOnlyHint: true }
+  },
+  {
+    name: "asset_upscale_refine",
+    description:
+      "Upscale / refine an image, asset-type-aware. DAT2 for flat logos/icons, Real-ESRGAN/SUPIR for photoreal, img2img for diffusion polish. Lanczos fallback.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        image: { type: "string" },
+        asset_type: { type: "string" },
+        target_size: { type: "integer", default: 2048 },
+        mode: {
+          type: "string",
+          enum: ["auto", "dat2", "real-esrgan", "supir", "img2img", "lanczos"],
+          default: "auto"
+        },
+        output_dir: { type: "string" }
+      },
+      required: ["image"]
+    },
+    annotations: { readOnlyHint: true }
+  },
+  {
+    name: "asset_validate",
+    description:
+      "Run tier-0 deterministic validators on an asset (dimensions, alpha presence, checkerboard-pattern heuristic on tile-luma alternation, safe-zone bbox, palette ΔE2000 against brand, WCAG contrast of brand primary vs light and dark tabs, OCR Levenshtein against intended_text). Optional tier-2 VLM-as-judge via PROMPT_TO_BUNDLE_VLM_URL.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        image: { type: "string" },
+        asset_type: { type: "string" },
+        brand_bundle: { type: "object" },
+        intended_text: { type: "string" },
+        run_vlm: { type: "boolean", default: false }
+      },
+      required: ["image", "asset_type"]
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true }
+  },
+  {
+    name: "asset_brand_bundle_parse",
+    description:
+      "Parse a brand source (brand.json, DTCG tokens, AdCP spec, brand.md, or raw text) into the canonical BrandBundle schema.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        source: { type: "string", description: "Path to file or raw text" }
+      },
+      required: ["source"]
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true }
+  },
+  {
+    name: "asset_save_inline_svg",
+    description:
+      "Round-trip endpoint for inline_svg mode. After you (the LLM) emit the <svg>…</svg> in chat, immediately call this tool with that SVG text so the server writes a complete asset bundle to disk: master.svg + (for favicon) icon.svg + icon-dark.svg + favicon-{16,32,48}.png + favicon.ico + apple-touch-icon.png (opaque) + pwa-192.png + pwa-512.png + pwa-512-maskable.png + manifest.webmanifest + head-snippet.html + (for app_icon) the full iOS AppIconSet + Android adaptive (foreground+background+monochrome) + PWA maskable + visionOS. Returns an AssetBundle with file paths the user can open. Validates the SVG against the original svg_brief (viewBox, path count, palette, forbidden elements).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        svg: {
+          type: "string",
+          description: "The full <svg>...</svg> text you just emitted in chat."
+        },
+        asset_type: {
+          type: "string",
+          enum: [
+            "logo",
+            "app_icon",
+            "favicon",
+            "og_image",
+            "splash_screen",
+            "illustration",
+            "icon_pack",
+            "hero",
+            "sticker",
+            "transparent_mark"
+          ]
+        },
+        brand_bundle: { type: "object" },
+        expected_text: { type: "string" },
+        platforms: {
+          type: "array",
+          items: { type: "string", enum: ["ios", "android", "pwa", "visionos", "all"] },
+          description: "For asset_type=app_icon. Defaults to ['all']."
+        },
+        dark_mode: {
+          type: "boolean",
+          description:
+            "For asset_type=favicon: also emit icon-dark.svg (prefers-color-scheme: dark). Default true."
+        },
+        app_name: {
+          type: "string",
+          description: "For asset_type=favicon: name/short_name written into manifest.webmanifest."
+        },
+        theme_color: {
+          type: "string",
+          description: "For asset_type=favicon: theme_color hex for manifest + <meta>."
+        },
+        background_color: {
+          type: "string",
+          description: "For asset_type=favicon: PWA splash background_color hex."
+        },
+        output_dir: { type: "string" }
+      },
+      required: ["svg", "asset_type"]
+    },
+    annotations: { openWorldHint: false }
+  },
+  {
+    name: "asset_ingest_external",
+    description:
+      "Ingest an image the user generated in an external tool (Midjourney, Nano Banana, Ideogram web, Recraft, Flux Playground, etc.) and run the matte → vectorize (where applicable) → tier-0 validation pipeline. The round-trip endpoint for external_prompt_only mode.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        image_path: {
+          type: "string",
+          description: "Absolute path to the locally-saved image."
+        },
+        asset_type: {
+          type: "string",
+          enum: [
+            "logo",
+            "app_icon",
+            "favicon",
+            "og_image",
+            "splash_screen",
+            "illustration",
+            "icon_pack",
+            "hero",
+            "sticker",
+            "transparent_mark"
+          ]
+        },
+        brand_bundle: { type: "object" },
+        expected_text: { type: "string" },
+        vector: { type: "boolean" },
+        transparent: { type: "boolean" },
+        output_dir: { type: "string" }
+      },
+      required: ["image_path", "asset_type"]
+    },
+    annotations: { openWorldHint: false }
+  }
+];
+
+export function createServer(): Server {
+  const server = new Server(
+    {
+      name: "prompt-to-asset",
+      version: "0.1.0"
+    },
+    {
+      capabilities: {
+        tools: {}
+      }
+    }
+  );
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+
+  server.setRequestHandler(CallToolRequestSchema, async (req) => {
+    const { name, arguments: args } = req.params;
+
+    try {
+      let result: unknown;
+      switch (name) {
+        case "asset_capabilities":
+          result = await capabilities(CapabilitiesInput.parse(args ?? {}));
+          break;
+        case "asset_enhance_prompt":
+          result = await enhancePrompt(EnhancePromptInput.parse(args ?? {}));
+          break;
+        case "asset_generate_logo":
+          result = await generateLogo(GenerateLogoInput.parse(args ?? {}));
+          break;
+        case "asset_generate_app_icon":
+          result = await generateAppIcon(GenerateAppIconInput.parse(args ?? {}));
+          break;
+        case "asset_generate_favicon":
+          result = await generateFavicon(GenerateFaviconInput.parse(args ?? {}));
+          break;
+        case "asset_generate_og_image":
+          result = await generateOgImage(GenerateOgImageInput.parse(args ?? {}));
+          break;
+        case "asset_generate_illustration":
+          result = await generateIllustration(GenerateIllustrationInput.parse(args ?? {}));
+          break;
+        case "asset_generate_splash_screen":
+          result = await generateSplashScreen(GenerateSplashScreenInput.parse(args ?? {}));
+          break;
+        case "asset_generate_hero":
+          result = await generateHero(GenerateHeroInput.parse(args ?? {}));
+          break;
+        case "asset_remove_background":
+          result = await removeBackground(RemoveBackgroundInput.parse(args ?? {}));
+          break;
+        case "asset_vectorize":
+          result = await vectorizeImage(VectorizeInput.parse(args ?? {}));
+          break;
+        case "asset_upscale_refine":
+          result = await upscaleRefine(UpscaleRefineInput.parse(args ?? {}));
+          break;
+        case "asset_validate":
+          result = await validateAsset(ValidateAssetInput.parse(args ?? {}));
+          break;
+        case "asset_brand_bundle_parse":
+          result = await brandBundleParse(BrandBundleParseInput.parse(args ?? {}));
+          break;
+        case "asset_ingest_external":
+          result = await ingestExternal(IngestExternalInput.parse(args ?? {}));
+          break;
+        case "asset_save_inline_svg":
+          result = await saveInlineSvg(SaveInlineSvgInput.parse(args ?? {}));
+          break;
+        default:
+          throw new Error(`Unknown tool: ${name}`);
+      }
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+      };
+    } catch (err) {
+      const error = err as Error;
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error calling ${name}: ${error.message}${error.stack ? `\n${error.stack}` : ""}`
+          }
+        ]
+      };
+    }
+  });
+
+  return server;
+}

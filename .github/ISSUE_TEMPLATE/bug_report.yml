@@ -1,0 +1,95 @@
+name: Bug report
+description: Report a reproducible defect in the MCP server, pipeline, or a skill.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. If you believe this issue
+        has security impact, please use `SECURITY.md` instead of this form.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `npm ls prompt-to-asset` or the commit SHA.
+      placeholder: "0.1.0 / abcd1234"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: MCP client
+      options:
+        - Claude Code
+        - Cursor
+        - Windsurf
+        - Cline
+        - Codex CLI
+        - Gemini CLI
+        - GitHub Copilot
+        - Direct stdio (custom)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: asset_type
+    attributes:
+      label: Asset type
+      options:
+        - logo
+        - app_icon
+        - favicon
+        - og_image
+        - illustration
+        - icon_pack
+        - splash_screen
+        - transparent_mark
+        - hero
+        - sticker
+        - N/A (tool-surface issue)
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: |
+        Exact brief, tool call, and any relevant env vars (redact keys).
+        Include the MCP request JSON if you have it.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: "OS, Node version, which provider keys were set (names only, NO VALUES)."
+      placeholder: "macOS 14.5, Node 20.11.0, OPENAI_API_KEY set, IDEOGRAM_API_KEY set"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "Relevant stderr or MCP server log output. Redact keys."
+      render: text

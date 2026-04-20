@@ -1,0 +1,16 @@
+{
+  "name": "prompt-to-asset",
+  "version": "0.1.0",
+  "description": "Reliably generate production-grade software assets (logos, app icons, favicons, OG images, illustrations, vectors, transparent marks) from simple briefs.",
+  "author": { "name": "prompt-to-asset contributors" },
+  "license": "MIT",
+  "skills": ["./skills"],
+  "mcp": {
+    "servers": {
+      "prompt-to-asset": {
+        "command": "node",
+        "args": ["./packages/mcp-server/dist/index.js"]
+      }
+    }
+  }
+}

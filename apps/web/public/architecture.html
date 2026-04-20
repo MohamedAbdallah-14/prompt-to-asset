@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Architecture — prompt-to-asset</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<header class="nav">
+  <a href="/" class="brand">
+    <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+      <rect x="2" y="2" width="28" height="28" rx="7" fill="#0f172a"/>
+      <path d="M10 22 L10 10 L16 10 Q22 10 22 14 Q22 17 19 17.5 L22 22 Z M13 13 L13 15 L16 15 Q18 15 18 14 Q18 13 16 13 Z" fill="#38bdf8"/>
+    </svg>
+    <span>prompt-to-asset</span>
+  </a>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/docs.html">Docs</a>
+    <a href="/architecture.html">Architecture</a>
+    <a href="https://github.com/yourorg/prompt-to-asset" class="ext">GitHub ↗</a>
+  </nav>
+</header>
+
+<article class="doc-body">
+
+<h1>Architecture</h1>
+<p>How the plugin works under the hood, and why. All decisions traceable to <a href="https://github.com/yourorg/prompt-to-asset/blob/main/docs/research/SYNTHESIS.md">SYNTHESIS.md</a>.</p>
+
+<h2>The five facts</h2>
+<ol>
+  <li><strong>Transparency is a routing decision, not a prompt decision.</strong> Imagen/Gemini's VAE is RGB-only; they literally render the checkerboard as pixels. Route to <code>gpt-image-1</code>, Ideogram 3 Turbo, Recraft V3, or LayerDiffuse Flux/SDXL.</li>
+  <li><strong>Brand text &gt; 3 words should never exit a diffusion sampler.</strong> Even the best text renderers misspell. Generate text-free mark, composite SVG/Canvas type with the brand font.</li>
+  <li><strong>No raster model emits real SVG.</strong> Three paths: Recraft V3 native, LLM-authored SVG for simple geometry, or raster + matte + <code>vtracer</code>/<code>potrace</code> + SVGO.</li>
+  <li><strong><code>negative_prompt</code> is not universal.</strong> SD family: native. Flux: <em>errors</em>. <code>gpt-image-1</code>, Imagen: silently ignored. Use positive anchors instead.</li>
+  <li><strong>Every output validates before it ships.</strong> Tier-0 deterministic (dimensions, alpha, checkerboard FFT, safe-zone, palette ΔE2000, OCR Levenshtein) + optional tier-2 VLM-as-judge.</li>
+</ol>
+
+<h2>The pipeline</h2>
+
+<pre><code>  brief (text)
+    ↓  classify()                           → asset_type ∈ enum
+    ↓  parse_brand_bundle()?                → BrandBundle | null
+    ↓  compute_params(asset_type, brand)    → dimensions, transparency, safe_zone
+    ↓  route(asset_type, text_length, …)    → primary_model, fallback_models, postprocess[]
+    ↓  rewrite(brief, model, brand)         → dialect-appropriate prompt
+
+  ── call provider with seed pinned ──
+
+    ↓  validate_0(image)                    → reject checkerboard / bad alpha / composition
+    ↓  matte?        (birefnet | rmbg via PROMPT_TO_BUNDLE_RMBG_URL | difference | native)
+    ↓  vectorize?    (recraft | vtracer-on-PATH | potrace-on-PATH | llm-svg | posterize)
+    ↓  upscale?      (dat2 | supir | img2img | lanczos)
+    ↓  export        (sharp platform fan-out + @resvg/resvg-js + satori + png-to-ico + svgo)
+    ↓  validate_final (tile-luma alpha check + bbox + palette ΔE2000 + OCR + WCAG contrast)
+    ↓  content-address cache (prompt_hash, model, seed, params_hash)
+
+  → AssetBundle</code></pre>
+
+<h2>SSOT layout</h2>
+<p>One repository, one MCP binary, one canonical SKILL.md per intent, one un-frontmattered rule body. Everything per-IDE is <em>generated</em> by <code>scripts/sync-mirrors.sh</code> and verified byte-for-byte by <code>scripts/verify-repo.sh</code> in CI.</p>
+
+<pre><code>skills/asset-enhancer/SKILL.md   (SSOT)
+skills/logo/SKILL.md             (SSOT)
+skills/app-icon/SKILL.md         (SSOT)
+... 8 skills total
+rules/asset-enhancer-activate.md (SSOT body)
+data/model-registry.json         (SSOT capability matrix)
+data/routing-table.json          (SSOT routing rules)
+          ↓ sync-mirrors.sh
+.claude-plugin/plugin.json
+.claude/skills/**
+.cursor/rules/prompt-to-asset.mdc + .cursor/skills/** + .cursor/mcp.json
+.windsurf/rules/**  +  .windsurf/skills/**
+.clinerules/01-prompt-to-asset.md
+AGENTS.md  +  .codex/config.toml
+GEMINI.md  +  gemini-extension.json
+CLAUDE.md
+.github/copilot-instructions.md  +  .github/copilot-skillset.json
+.vscode/mcp.json
+plugins/prompt-to-asset/**       (bundle layout)</code></pre>
+
+<h2>Why data-driven routing</h2>
+<p><code>data/routing-table.json</code> is literally the source of truth for the router — pure function <code>route(input) → (primary, fallback, postprocess[])</code>. Tune routing without a deploy; ship the routing table as a patchable artifact.</p>
+
+<h2>Why content-addressed storage</h2>
+<p>Cache key = <code>sha256(model || version || seed || prompt_hash || params_hash)</code>. Workers write to <code>assets/&lt;hash[0:2]&gt;/&lt;hash&gt;/&lt;variant&gt;.&lt;ext&gt;</code>. Re-execution after a crash overwrites identical bytes; at-least-once queues become effectively exactly-once at storage. Expected hit rate 20–40% on brand iteration → ≈$5,000/mo saved per 1M assets (SYNTHESIS recommendation #8).</p>
+
+<h2>Stack</h2>
+<ul>
+  <li><strong>MCP server:</strong> TypeScript, <code>@modelcontextprotocol/sdk</code>, stdio + Streamable HTTP (HTTP coming), Zod schemas.</li>
+  <li><strong>Bitmap:</strong> <code>sharp</code> (libvips) — ~27× faster than <code>jimp</code>.</li>
+  <li><strong>SVG raster:</strong> <code>@resvg/resvg-js</code> deterministic cross-OS, no system fonts.</li>
+  <li><strong>OG render:</strong> Satori → SVG, resvg → PNG.</li>
+  <li><strong>Platform export:</strong> hand-rolled <code>sharp</code> emitter in <code>pipeline/export.ts</code> (iOS AppIconSet / Android adaptive / PWA maskable / visionOS master) + <code>png-to-ico</code> for <code>favicon.ico</code> + <code>svgo</code> for inline-SVG cleanup.</li>
+  <li><strong>Queue (future):</strong> BullMQ + Redis with <code>prompt_hash</code> as <code>jobId</code> is sketched in <a href="./docs.html#roadmap">the roadmap</a>; the current MCP server is synchronous and stateless.</li>
+  <li><strong>Storage (optional, hosted):</strong> Cloudflare R2 (egress-free) + CDN.</li>
+</ul>
+
+<h2>Minimal viable vs ambitious</h2>
+<p><strong>MVP (2 weeks):</strong> 3 tools (<code>asset_enhance_prompt</code>, <code>asset_generate_logo</code>, <code>asset_export_app_icon_set</code>), 3 providers (<code>gpt-image-1</code>, Ideogram 3, Recraft V3), single-command install for Claude Code + Cursor.</p>
+<p><strong>Ambitious (6–10 weeks):</strong> 11-tool surface + validator loop + LayerDiffuse/Flux/SDXL self-host + Figma MCP + hosted Streamable-HTTP MCP with OAuth 2.1 + PKCE + prompt-hash cache + Cross-IDE packaging with CI byte-verification + <code>resize_icon_set</code> as OSS appicon.co replacement.</p>
+
+<h2>See also</h2>
+<ul>
+  <li><a href="https://github.com/yourorg/prompt-to-asset/blob/main/docs/research/SYNTHESIS.md">Master synthesis</a> — 6,305 words, 20 categories, 104 angles.</li>
+  <li><a href="https://github.com/yourorg/prompt-to-asset/blob/main/docs/research/index.json">index.json</a> — machine-readable index of all findings.</li>
+  <li><a href="https://github.com/yourorg/prompt-to-asset/tree/main/skills">skills/</a> — the SSOTs.</li>
+  <li><a href="https://github.com/yourorg/prompt-to-asset/tree/main/packages/mcp-server/src">MCP server source</a>.</li>
+</ul>
+
+</article>
+
+<footer>
+  <div>
+    <p>MIT-licensed. Research compendium at <a href="https://github.com/yourorg/prompt-to-asset/blob/main/docs/research/">docs/research/</a>.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+name: Sync mirrors
+
+# Guardrail: every push must leave generated IDE mirrors byte-identical to the
+# SSOT files under skills/ and rules/. verify-repo.sh fails if drift is detected.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Verify mirrors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run verifier
+        run: bash scripts/verify-repo.sh

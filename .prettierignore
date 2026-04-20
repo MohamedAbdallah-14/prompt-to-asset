@@ -1,0 +1,43 @@
+**/dist/**
+**/build/**
+**/node_modules/**
+**/coverage/**
+**/.turbo/**
+package-lock.json
+tmp/
+.asset-cache/
+
+# Generated IDE mirrors — SSOT lives under skills/, rules/, .claude-plugin/
+.cursor/**
+.windsurf/**
+.clinerules/**
+.codex/**
+.claude/**
+.vscode/**
+plugins/**
+apps/web/public/**
+.playwright-mcp/**
+
+# SSOTs that are mirrored byte-for-byte to IDE-specific locations.
+# Reformatting these would cause drift and break `npm run verify`.
+skills/**
+rules/**
+.claude-plugin/**
+.github/copilot-instructions.md
+.github/copilot-skillset.json
+gemini-extension.json
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+
+# Research corpus is stored verbatim
+docs/research/**
+
+# Data files are generated / hand-curated; keep their formatting stable.
+data/**
+
+# Session artifacts
+ideations/**
+
+# Generated asset bundles — never hand-edited.
+assets/**

@@ -1,0 +1,41 @@
+name: Feature request
+description: Propose a new tool, provider, asset type, or pipeline stage.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check `docs/research/SYNTHESIS.md` first — many proposals are
+        already captured there with rationale. Link the relevant angle if so.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What asset workflow or constraint is currently awkward or broken?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: |
+        Concrete change. If it's a new MCP tool, sketch the input schema.
+        If it's a new provider or asset type, note the capability matrix
+        entries that would change (`data/model-registry.json`,
+        `data/routing-table.json`).
+    validations:
+      required: true
+
+  - type: textarea
+    id: research
+    attributes:
+      label: Research link
+      description: "Angle file under docs/research/ that supports or motivates this."
+      placeholder: "docs/research/15-routing/15d-*.md"
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+.turbo/
+.next/
+*.tsbuildinfo
+coverage/
+.nyc_output/
+.vercel/
+out/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# OS / editor noise
+.DS_Store
+*.log
+.cache/
+
+# Generated asset output (users set PROMPT_TO_BUNDLE_OUTPUT_DIR or --out).
+# Anything under these is either cache or one-off output.
+/tmp/
+/.asset-cache/
+/assets/
+/out/
+
+# Tesseract OCR language pack — 5 MB, downloaded on demand, never committed.
+eng.traineddata
+
+# Screenshots / playwright artifacts — local dev only.
+/page-check.png
+/page-v2-check.png
+/.playwright-mcp/
+
+# Per-user scratch — brainstorm / ideation notes, not part of the shipped repo.
+/ideations/

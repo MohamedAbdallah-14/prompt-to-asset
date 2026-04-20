@@ -1,0 +1,499 @@
+{
+  "$schema": "./schemas/paste-targets.schema.json",
+  "version": "1.1.0",
+  "updated": "2026-04-20",
+  "source": "docs/research/07-midjourney-ideogram-recraft/, docs/research/04-gemini-imagen-prompting/, docs/research/05-openai-dalle-gpt-image/, docs/research/06-stable-diffusion-flux/",
+  "description": "Mapping from model id → human-facing UIs where a user can paste the rewritten prompt and generate. Used by external_prompt_only mode.",
+  "models": {
+    "gpt-image-1": [
+      {
+        "name": "ChatGPT (image generation)",
+        "url": "https://chatgpt.com",
+        "notes": "Plus / Pro account only. Supports in-conversation generation and basic transparency. Validate alpha after download — text >3 words may still garble."
+      },
+      {
+        "name": "OpenAI Platform Playground",
+        "url": "https://platform.openai.com/playground/images",
+        "notes": "Set Output Format=png and Background=transparent for RGBA. Model=gpt-image-1."
+      }
+    ],
+    "gpt-image-1.5": [
+      {
+        "name": "ChatGPT (image generation)",
+        "url": "https://chatgpt.com",
+        "notes": "Same surface as 1.0; 1.5 rolls out behind the same UI with sharper output."
+      }
+    ],
+    "dall-e-3": [
+      {
+        "name": "ChatGPT (DALL·E)",
+        "url": "https://chatgpt.com",
+        "notes": "Deprecated 2026-05-12 in favor of gpt-image-1. Prefer that if available."
+      }
+    ],
+    "imagen-4": [
+      {
+        "name": "Google AI Studio (Imagen 4)",
+        "url": "https://aistudio.google.com/prompts/new_chat",
+        "notes": "No transparent-background support. Ask for 'solid pure white background' and matte afterwards via asset_remove_background."
+      },
+      {
+        "name": "Vertex AI Studio",
+        "url": "https://console.cloud.google.com/vertex-ai/studio/vision",
+        "notes": "Requires GCP project. Same transparency limitation as AI Studio."
+      }
+    ],
+    "imagen-3": [
+      {
+        "name": "Google AI Studio (Imagen 3)",
+        "url": "https://aistudio.google.com/prompts/new_chat",
+        "notes": "Same checkerboard-as-RGB problem as Imagen 4. Matte externally."
+      }
+    ],
+    "gemini-3-flash-image": [
+      {
+        "name": "Google AI Studio (Nano Banana)",
+        "url": "https://aistudio.google.com",
+        "notes": "The Gemini 2.5 / 3 Flash Image model is nicknamed 'Nano Banana' in the community. Strong multimodal-edit (attach reference images, up to 3); no transparent output — matte afterwards via asset_remove_background."
+      },
+      {
+        "name": "Gemini app",
+        "url": "https://gemini.google.com",
+        "notes": "Consumer-facing Gemini web/app. Accepts prompt + reference images."
+      }
+    ],
+    "gemini-3-pro-image": [
+      {
+        "name": "Vertex AI Studio (Nano Banana Pro)",
+        "url": "https://console.cloud.google.com/vertex-ai/studio/vision",
+        "notes": "The Pro variant of Nano Banana — higher aesthetic than the Flash tier. Still no transparent output; matte externally."
+      },
+      {
+        "name": "Google AI Studio",
+        "url": "https://aistudio.google.com",
+        "notes": "Selectable as gemini-3-pro-image-preview when available in your region."
+      }
+    ],
+    "sdxl": [
+      {
+        "name": "Stability AI Playground",
+        "url": "https://platform.stability.ai/playground",
+        "notes": "Tag-salad prompt style. negative_prompt IS a real sampler feature here — use it."
+      },
+      {
+        "name": "Civitai Generator",
+        "url": "https://civitai.com/generate",
+        "notes": "SDXL + community LoRAs. Tag-salad prompts."
+      },
+      {
+        "name": "Leonardo.Ai",
+        "url": "https://app.leonardo.ai",
+        "notes": "SDXL-based. Decent LoRA library for brand locking."
+      }
+    ],
+    "sd-1.5": [
+      {
+        "name": "Civitai Generator",
+        "url": "https://civitai.com/generate",
+        "notes": "Tag-salad. 77-token CLIP limit — front-load the important tags."
+      }
+    ],
+    "flux-schnell": [
+      {
+        "name": "fal.ai flux-schnell",
+        "url": "https://fal.ai/models/fal-ai/flux/schnell",
+        "notes": "Apache 2.0 open weights. Fastest Flux; lowest text-rendering fidelity. Good for iteration, not shipping wordmarks."
+      },
+      {
+        "name": "Replicate flux-schnell",
+        "url": "https://replicate.com/black-forest-labs/flux-schnell",
+        "notes": "Open-weights Flux on Replicate."
+      }
+    ],
+    "flux-dev": [
+      {
+        "name": "fal.ai flux/dev",
+        "url": "https://fal.ai/models/fal-ai/flux/dev",
+        "notes": "Open-weights Flux dev checkpoint (non-commercial). LoRA trainable."
+      },
+      {
+        "name": "Replicate flux-dev",
+        "url": "https://replicate.com/black-forest-labs/flux-dev",
+        "notes": "Non-commercial license."
+      }
+    ],
+    "sd3-large": [
+      {
+        "name": "Stability AI Playground (SD3)",
+        "url": "https://platform.stability.ai/playground",
+        "notes": "Prose-friendly input (not tag-salad). negative_prompt is a real field here."
+      },
+      {
+        "name": "Replicate stability-ai/stable-diffusion-3",
+        "url": "https://replicate.com/stability-ai/stable-diffusion-3",
+        "notes": "SD3 Large on Replicate."
+      }
+    ],
+    "playground-v3": [
+      {
+        "name": "Playground AI",
+        "url": "https://playground.com/create",
+        "notes": "Prose + negative prompt. Commercial-use license on paid tiers."
+      }
+    ],
+    "leonardo-phoenix": [
+      {
+        "name": "Leonardo.Ai",
+        "url": "https://app.leonardo.ai",
+        "notes": "Phoenix 1.0 preset. Good for editorial/illustration. Image Guidance enables ref-based composition."
+      }
+    ],
+    "leonardo-diffusion-xl": [
+      {
+        "name": "Leonardo.Ai (Diffusion XL)",
+        "url": "https://app.leonardo.ai",
+        "notes": "SDXL-based preset with Leonardo presets + Elements (LoRA-style style packs)."
+      }
+    ],
+    "krea-image-1": [
+      {
+        "name": "Krea",
+        "url": "https://www.krea.ai",
+        "notes": "Realtime canvas + image-1 generation. Paste prompt, iterate live. Matte externally."
+      }
+    ],
+    "flux-pro": [
+      {
+        "name": "BFL Playground",
+        "url": "https://playground.bfl.ai",
+        "notes": "Official Flux UI. Paste prose narrative. Do NOT use negative_prompt — Flux errors on it."
+      },
+      {
+        "name": "fal.ai",
+        "url": "https://fal.ai/models/fal-ai/flux-pro",
+        "notes": "Prose prompt. Good for photoreal hero art."
+      },
+      {
+        "name": "Replicate",
+        "url": "https://replicate.com/black-forest-labs/flux-1.1-pro",
+        "notes": "Same Flux surface hosted on Replicate."
+      }
+    ],
+    "flux-2": [
+      {
+        "name": "BFL Playground",
+        "url": "https://playground.bfl.ai",
+        "notes": "Flux.2 accepts up to 8 brand reference images — upload your brand style refs for consistency."
+      },
+      {
+        "name": "fal.ai",
+        "url": "https://fal.ai",
+        "notes": "Check 'fal-ai/flux-2' — availability varies by region."
+      }
+    ],
+    "flux-kontext-pro": [
+      {
+        "name": "BFL Playground (Kontext)",
+        "url": "https://playground.bfl.ai",
+        "notes": "Edit-only. Upload the source asset + give an instruction prompt. Use quoted strings for literal text swaps: Replace 'ACME' with 'ZENO'. Preserves identity across the edit."
+      },
+      {
+        "name": "fal.ai flux-pro/kontext",
+        "url": "https://fal.ai/models/fal-ai/flux-pro/kontext",
+        "notes": "Good for an iterative family (logo → favicon → OG card) from one master. Keep replacement text similar length to the original."
+      },
+      {
+        "name": "Replicate flux-kontext-pro",
+        "url": "https://replicate.com/black-forest-labs/flux-kontext-pro",
+        "notes": "Same Kontext surface on Replicate. No negative prompt; describe the target, not what to avoid."
+      }
+    ],
+    "fal-flux-pro": [
+      {
+        "name": "fal.ai flux-pro",
+        "url": "https://fal.ai/models/fal-ai/flux-pro",
+        "notes": "Aggregator path to Flux Pro — same model as BFL, different billing."
+      }
+    ],
+    "fal-flux-2": [
+      {
+        "name": "fal.ai flux-2",
+        "url": "https://fal.ai/models/fal-ai/flux-2",
+        "notes": "Aggregator path to Flux.2. Upload up to 8 reference images for brand consistency."
+      }
+    ],
+    "fal-sdxl": [
+      {
+        "name": "fal.ai fast-sdxl",
+        "url": "https://fal.ai/models/fal-ai/fast-sdxl",
+        "notes": "Cheap SDXL iteration. Tag-salad prompt; native negative_prompt support."
+      }
+    ],
+    "midjourney-v6": [
+      {
+        "name": "Midjourney web (v6)",
+        "url": "https://www.midjourney.com/app",
+        "notes": "Paste prompt; append --ar 1:1 --style raw --v 6. Use --sref / --cref for consistency."
+      }
+    ],
+    "midjourney-v7": [
+      {
+        "name": "Midjourney web",
+        "url": "https://www.midjourney.com/app",
+        "notes": "Paste prompt; append --ar 1:1 --style raw --v 7. Use --sref / --cref / --mref for brand consistency."
+      },
+      {
+        "name": "Discord /imagine",
+        "url": "https://discord.com/channels/662267976984297473",
+        "notes": "Legacy surface. /imagine prompt <prose> --ar 1:1 --v 7"
+      }
+    ],
+    "ideogram-3": [
+      {
+        "name": "Ideogram web (v3)",
+        "url": "https://ideogram.ai",
+        "notes": "Full Ideogram 3 (not the Turbo variant). Higher fidelity for dense typography; slower + costlier per gen."
+      }
+    ],
+    "ideogram-3-turbo": [
+      {
+        "name": "Ideogram web",
+        "url": "https://ideogram.ai",
+        "notes": "Best-in-class wordmark rendering for 1–3 word brand text. For RGBA output set Style = Transparent (v3 feature). Consider toggling Magic Prompt OFF if you want exact control."
+      }
+    ],
+    "recraft-v3": [
+      {
+        "name": "Recraft web",
+        "url": "https://www.recraft.ai",
+        "notes": "Pick 'Vector' style for real SVG output. Brand Styles panel locks palette + style across a set."
+      }
+    ],
+    "firefly-3": [
+      {
+        "name": "Adobe Firefly",
+        "url": "https://firefly.adobe.com",
+        "notes": "Commercial-indemnity output; useful when license matters. Limited style library vs Flux/Midjourney."
+      }
+    ],
+    "pollinations-flux": [
+      {
+        "name": "Pollinations (Flux backend)",
+        "url": "https://pollinations.ai",
+        "notes": "Zero-key, HTTP GET. Example: curl -o out.png 'https://image.pollinations.ai/prompt/<urlencoded>?model=flux&width=1024&height=1024&nologo=true'. ~1 req/15s anonymous; RGB only (matte externally)."
+      }
+    ],
+    "pollinations-turbo": [
+      {
+        "name": "Pollinations (Turbo preset)",
+        "url": "https://image.pollinations.ai/",
+        "notes": "Fastest Pollinations preset. Use ?model=turbo in the URL."
+      }
+    ],
+    "pollinations-kontext": [
+      {
+        "name": "Pollinations (Kontext edit)",
+        "url": "https://image.pollinations.ai/",
+        "notes": "Free in-context edit via ?model=kontext — give the source image URL as &image=..."
+      }
+    ],
+    "pollinations-sd": [
+      {
+        "name": "Pollinations (stable-diffusion preset)",
+        "url": "https://image.pollinations.ai/",
+        "notes": "Legacy SD 1.5 via ?model=stable-diffusion — fall-back for cheap iteration."
+      }
+    ],
+    "horde-sdxl": [
+      {
+        "name": "Stable Horde (SDXL)",
+        "url": "https://aihorde.net/api/",
+        "notes": "Anonymous kudos bucket works (apikey=0000000000); queue-based. Set HORDE_API_KEY for priority."
+      }
+    ],
+    "horde-flux": [
+      {
+        "name": "Stable Horde (Flux Schnell)",
+        "url": "https://aihorde.net/api/",
+        "notes": "Flux.1-Schnell fp8 on the horde. Worker availability varies."
+      }
+    ],
+    "hf-sdxl": [
+      {
+        "name": "Hugging Face Inference (SDXL)",
+        "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0",
+        "notes": "Free tier — needs HF_TOKEN (https://huggingface.co/settings/tokens, no credit card). Cold-start latency."
+      }
+    ],
+    "hf-sd3": [
+      {
+        "name": "Hugging Face Inference (SD3 Medium)",
+        "url": "https://huggingface.co/stabilityai/stable-diffusion-3-medium-diffusers",
+        "notes": "Free tier; check SD3 Medium research license before commercial use."
+      }
+    ],
+    "hf-flux-schnell": [
+      {
+        "name": "Hugging Face Inference (Flux Schnell)",
+        "url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell",
+        "notes": "Apache 2.0 Flux variant via HF free tier."
+      }
+    ],
+    "hf-flux-dev": [
+      {
+        "name": "Hugging Face Inference (Flux Dev)",
+        "url": "https://huggingface.co/black-forest-labs/FLUX.1-dev",
+        "notes": "Flux Dev via HF free tier. Non-commercial license — respect it."
+      }
+    ],
+    "cf-flux-1-schnell": [
+      {
+        "name": "Cloudflare Workers AI (Flux-1 Schnell)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/flux-1-schnell/",
+        "notes": "10,000 neurons/day free; ~11 neurons per image. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
+      }
+    ],
+    "cf-flux-2-dev": [
+      {
+        "name": "Cloudflare Workers AI (Flux.2 dev)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/flux-2-dev/",
+        "notes": "Flux.2 dev on CF — supports reference images for brand consistency. Higher neuron cost."
+      }
+    ],
+    "cf-flux-2-klein-4b": [
+      {
+        "name": "Cloudflare Workers AI (Flux.2 klein 4B)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/",
+        "notes": "Distilled Flux.2 for speed; 8 steps."
+      }
+    ],
+    "cf-flux-2-klein-9b": [
+      {
+        "name": "Cloudflare Workers AI (Flux.2 klein 9B)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/",
+        "notes": "Larger distilled Flux.2 variant."
+      }
+    ],
+    "cf-sdxl": [
+      {
+        "name": "Cloudflare Workers AI (SDXL base 1.0)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/",
+        "notes": "SDXL base on CF; native negative_prompt support."
+      }
+    ],
+    "cf-sdxl-lightning": [
+      {
+        "name": "Cloudflare Workers AI (SDXL-Lightning)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/",
+        "notes": "Cheapest CF image model — ~2 neurons per image; 4-step Lightning variant."
+      }
+    ],
+    "cf-dreamshaper-8-lcm": [
+      {
+        "name": "Cloudflare Workers AI (DreamShaper 8 LCM)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/",
+        "notes": "Photoreal-focused SD 1.5 derivative, 4-step LCM."
+      }
+    ],
+    "cf-leonardo-phoenix": [
+      {
+        "name": "Cloudflare Workers AI (Leonardo Phoenix 1.0)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/",
+        "notes": "Leonardo Phoenix hosted on CF — free tier."
+      }
+    ],
+    "cf-leonardo-lucid-origin": [
+      {
+        "name": "Cloudflare Workers AI (Leonardo Lucid Origin)",
+        "url": "https://developers.cloudflare.com/workers-ai/models/",
+        "notes": "Leonardo's most adaptable preset, hosted on CF."
+      }
+    ],
+    "replicate-flux-1.1-pro": [
+      {
+        "name": "Replicate (Flux 1.1 Pro)",
+        "url": "https://replicate.com/black-forest-labs/flux-1.1-pro",
+        "notes": "Replicate-hosted Flux 1.1 Pro. Metered per-run; trial credit on signup."
+      }
+    ],
+    "replicate-flux-schnell": [
+      {
+        "name": "Replicate (Flux Schnell)",
+        "url": "https://replicate.com/black-forest-labs/flux-schnell",
+        "notes": "Cheapest Replicate image model. Apache 2.0 weights upstream."
+      }
+    ],
+    "replicate-flux-dev": [
+      {
+        "name": "Replicate (Flux Dev)",
+        "url": "https://replicate.com/black-forest-labs/flux-dev",
+        "notes": "Flux Dev via Replicate. Non-commercial license — respect it."
+      }
+    ],
+    "replicate-sdxl": [
+      {
+        "name": "Replicate (SDXL)",
+        "url": "https://replicate.com/stability-ai/sdxl",
+        "notes": "Canonical SDXL. Native negative_prompt support."
+      }
+    ],
+    "replicate-sd3": [
+      {
+        "name": "Replicate (Stable Diffusion 3)",
+        "url": "https://replicate.com/stability-ai/stable-diffusion-3",
+        "notes": "SD3 Large via Replicate. Commercial license applies."
+      }
+    ],
+    "replicate-recraft-v3": [
+      {
+        "name": "Replicate (Recraft V3)",
+        "url": "https://replicate.com/recraft-ai/recraft-v3",
+        "notes": "Native SVG via Replicate — the fallback path when no direct Recraft key is set."
+      }
+    ],
+    "replicate-ideogram-3": [
+      {
+        "name": "Replicate (Ideogram V3)",
+        "url": "https://replicate.com/ideogram-ai/ideogram-v3",
+        "notes": "Ideogram 3 via Replicate — best-in-class wordmark rendering."
+      }
+    ]
+  },
+  "strategy_targets": {
+    "llm_author_svg": [
+      {
+        "name": "This very conversation",
+        "url": "inline",
+        "notes": "inline_svg mode — the hosting LLM writes the SVG directly. No external paste needed; it's already in the chat."
+      }
+    ],
+    "satori_template": [
+      {
+        "name": "asset_generate_og_image (api mode)",
+        "url": "mcp-tool",
+        "notes": "OG images are rendered by Satori + @resvg/resvg-js server-side. No external UI needed — call asset_generate_og_image with mode=api."
+      }
+    ],
+    "composite": [
+      {
+        "name": "asset_generate_logo with text_content + SVG compositor",
+        "url": "mcp-tool",
+        "notes": "For logos with >3-word wordmarks, generate a text-free mark and let the server composite SVG typography. See asset_generate_logo in composite mode."
+      }
+    ],
+    "svg_first": [
+      {
+        "name": "Recraft web (Vector style)",
+        "url": "https://www.recraft.ai",
+        "notes": "Primary strategy for favicon: generate a real SVG in Recraft (Vector style), then the server bundles .ico / apple-touch / PWA manifest around it."
+      }
+    ],
+    "composite_mark_on_background": [
+      {
+        "name": "asset_generate_splash_screen (api mode)",
+        "url": "mcp-tool",
+        "notes": "Splash screens composite an existing brand mark onto a background. Server-side; no external UI."
+      }
+    ]
+  }
+}

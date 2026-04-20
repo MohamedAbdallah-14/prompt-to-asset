@@ -1,0 +1,4 @@
+# Codex CLI — prompt-to-asset MCP registration
+[mcp_servers.prompt-to-asset]
+command = "node"
+args = ["./packages/mcp-server/dist/index.js"]

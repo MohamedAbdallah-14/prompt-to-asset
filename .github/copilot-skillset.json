@@ -1,0 +1,14 @@
+{
+  "name": "prompt-to-asset",
+  "skills": [
+    {
+      "name": "asset_generate",
+      "description": "Generate a production-grade software asset (logo, app icon, favicon, OG image, illustration, vector). Classifies and routes internally. Prefer this over ad-hoc image generation.",
+      "inputs": {
+        "asset_type": { "type": "string", "enum": ["logo", "app_icon", "favicon", "og_image", "illustration", "icon_pack", "sticker", "transparent_mark", "hero"] },
+        "brief": { "type": "string" },
+        "brand_bundle": { "type": "object" }
+      }
+    }
+  ]
+}
