@@ -7,9 +7,8 @@ name: Publish MCP server to npm
 # bound to repo MohamedAbdallah-14/prompt-to-asset, workflow publish.yml,
 # environment npm-publish. OIDC handles auth — no NPM_TOKEN in repo secrets.
 #
-# Trigger: push a tag shaped `mcp-server-vX.Y.Z` (e.g. mcp-server-v0.2.1).
-# The `environment: npm-publish` gate lets you require a manual approval
-# click before the publish step runs (optional — set reviewers in
+# Trigger: push a tag shaped `mcp-server-vX.Y.Z`. The `environment: npm-publish`
+# gate lets you require a manual approval click (optional — set reviewers in
 # Settings → Environments).
 
 on:
@@ -52,14 +51,16 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
-      - name: Test
-        run: npm run test:run
-
+      # Build BEFORE tests — the integration tests under tests/integration/
+      # exec the built `p2a` binary. Same ordering as ci.yml.
       - name: Build
         run: npm run build
 
       - name: Data integrity (registry vs routing-table)
         run: node packages/mcp-server/dist/index.js doctor --data
+
+      - name: Test
+        run: npm run test:run
 
       - name: Smoke (MCP stdio + tool surface)
         run: npm run smoke
