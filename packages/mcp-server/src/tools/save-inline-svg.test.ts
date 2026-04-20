@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { tmpdir } from "node:os";
 import { mkdtempSync, readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, basename } from "node:path";
 import { saveInlineSvg } from "./save-inline-svg.js";
 
 function tmp() {
@@ -107,7 +107,7 @@ describe("asset_save_inline_svg", () => {
       output_dir: outDir
     });
 
-    const kinds = r.variants.map((v) => v.path.split("/").pop());
+    const kinds = r.variants.map((v) => basename(v.path));
     for (const required of [
       "icon.svg",
       "icon-dark.svg",
@@ -145,7 +145,8 @@ describe("asset_save_inline_svg", () => {
 
     // icon-dark.svg actually differs from icon.svg
     const darkPath = r.variants.find((v) => v.path.endsWith("icon-dark.svg"))!.path;
-    const lightPath = r.variants.find((v) => v.path.endsWith("/icon.svg"))!.path;
+    // Windows paths use backslash; compare on basename to be cross-platform.
+    const lightPath = r.variants.find((v) => basename(v.path) === "icon.svg")!.path;
     expect(readFileSync(darkPath, "utf-8")).not.toBe(readFileSync(lightPath, "utf-8"));
   });
 
@@ -164,7 +165,9 @@ describe("asset_save_inline_svg", () => {
     const paths = r.variants.map((v) => v.path);
     // iOS AppIconSet
     expect(paths.some((p) => p.includes("AppIcon.appiconset") && p.endsWith(".png"))).toBe(true);
-    expect(paths.some((p) => p.endsWith("AppIcon.appiconset/Contents.json"))).toBe(true);
+    expect(
+      paths.some((p) => p.includes("AppIcon.appiconset") && basename(p) === "Contents.json")
+    ).toBe(true);
     // Android adaptive xml + monochrome
     expect(paths.some((p) => p.endsWith("ic_launcher.xml"))).toBe(true);
     expect(paths.some((p) => p.endsWith("ic_launcher_monochrome.png"))).toBe(true);
