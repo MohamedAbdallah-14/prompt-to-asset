@@ -2,11 +2,28 @@
 
 > Turn a one-line brief into a complete, ship-ready asset bundle — app icons, favicons, OG images, illustrations, splash screens, sprite sheets. Route to the right model, matte / vectorize / validate, and fan out to every platform from one 1024² master. Works **without any API key** via Pollinations, Stable Horde, HF free-tier, or inline SVG from your AI assistant.
 
+[![npm](https://img.shields.io/npm/v/prompt-to-asset.svg?color=cb3837&logo=npm)](https://www.npmjs.com/package/prompt-to-asset)
+[![npm downloads](https://img.shields.io/npm/dm/prompt-to-asset.svg)](https://www.npmjs.com/package/prompt-to-asset)
 [![CI](https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/ci.yml/badge.svg)](https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20.11-brightgreen.svg)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-1.0-8b5cf6.svg)](https://modelcontextprotocol.io)
 [![Zero-key](https://img.shields.io/badge/zero--key-ready-16a34a.svg)](#zero-key-quickstart)
+
+## Install in your IDE — one click
+
+[![Install in Cursor](https://img.shields.io/badge/Cursor-Install-000?logo=cursor)](cursor://anysphere.cursor-deeplink/mcp/install?name=prompt-to-asset&config=eyJjb21tYW5kIjogIm5weCIsICJhcmdzIjogWyIteSIsICJwcm9tcHQtdG8tYXNzZXQiXX0=)
+[![Install in VS Code](https://img.shields.io/badge/VS%20Code-Install-007ACC?logo=visualstudiocode)](vscode:mcp/install?%7B%22name%22%3A%20%22prompt-to-asset%22%2C%20%22type%22%3A%20%22stdio%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22prompt-to-asset%22%5D%7D)
+[![Install in VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-Install-24bfa5?logo=visualstudiocode)](vscode-insiders:mcp/install?%7B%22name%22%3A%20%22prompt-to-asset%22%2C%20%22type%22%3A%20%22stdio%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22prompt-to-asset%22%5D%7D)
+[![Install in Claude Desktop](https://img.shields.io/badge/Claude%20Desktop-%2Emcpb-D97706)](https://github.com/MohamedAbdallah-14/prompt-to-asset/releases/latest/download/prompt-to-asset-0.2.0.mcpb)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-claude%20mcp%20add-7F56D9)](https://docs.claude.com/en/docs/claude-code/mcp)
+[![Smithery](https://img.shields.io/badge/Smithery-Install-6366f1)](https://smithery.ai/server/prompt-to-asset)
+
+**Claude Code** · `claude mcp add prompt-to-asset -- npx -y prompt-to-asset`
+**Claude Desktop** · download the [`.mcpb` bundle](https://github.com/MohamedAbdallah-14/prompt-to-asset/releases/latest) and double-click
+**Cursor / VS Code / Windsurf** · click the badge above, or run `npx prompt-to-asset init --register`
+**Smithery (universal)** · `npx -y @smithery/cli install prompt-to-asset --client claude`
+**Everything else** · `npx prompt-to-asset init` prints the exact stanza for every IDE
 
 `prompt-to-asset` is a CLI **and** MCP server for developer asset generation. Three pieces:
 

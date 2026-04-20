@@ -1,0 +1,154 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/main/manifest.schema.json",
+  "dxt_version": "0.1",
+  "name": "prompt-to-asset",
+  "display_name": "prompt-to-asset",
+  "version": "0.2.0",
+  "description": "Prompt enhancer + asset pipeline: one brief to iOS/Android/PWA/favicon/OG via routed image models.",
+  "long_description": "Turn a one-line brief into a complete, ship-ready asset bundle — app icons, favicons, OG images, illustrations, splash screens. Three modes: inline_svg (zero-key, host LLM writes the SVG), external_prompt_only (paste into your subscription), api (server-driven via OpenAI / Gemini / Ideogram / Recraft / Flux / Stability / Leonardo / fal.ai / Replicate / HF / Cloudflare / Pollinations / Stable Horde / ComfyUI). 17 MCP tools including asset_enhance_prompt, asset_generate_logo / app_icon / favicon / og_image / illustration / hero / splash_screen, asset_save_inline_svg, asset_ingest_external, asset_train_brand_lora.",
+  "author": {
+    "name": "Mohamed Abdallah",
+    "url": "https://github.com/MohamedAbdallah-14"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/MohamedAbdallah-14/prompt-to-asset",
+  "documentation": "https://github.com/MohamedAbdallah-14/prompt-to-asset#readme",
+  "support": "https://github.com/MohamedAbdallah-14/prompt-to-asset/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MohamedAbdallah-14/prompt-to-asset.git"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "image-generation",
+    "logo",
+    "app-icon",
+    "favicon",
+    "og-image",
+    "claude-code",
+    "cursor",
+    "windsurf"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "npx",
+      "args": ["-y", "prompt-to-asset"],
+      "env": {
+        "OPENAI_API_KEY": "${user_config.OPENAI_API_KEY}",
+        "GEMINI_API_KEY": "${user_config.GEMINI_API_KEY}",
+        "IDEOGRAM_API_KEY": "${user_config.IDEOGRAM_API_KEY}",
+        "RECRAFT_API_KEY": "${user_config.RECRAFT_API_KEY}",
+        "BFL_API_KEY": "${user_config.BFL_API_KEY}",
+        "STABILITY_API_KEY": "${user_config.STABILITY_API_KEY}",
+        "LEONARDO_API_KEY": "${user_config.LEONARDO_API_KEY}",
+        "FAL_API_KEY": "${user_config.FAL_API_KEY}",
+        "HF_TOKEN": "${user_config.HF_TOKEN}",
+        "REPLICATE_API_TOKEN": "${user_config.REPLICATE_API_TOKEN}",
+        "CLOUDFLARE_API_TOKEN": "${user_config.CLOUDFLARE_API_TOKEN}",
+        "CLOUDFLARE_ACCOUNT_ID": "${user_config.CLOUDFLARE_ACCOUNT_ID}",
+        "P2A_MAX_SPEND_USD_PER_RUN": "${user_config.P2A_MAX_SPEND_USD_PER_RUN}"
+      }
+    }
+  },
+  "user_config": {
+    "GEMINI_API_KEY": {
+      "type": "string",
+      "title": "Google AI Studio key (free tier — ~1,500 img/day)",
+      "description": "Get from https://aistudio.google.com/apikey. No credit card. Routes to Gemini 3 Flash Image (Nano Banana).",
+      "sensitive": true,
+      "required": false
+    },
+    "OPENAI_API_KEY": {
+      "type": "string",
+      "title": "OpenAI key",
+      "description": "gpt-image-1 / gpt-image-1.5 / dall-e-3. Best for native-RGBA transparent PNGs.",
+      "sensitive": true,
+      "required": false
+    },
+    "IDEOGRAM_API_KEY": {
+      "type": "string",
+      "title": "Ideogram key",
+      "description": "Best-in-class 1-3 word wordmark rendering.",
+      "sensitive": true,
+      "required": false
+    },
+    "RECRAFT_API_KEY": {
+      "type": "string",
+      "title": "Recraft V3 key",
+      "description": "Native SVG output, brand style_id.",
+      "sensitive": true,
+      "required": false
+    },
+    "BFL_API_KEY": {
+      "type": "string",
+      "title": "Black Forest Labs Flux key",
+      "description": "Flux Pro / Flux.2 / Kontext — photoreal hero art.",
+      "sensitive": true,
+      "required": false
+    },
+    "STABILITY_API_KEY": {
+      "type": "string",
+      "title": "Stability AI key",
+      "description": "SDXL / SD3 / Playground v3.",
+      "sensitive": true,
+      "required": false
+    },
+    "LEONARDO_API_KEY": {
+      "type": "string",
+      "title": "Leonardo key",
+      "description": "Phoenix / Diffusion XL.",
+      "sensitive": true,
+      "required": false
+    },
+    "FAL_API_KEY": {
+      "type": "string",
+      "title": "fal.ai key",
+      "description": "Aggregator — alt path for Flux / SDXL.",
+      "sensitive": true,
+      "required": false
+    },
+    "HF_TOKEN": {
+      "type": "string",
+      "title": "Hugging Face token (free tier)",
+      "description": "Read token from https://huggingface.co/settings/tokens. No credit card.",
+      "sensitive": true,
+      "required": false
+    },
+    "REPLICATE_API_TOKEN": {
+      "type": "string",
+      "title": "Replicate token",
+      "description": "Flux 1.1 Pro / SDXL / SD3 / Recraft V3 / Ideogram V3.",
+      "sensitive": true,
+      "required": false
+    },
+    "CLOUDFLARE_API_TOKEN": {
+      "type": "string",
+      "title": "Cloudflare Workers AI token (free 10k neurons/day)",
+      "description": "Pair with CLOUDFLARE_ACCOUNT_ID.",
+      "sensitive": true,
+      "required": false
+    },
+    "CLOUDFLARE_ACCOUNT_ID": {
+      "type": "string",
+      "title": "Cloudflare account id",
+      "description": "Required alongside CLOUDFLARE_API_TOKEN.",
+      "sensitive": false,
+      "required": false
+    },
+    "P2A_MAX_SPEND_USD_PER_RUN": {
+      "type": "string",
+      "title": "Cost cap (USD per tool call)",
+      "description": "Optional. Pre-flight refuses api-mode calls above this cap.",
+      "sensitive": false,
+      "required": false
+    }
+  },
+  "compatibility": {
+    "runtimes": {
+      "node": ">=20.11.0"
+    }
+  }
+}

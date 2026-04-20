@@ -1,0 +1,107 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json",
+  "name": "io.github.MohamedAbdallah-14/prompt-to-asset",
+  "description": "Prompt enhancer + asset pipeline: one brief to iOS/Android/PWA/favicon/OG via routed models.",
+  "repository": {
+    "url": "https://github.com/MohamedAbdallah-14/prompt-to-asset",
+    "source": "github"
+  },
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "prompt-to-asset",
+      "version": "0.2.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "OPENAI_API_KEY",
+          "description": "Enables api mode via OpenAI gpt-image-1 / gpt-image-1.5 / dall-e-3. Native RGBA for transparent PNGs.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "GEMINI_API_KEY",
+          "description": "Enables api mode via Google Imagen / Gemini 3 Flash Image (Nano Banana). Free tier: ~1,500 images/day at https://aistudio.google.com/apikey.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "IDEOGRAM_API_KEY",
+          "description": "Enables api mode via Ideogram 3 / 3 Turbo. Best-in-class 1-3 word wordmark rendering.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "RECRAFT_API_KEY",
+          "description": "Enables api mode via Recraft V3. Native SVG output.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "BFL_API_KEY",
+          "description": "Enables api mode via Black Forest Labs Flux Pro / Flux.2 / Kontext. Photoreal hero art.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "STABILITY_API_KEY",
+          "description": "Enables api mode via Stability SDXL / SD3 / Playground v3.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "LEONARDO_API_KEY",
+          "description": "Enables api mode via Leonardo Phoenix / Diffusion XL.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "FAL_API_KEY",
+          "description": "Enables api mode via fal.ai aggregator (alt path for Flux / SDXL).",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "HF_TOKEN",
+          "description": "Free tier — enables api mode via Hugging Face Inference (SDXL / SD3 / Flux dev+schnell). Free read token, no credit card.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "REPLICATE_API_TOKEN",
+          "description": "Enables api mode via Replicate (Flux 1.1 Pro, SDXL, SD3, Recraft V3, Ideogram V3).",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "CLOUDFLARE_API_TOKEN",
+          "description": "Free tier — enables api mode via Cloudflare Workers AI (10k neurons/day). Pair with CLOUDFLARE_ACCOUNT_ID.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "CLOUDFLARE_ACCOUNT_ID",
+          "description": "Required alongside CLOUDFLARE_API_TOKEN for Workers AI.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "P2A_MAX_SPEND_USD_PER_RUN",
+          "description": "Optional cost guard. Pre-flight estimate refuses api-mode calls over this USD cap. Zero-cost routes (Pollinations / Horde / HF free / inline_svg) are always a no-op.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "P2A_ALLOWED_PATHS",
+          "description": "Colon-separated additional filesystem roots the safePath guard will accept for image_path / output_dir. Defaults to cwd + output dir + cache dir + OS tempdir.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}
