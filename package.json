@@ -46,7 +46,8 @@
     "test:coverage": "vitest run --coverage",
     "sync": "bash scripts/sync-mirrors.sh",
     "verify": "bash scripts/verify-repo.sh",
-    "smoke": "npm run -w prompt-to-asset smoke"
+    "smoke": "npm run -w prompt-to-asset smoke",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=20.11.0"
@@ -58,6 +59,7 @@
     "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^10.2.1",
     "globals": "^17.5.0",
+    "husky": "^9.1.7",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2",

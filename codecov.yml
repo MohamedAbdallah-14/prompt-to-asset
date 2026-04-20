@@ -1,0 +1,29 @@
+# Coverage reporting is advisory. Tests passing is the hard bar; we don't
+# want PRs blocked on a 0.3-percentage-point dip. Informational = comment
+# on the PR but don't fail the status check.
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+        threshold: 2%
+    patch:
+      default:
+        informational: true
+
+# Don't ding us on generated / data / vendored code we don't author.
+ignore:
+  - "packages/mcp-server/dist/**"
+  - "packages/mcp-server/**/*.test.ts"
+  - "data/**"
+  - "docs/**"
+  - "evals/snapshots/**"
+  - "bundle/**"
+  - "dist-release/**"
+  - "scripts/**"
+  - "examples/**"
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: true

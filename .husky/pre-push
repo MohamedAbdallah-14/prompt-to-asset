@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# Local fast-fail gate. Mirrors what CI runs so we don't eat 3 minutes of
+# GitHub Actions time for a lint typo. Skip with:  HUSKY=0 git push
+set -e
+
+if [ "$HUSKY" = "0" ]; then
+  echo "[husky] HUSKY=0 — skipping pre-push"
+  exit 0
+fi
+
+echo "[husky] pre-push: typecheck + lint + format + test + evals --check"
+npm run typecheck
+npm run lint
+npm run format:check
+npm run test:run
+node evals/scripts/run.mjs --check
+echo "[husky] pre-push ok"

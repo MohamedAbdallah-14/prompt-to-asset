@@ -1,0 +1,10 @@
+# Default owner — any PR gets a review request routed here.
+*               @MohamedAbdallah-14
+
+# Security-sensitive surfaces — require explicit owner review even as the
+# team grows. GitHub matches last-wins per pattern.
+/packages/mcp-server/src/security/**   @MohamedAbdallah-14
+/packages/mcp-server/src/providers/**  @MohamedAbdallah-14
+/.github/workflows/**                  @MohamedAbdallah-14
+/data/routing-table.json               @MohamedAbdallah-14
+/data/model-registry.json              @MohamedAbdallah-14

@@ -5,6 +5,8 @@
 [![npm](https://img.shields.io/npm/v/prompt-to-asset.svg?color=cb3837&logo=npm)](https://www.npmjs.com/package/prompt-to-asset)
 [![npm downloads](https://img.shields.io/npm/dm/prompt-to-asset.svg)](https://www.npmjs.com/package/prompt-to-asset)
 [![CI](https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/ci.yml/badge.svg)](https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/MohamedAbdallah-14/prompt-to-asset/graph/badge.svg)](https://codecov.io/gh/MohamedAbdallah-14/prompt-to-asset)
+[![CodeQL](https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/codeql.yml/badge.svg)](https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20.11-brightgreen.svg)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-1.0-8b5cf6.svg)](https://modelcontextprotocol.io)

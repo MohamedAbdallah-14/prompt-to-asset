@@ -5,8 +5,10 @@ Thanks for contributing. A few checks before you open this PR:
   (skills/*/SKILL.md, rules/*.md, .claude-plugin/*) — NOT in a mirror under
   .cursor/, .windsurf/, .codex/, .clinerules/, or gemini-extension.json.
   Then run `npm run sync` and commit the regenerated mirrors in the same PR.
-- Run `npm run typecheck && npm run lint && npm test && npm run verify` before pushing.
-- Conventional Commits in the PR title help the changelog stay legible.
+- The husky pre-push hook runs lint + typecheck + tests + evals locally.
+  If it blocks you mid-emergency, HUSKY=0 git push bypasses it.
+- Use [Conventional Commits](https://www.conventionalcommits.org/) in the
+  PR title. Scope examples: `feat(providers):`, `fix(cli):`, `docs(readme):`.
 -->
 
 ## Summary
@@ -17,6 +19,14 @@ Thanks for contributing. A few checks before you open this PR:
 
 <!-- Why is this change worth making? Link an issue, a research angle under
      docs/research/, or a concrete failure case. -->
+
+## Breaking change?
+
+- [ ] Yes — this PR breaks a public API (MCP tool surface, CLI flag, env var,
+      file layout, or schema). Explain the migration path below.
+- [ ] No — backwards-compatible.
+
+<!-- If yes: who's affected, and what do they need to change? -->
 
 ## Checklist
 
