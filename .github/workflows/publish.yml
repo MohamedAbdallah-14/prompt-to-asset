@@ -89,4 +89,12 @@ jobs:
 
       - name: Publish with OIDC provenance
         working-directory: packages/mcp-server
+        env:
+          # Explicitly blank any NODE_AUTH_TOKEN coming from the
+          # npm-publish environment. When NODE_AUTH_TOKEN is empty AND
+          # `id-token: write` is granted, npm 10.9+ performs the OIDC
+          # exchange against the configured Trusted Publisher instead
+          # of presenting a stale static token (which was rejecting
+          # with 404 Not Found).
+          NODE_AUTH_TOKEN: ""
         run: npm publish --provenance --access public
