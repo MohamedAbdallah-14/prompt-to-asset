@@ -1,0 +1,70 @@
+name: Dependabot auto-merge
+
+# Auto-approves and enables auto-merge on Dependabot PRs that are safe
+# enough to land without human review:
+#   - patch bumps from any ecosystem (npm, github-actions, docker)
+#   - minor bumps from the dev-tooling and actions groups only
+#
+# Everything else (any major bump, runtime dep minor bump, mcp-sdk bump,
+# validation-runtime bump) stays pending a human. The branch-protection
+# ruleset on main still enforces CI + evals + sync + pack-check + audit
+# before the auto-merge actually lands the PR.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Classify the Dependabot PR
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Approve + enable auto-merge (patch, any group)
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          echo "Approving patch-level Dependabot PR: $PR_URL"
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
+
+      - name: Approve + enable auto-merge (minor, safe groups)
+        if: |
+          steps.meta.outputs.update-type == 'version-update:semver-minor' &&
+          (steps.meta.outputs.dependency-group == 'dev-tooling' ||
+           steps.meta.outputs.dependency-group == 'actions')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GROUP: ${{ steps.meta.outputs.dependency-group }}
+        run: |
+          echo "Approving minor-level Dependabot PR from group '$GROUP': $PR_URL"
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
+
+      - name: Leave a hint for PRs held back for human review
+        if: |
+          steps.meta.outputs.update-type == 'version-update:semver-major' ||
+          (steps.meta.outputs.update-type == 'version-update:semver-minor' &&
+           !(steps.meta.outputs.dependency-group == 'dev-tooling' ||
+             steps.meta.outputs.dependency-group == 'actions'))
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          UTYPE: ${{ steps.meta.outputs.update-type }}
+          GROUP: ${{ steps.meta.outputs.dependency-group }}
+        run: |
+          gh pr comment "$PR_URL" --body \
+            "Auto-merge skipped: update-type=\`$UTYPE\` group=\`${GROUP:-<ungrouped>}\`. Needs a human to review + merge."
