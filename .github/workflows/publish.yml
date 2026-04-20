@@ -7,9 +7,7 @@ name: Publish MCP server to npm
 # bound to repo MohamedAbdallah-14/prompt-to-asset, workflow publish.yml,
 # environment npm-publish. OIDC handles auth — no NPM_TOKEN in repo secrets.
 #
-# Trigger: push a tag shaped `mcp-server-vX.Y.Z`. The `environment: npm-publish`
-# gate lets you require a manual approval click (optional — set reviewers in
-# Settings → Environments).
+# Trigger: push a tag shaped `mcp-server-vX.Y.Z`.
 
 on:
   push:
@@ -39,22 +37,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "22"
+          registry-url: "https://registry.npmjs.org"
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
-
-      # Explicit registry + scrub any .npmrc that might have been seeded
-      # with a stale _authToken template. With OIDC Trusted Publisher,
-      # npm exchanges the id-token directly; a zero-length _authToken
-      # line from setup-node's registry-url breaks that exchange and
-      # produces a `404 PUT /prompt-to-asset` with the misleading
-      # "not in this registry" body.
-      - name: Configure npm for OIDC publish
-        run: |
-          rm -f "$HOME/.npmrc" ./.npmrc
-          npm config set registry https://registry.npmjs.org/
-          npm config get registry
 
       - name: Ensure sharp resolves on the runner
         run: npm install --no-save sharp
@@ -62,8 +49,6 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
-      # Build BEFORE tests — the integration tests under tests/integration/
-      # exec the built `p2a` binary. Same ordering as ci.yml.
       - name: Build
         run: npm run build
 
@@ -79,8 +64,29 @@ jobs:
       - name: Evals regression gate
         run: node evals/scripts/run.mjs --check
 
-      - name: Publish with provenance (OIDC trusted publisher)
+      - name: OIDC diagnostic
+        # Surface whether the OIDC env vars are actually plumbed through
+        # the `environment: npm-publish` gate. If these are empty, the
+        # environment is blocking the id-token: write scope and we need
+        # to remove / reconfigure it. Values are intentionally not echoed.
+        run: |
+          if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL}" ]; then
+            echo "ACTIONS_ID_TOKEN_REQUEST_URL: set"
+          else
+            echo "ACTIONS_ID_TOKEN_REQUEST_URL: UNSET — OIDC won't work"
+          fi
+          if [ -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" ]; then
+            echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: set"
+          else
+            echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: UNSET — OIDC won't work"
+          fi
+          echo "npm version: $(npm --version)"
+          echo "node version: $(node --version)"
+          echo "--- .npmrc (user) ---"
+          cat "$HOME/.npmrc" 2>/dev/null || echo "no ~/.npmrc"
+          echo "--- .npmrc (repo) ---"
+          cat ./.npmrc 2>/dev/null || echo "no ./.npmrc"
+
+      - name: Publish with OIDC provenance
         working-directory: packages/mcp-server
-        # With Trusted Publisher configured, OIDC signs the upload and
-        # attaches sigstore provenance. No NPM_TOKEN needed.
-        run: npm publish --access public --provenance
+        run: npm publish --provenance --access public
