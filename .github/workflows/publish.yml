@@ -39,11 +39,22 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "22"
-          registry-url: "https://registry.npmjs.org/"
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
+
+      # Explicit registry + scrub any .npmrc that might have been seeded
+      # with a stale _authToken template. With OIDC Trusted Publisher,
+      # npm exchanges the id-token directly; a zero-length _authToken
+      # line from setup-node's registry-url breaks that exchange and
+      # produces a `404 PUT /prompt-to-asset` with the misleading
+      # "not in this registry" body.
+      - name: Configure npm for OIDC publish
+        run: |
+          rm -f "$HOME/.npmrc" ./.npmrc
+          npm config set registry https://registry.npmjs.org/
+          npm config get registry
 
       - name: Ensure sharp resolves on the runner
         run: npm install --no-save sharp
