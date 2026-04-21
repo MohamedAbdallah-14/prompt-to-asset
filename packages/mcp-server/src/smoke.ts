@@ -75,7 +75,11 @@ const checks: Check[] = [
       const spec = await enhancePrompt({ brief: "transparent logo for my app called Acme" });
       if (spec.asset_type !== "logo")
         throw new Error(`classified as ${spec.asset_type}, expected logo`);
-      if (!["recraft-v3", "gpt-image-1", "ideogram-3-turbo"].includes(spec.target_model)) {
+      if (
+        !["recraft-v3", "recraft-v4", "gpt-image-1", "gpt-image-1.5", "ideogram-3-turbo"].includes(
+          spec.target_model
+        )
+      ) {
         throw new Error(`target_model=${spec.target_model}, expected a transparency-safe model`);
       }
       if (!spec.transparency_required)

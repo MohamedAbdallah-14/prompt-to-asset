@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/routing-table.schema.json",
-  "version": "1.2.0",
-  "updated": "2026-04-21",
+  "version": "1.2.1",
+  "updated": "2026-04-22",
   "source": "docs/research/SYNTHESIS.md § Model Capability Matrix and § Highest-Confidence Recommendations",
   "rules": [
     {
@@ -14,7 +14,7 @@
         { "model": "recraft-v4", "params": { "output_format": "svg" }, "postprocess": ["rasterize_svg"] },
         { "model": "recraft-v3", "params": { "output_format": "svg" }, "postprocess": ["rasterize_svg"] }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image-preview", "nano-banana", "nano-banana-pro", "sd-1.5", "dall-e-3", "flux-schnell", "flux-dev", "flux-pro", "flux-2"],
+      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image", "sd-1.5", "dall-e-3", "flux-schnell", "flux-dev", "flux-pro", "flux-2"],
       "postprocess": ["validate_alpha", "reject_checkerboard"],
       "research_sources": [
         "docs/research/04-gemini-imagen-prompting/4c-transparent-background-checkerboard.md",
@@ -32,7 +32,7 @@
         { "model": "gpt-image-1.5", "params": { "background": "transparent" }, "postprocess": ["birefnet_matte", "kmeans_quantize", "vtracer", "svgo"] },
         { "model": "gpt-image-1", "params": { "background": "transparent" }, "postprocess": ["birefnet_matte", "kmeans_quantize", "vtracer", "svgo"] }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image-preview", "nano-banana", "nano-banana-pro", "sd-1.5"],
+      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "sd-1.5"],
       "postprocess": ["svgo_conservative", "validate_svg_path_count"],
       "research_sources": [
         "docs/research/07-midjourney-ideogram-recraft/7c-recraft-v3-native-svg.md",
@@ -51,7 +51,7 @@
         { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] },
         { "model": "recraft-v4" }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "nano-banana", "sd-1.5", "flux-schnell", "flux-dev", "flux-pro", "flux-2"],
+      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "sd-1.5", "flux-schnell", "flux-dev", "flux-pro", "flux-2"],
       "postprocess": ["birefnet_matte", "validate_alpha", "ocr_wordmark_check"],
       "research_sources": [
         "docs/research/07-midjourney-ideogram-recraft/7b-ideogram-text-rendering-for-logos.md",
@@ -64,7 +64,7 @@
       "when": { "asset_type": "logo", "text_length": ">3" },
       "primary": { "strategy": "composite", "mark_model": "recraft-v3", "typography": "svg_composite" },
       "fallback": [],
-      "never": ["any_diffusion_for_the_text"],
+      "never": [],
       "postprocess": ["validate_composite"],
       "research_sources": [
         "docs/research/08-logo-generation/8c-text-rendering-in-logos.md",
@@ -83,7 +83,7 @@
         { "model": "gpt-image-1", "params": { "background": "transparent" } },
         { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "nano-banana", "flux-schnell", "flux-dev"],
+      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "flux-schnell", "flux-dev"],
       "postprocess": ["birefnet_matte", "center_frame_check", "export_app_icon_set"],
       "research_sources": [
         "docs/research/09-app-icon-generation/9a-ios-app-icon-hig-specs.md",
@@ -101,7 +101,7 @@
         { "model": "gpt-image-1.5", "postprocess": ["birefnet_matte", "kmeans_quantize", "potrace", "svgo"] },
         { "model": "gpt-image-1", "postprocess": ["birefnet_matte", "kmeans_quantize", "potrace", "svgo"] }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image-preview", "nano-banana", "nano-banana-pro"],
+      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image"],
       "postprocess": ["wcag_16px_check", "export_favicon_bundle"],
       "research_sources": [
         "docs/research/11-favicon-web-assets/"
@@ -114,7 +114,7 @@
       "fallback": [
         { "strategy": "satori_with_diffusion_hero", "hero_model": "flux-pro" },
         { "strategy": "satori_with_diffusion_hero", "hero_model": "flux-2" },
-        { "strategy": "satori_with_diffusion_hero", "hero_model": "cf-flux-schnell" },
+        { "strategy": "satori_with_diffusion_hero", "hero_model": "cf-flux-1-schnell" },
         { "strategy": "satori_with_diffusion_hero", "hero_model": "hf-flux-schnell" }
       ],
       "never": [],
@@ -134,7 +134,7 @@
         { "model": "sdxl", "params": { "lora": "brand.lora" } },
         { "model": "cf-flux-1-schnell" }
       ],
-      "never": ["imagen-3", "imagen-4", "nano-banana", "nano-banana-pro"],
+      "never": ["imagen-3", "imagen-4"],
       "postprocess": ["palette_delta_e_check", "set_coherence_check"],
       "research_sources": [
         "docs/research/15-style-consistency-brand/",
@@ -189,7 +189,7 @@
         { "model": "recraft-v4", "params": { "output_format": "svg" } },
         { "model": "recraft-v3", "params": { "output_format": "svg" } }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image-preview", "nano-banana", "nano-banana-pro", "flux-schnell", "flux-dev", "flux-pro", "flux-2", "sd-1.5", "sdxl"],
+      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "flux-schnell", "flux-dev", "flux-pro", "flux-2", "sd-1.5", "sdxl"],
       "postprocess": ["svgo_conservative", "validate_svg_path_count"],
       "research_sources": [
         "docs/research/10-ui-illustrations-graphics/10c-spot-illustrations-and-icon-packs.md",
@@ -205,7 +205,7 @@
         { "model": "gpt-image-1", "params": { "background": "transparent" }, "postprocess": ["birefnet_matte"] },
         { "model": "ideogram-3-turbo", "endpoint": "/ideogram-v3/generate-transparent", "params": { "rendering_speed": "TURBO" } }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image-preview", "nano-banana", "nano-banana-pro"],
+      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image"],
       "postprocess": ["center_frame_check", "export_splash_screen_bundle"],
       "research_sources": [
         "docs/research/09-app-icon-generation/",
@@ -221,7 +221,7 @@
         { "model": "ideogram-3-turbo", "endpoint": "/ideogram-v3/generate-transparent", "params": { "rendering_speed": "TURBO" } },
         { "model": "sdxl", "params": { "layerdiffuse": true } }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image-preview", "nano-banana", "nano-banana-pro"],
+      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image"],
       "postprocess": ["validate_alpha", "tight_bbox"],
       "research_sources": [
         "docs/research/13-transparent-backgrounds/",

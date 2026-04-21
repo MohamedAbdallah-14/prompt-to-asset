@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   CallToolRequestSchema,
@@ -730,11 +733,37 @@ export const TOOLS: Tool[] = [
   }
 ];
 
+/**
+ * Loads the published package version from package.json at runtime so the MCP
+ * server handshake (and `p2a --version`) always matches what npm actually
+ * published. Avoids the drift that happened at 0.3.0 → 0.4.0 where the server
+ * kept reporting an old number.
+ */
+function loadPackageVersion(): string {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const candidates = [
+    resolve(__dirname, "..", "package.json"),
+    resolve(__dirname, "..", "..", "package.json")
+  ];
+  for (const c of candidates) {
+    try {
+      const pkg = JSON.parse(readFileSync(c, "utf-8")) as { name?: string; version?: string };
+      if (pkg.name === "prompt-to-asset" && typeof pkg.version === "string") return pkg.version;
+    } catch {
+      // try next candidate
+    }
+  }
+  return "0.0.0";
+}
+
+export const SERVER_VERSION = loadPackageVersion();
+
 export function createServer(): Server {
   const server = new Server(
     {
       name: "prompt-to-asset",
-      version: "0.3.0"
+      version: SERVER_VERSION
     },
     {
       capabilities: {

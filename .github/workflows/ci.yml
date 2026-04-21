@@ -51,7 +51,7 @@ jobs:
       # this runner is. `--no-save` keeps the lockfile untouched.
       - name: Ensure sharp resolves on ${{ runner.os }}
         shell: bash
-        run: npm install --no-save sharp@^0.33.5
+        run: npm install --no-save sharp@^0.34.5
 
       - name: Type-check
         run: npm run typecheck
@@ -103,7 +103,7 @@ jobs:
         run: npm ci
 
       - name: Ensure sharp resolves
-        run: npm install --no-save sharp@^0.33.5
+        run: npm install --no-save sharp@^0.34.5
 
       - name: Build
         run: npm run build

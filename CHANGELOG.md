@@ -11,6 +11,24 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+## [0.4.1] — 2026-04-22
+
+Quality pass on the 0.4.0 release. No feature changes — everything here is a drift-correction, a polish, or a CI fix.
+
+### Fixed
+
+- **CI smoke test green.** The smoke check for `transparent logo for my app` was pinned to the old transparency-safe whitelist (`recraft-v3`, `gpt-image-1`, `ideogram-3-turbo`) and failed after 0.4.0 promoted `recraft-v4` to primary. The whitelist now includes `recraft-v4` and `gpt-image-1.5`, matching the live routing table.
+- **CI sharp resolution pin aligned.** `.github/workflows/ci.yml` was installing `sharp@^0.33.5` on every runner, overriding the `^0.34.5` declared in `packages/mcp-server/package.json`. CI now installs the same major as the package manifest, so platform tests run against the shipping dep.
+- **Cost guard model IDs synced to the registry.** `cost-guard.ts` had eight model ids that no longer matched `data/model-registry.json` (`hf-sd-xl`, `hf-sd-3`, `sdxl-1.0`, `sd-3-large`, `leonardo-phoenix-1.0`, `recraft-v3-svg`, `flux-pro-1.1`, `cf-flux-schnell`), so cost checks silently fell through to fail-open. All IDs now line up with the registry, and `recraft-v4`, `gpt-image-1-mini`, `cf-flux-2-*`, and the full `replicate-*` / `comfyui-*` set are priced.
+- **Routing-table never-lists no longer reference unregistered models.** Dropped `gemini-3-pro-image-preview`, `nano-banana`, `nano-banana-pro`, and `any_diffusion_for_the_text` from the `never` arrays; the concrete `gemini-3-*` ids in the registry already cover the intent. `p2a doctor --data` now reports zero never-list warnings.
+- **Typo in og-image fallback chain.** `hero_model: "cf-flux-schnell"` corrected to `cf-flux-1-schnell` (the id that actually exists in the registry).
+- **MCP server version now reads from package.json.** The handshake string was hard-coded at `0.3.0` even after the package published `0.4.0`. `createServer()` now loads the current version from `package.json` at runtime, so clients see the version they actually installed.
+
+### Changed
+
+- **`data/routing-table.json`** bumped to 1.2.1 / 2026-04-22 to reflect the never-list cleanup.
+- **Cost guard** now covers 40+ models including every free-tier and Replicate route, so `P2A_MAX_SPEND_USD_PER_RUN` is meaningful on more paths.
+
 ## [0.4.0] — 2026-04-21
 
 Research-to-implementation alignment release. Full audit of all 34 research categories (361 files) against the codebase. Every finding from the research update log is now reflected in production code, data files, skills, and docs.

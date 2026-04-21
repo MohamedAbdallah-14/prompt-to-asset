@@ -28,18 +28,17 @@
 // Keep updated as providers publish; easier to move in one file than in
 // model-registry.json which is versioned heavily.
 export const PRICE_TABLE_USD_PER_IMAGE: Record<string, number> = {
-  // OpenAI
+  // OpenAI — IDs must match data/model-registry.json exactly.
   "gpt-image-1": 0.19,
   "gpt-image-1.5": 0.19,
+  "gpt-image-1-mini": 0.008,
   "dall-e-3": 0.08,
 
   // Google
   "imagen-3": 0.03,
   "imagen-4": 0.04,
-  "gemini-3-flash-image": 0, // free tier on AI Studio
-  "gemini-3.1-flash-image-preview": 0,
-  "gemini-3-pro-image-preview": 0.039,
-  "gemini-3-pro-image": 0.039,
+  "gemini-3-flash-image": 0.039, // Nano Banana. Free tier was removed 2025-12; paid only.
+  "gemini-3-pro-image": 0.067, // Nano Banana Pro 1K
 
   // Ideogram
   "ideogram-3": 0.08,
@@ -47,42 +46,66 @@ export const PRICE_TABLE_USD_PER_IMAGE: Record<string, number> = {
 
   // Recraft
   "recraft-v3": 0.04,
-  "recraft-v3-svg": 0.04,
+  "recraft-v4": 0.08,
 
   // Flux family
   "flux-pro": 0.05,
-  "flux-pro-1.1": 0.05,
-  "flux-1.1-pro-ultra": 0.06,
   "flux-kontext-pro": 0.05,
-  "flux-kontext-max": 0.08,
   "flux-2": 0.08,
   "flux-schnell": 0.003,
+  "flux-dev": 0.025,
 
   // Stability
-  "sd-3-large": 0.065,
-  "sd-3-large-turbo": 0.04,
-  "sdxl-1.0": 0.009,
+  "sd3-large": 0.065,
+  sdxl: 0.009,
+  "sd-1.5": 0.002,
   "playground-v3": 0.04,
 
   // Leonardo
-  "leonardo-phoenix-1.0": 0.02,
+  "leonardo-phoenix": 0.02,
+  "leonardo-diffusion-xl": 0.02,
+
+  // Adobe Firefly / others
+  "firefly-3": 0.04,
+  "krea-image-1": 0.04,
+  "midjourney-v6": 0,
+  "midjourney-v7": 0,
 
   // fal.ai — aggregator; use flux pricing as proxy
   "fal-flux-pro": 0.05,
-  "fal-flux-schnell": 0.003,
+  "fal-flux-2": 0.08,
+  "fal-sdxl": 0.01,
 
-  // Free tier / zero key
+  // Free tier / zero key — must match registry ids in data/model-registry.json
   "pollinations-flux": 0,
   "pollinations-turbo": 0,
-  "pollinations-majestic": 0,
+  "pollinations-kontext": 0,
+  "pollinations-sd": 0,
   "horde-sdxl": 0,
   "horde-flux": 0,
-  "hf-sd-xl": 0,
-  "hf-sd-3": 0,
+  "hf-sdxl": 0,
+  "hf-sd3": 0,
+  "hf-flux-dev": 0,
   "hf-flux-schnell": 0,
-  "cf-flux-schnell": 0,
+  "cf-flux-1-schnell": 0,
+  "cf-flux-2-klein-4b": 0,
+  "cf-flux-2-klein-9b": 0,
+  "cf-flux-2-dev": 0,
+  "cf-sdxl": 0,
   "cf-sdxl-lightning": 0,
-  "replicate-flux-schnell": 0.003
+  "cf-dreamshaper-8-lcm": 0,
+  "cf-leonardo-phoenix": 0,
+  "cf-leonardo-lucid-origin": 0,
+  "replicate-flux-schnell": 0.003,
+  "replicate-flux-1.1-pro": 0.04,
+  "replicate-flux-dev": 0.025,
+  "replicate-sdxl": 0.00125,
+  "replicate-sd3": 0.035,
+  "replicate-recraft-v3": 0.04,
+  "replicate-ideogram-3": 0.08,
+  "comfyui-sdxl": 0,
+  "comfyui-flux": 0,
+  "comfyui-flux-lora": 0
 };
 
 export function estimatedCostUsd(modelId: string, images: number = 1): number | null {
