@@ -189,10 +189,10 @@ describe("upscale", () => {
       .toBuffer();
     global.fetch = vi.fn(
       async () =>
-        new Response(
-          JSON.stringify({ image_b64: big.toString("base64"), method: "dat2-remote" }),
-          { status: 200, headers: { "content-type": "application/json" } }
-        )
+        new Response(JSON.stringify({ image_b64: big.toString("base64"), method: "dat2-remote" }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
     ) as typeof fetch;
     process.env["PROMPT_TO_BUNDLE_UPSCALER_URL"] = "https://remote/upscale";
     const r = await upscale({

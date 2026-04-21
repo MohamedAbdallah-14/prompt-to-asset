@@ -1,12 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import {
-  mkdtempSync,
-  mkdirSync,
-  rmSync,
-  writeFileSync,
-  readFileSync,
-  existsSync
-} from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CONFIG } from "../config.js";
@@ -78,8 +71,7 @@ let tmpRoot: string;
 beforeEach(() => {
   for (const k of ENV_TO_RESTORE) envSnapshot[k] = process.env[k];
   for (const k of ENV_TO_RESTORE) delete process.env[k];
-  for (const k of Object.keys(CONFIG.apiKeys))
-    setKey(k as keyof typeof CONFIG.apiKeys, undefined);
+  for (const k of Object.keys(CONFIG.apiKeys)) setKey(k as keyof typeof CONFIG.apiKeys, undefined);
   // Pollinations is on by default and would make "no keys" behaviour misleading.
   process.env["POLLINATIONS_DISABLED"] = "1";
   process.env["HORDE_DISABLED"] = "1";
@@ -118,7 +110,10 @@ describe("brandBundleParse", () => {
     expect(none.bundle.palette).toEqual([]);
     expect(none.warnings.some((w) => w.includes("no colors"))).toBe(true);
 
-    const manyHex = Array.from({ length: 16 }, (_, i) => `#${(0x111111 * (i + 1)).toString(16).slice(0, 6).padStart(6, "0")}`).join(", ");
+    const manyHex = Array.from(
+      { length: 16 },
+      (_, i) => `#${(0x111111 * (i + 1)).toString(16).slice(0, 6).padStart(6, "0")}`
+    ).join(", ");
     const many = await brandBundleParse({ source: manyHex });
     if (many.bundle.palette.length > 12) {
       expect(many.warnings.some((w) => w.includes("colors"))).toBe(true);
@@ -528,9 +523,7 @@ describe("validateAsset", () => {
       run_vqa: true,
       run_vlm: true
     });
-    expect(r.warnings.some((w) => w.includes("VQAScore skipped") || w.includes("VLM"))).toBe(
-      true
-    );
+    expect(r.warnings.some((w) => w.includes("VQAScore skipped") || w.includes("VLM"))).toBe(true);
   });
 });
 
@@ -617,10 +610,13 @@ describe("trainBrandLora", () => {
     const imgPath = join(tmpRoot, "img.png");
     writeFileSync(imgPath, png);
     const fetchMock = vi.fn(async () => {
-      return new Response(JSON.stringify({ lora_id: "lora_123", status: "ready", lora_url: "https://x" }), {
-        status: 200,
-        headers: { "content-type": "application/json" }
-      });
+      return new Response(
+        JSON.stringify({ lora_id: "lora_123", status: "ready", lora_url: "https://x" }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
     });
     global.fetch = fetchMock as typeof fetch;
     const r = await trainBrandLora({

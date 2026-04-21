@@ -18,11 +18,9 @@ function captureIo() {
       err.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf-8"));
       return true;
     });
-  const exitSpy = vi
-    .spyOn(process, "exit")
-    .mockImplementation(((_code?: number) => {
-      throw new ProcessExit(_code ?? 0);
-    }) as typeof process.exit);
+  const exitSpy = vi.spyOn(process, "exit").mockImplementation(((_code?: number) => {
+    throw new ProcessExit(_code ?? 0);
+  }) as typeof process.exit);
   return {
     out,
     err,
@@ -142,9 +140,9 @@ describe("cli/models modelsCommand", () => {
   });
 
   it("inspect --json with unknown id exits 1", async () => {
-    await expect(
-      modelsCommand(["inspect", "not-real-model", "--json"])
-    ).rejects.toBeInstanceOf(ProcessExit);
+    await expect(modelsCommand(["inspect", "not-real-model", "--json"])).rejects.toBeInstanceOf(
+      ProcessExit
+    );
   });
 
   it("--help prints the subcommand help", async () => {

@@ -48,10 +48,10 @@ function installProviderFetchMock() {
 
     // OpenAI images — returns b64_json directly
     if (url.startsWith("https://api.openai.com/v1/images/generations")) {
-      return new Response(
-        JSON.stringify({ data: [{ b64_json: DUMMY_PNG_B64 }] }),
-        { status: 200, headers: { "content-type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ data: [{ b64_json: DUMMY_PNG_B64 }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
     }
     // Ideogram — returns a URL; subsequent fetch returns the binary
     if (url.startsWith("https://api.ideogram.ai/")) {

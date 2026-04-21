@@ -29,11 +29,9 @@ function captureIo() {
       err.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf-8"));
       return true;
     });
-  const exitSpy = vi
-    .spyOn(process, "exit")
-    .mockImplementation(((_code?: number) => {
-      throw new ProcessExit(_code ?? 0);
-    }) as typeof process.exit);
+  const exitSpy = vi.spyOn(process, "exit").mockImplementation(((_code?: number) => {
+    throw new ProcessExit(_code ?? 0);
+  }) as typeof process.exit);
   return {
     out,
     err,
@@ -90,7 +88,17 @@ describe("cli/sprite-sheet", () => {
 
     const out = join(tmp, "out", "sheet.png");
     const atlas = join(tmp, "out", "sheet.json");
-    await spriteSheetCommand([tmp, "--out", out, "--atlas", atlas, "--padding", "2", "--columns", "2"]);
+    await spriteSheetCommand([
+      tmp,
+      "--out",
+      out,
+      "--atlas",
+      atlas,
+      "--padding",
+      "2",
+      "--columns",
+      "2"
+    ]);
     expect(existsSync(out)).toBe(true);
     const parsed = JSON.parse(readFileSync(atlas, "utf-8"));
     expect(Object.keys(parsed.frames).length).toBe(3);
@@ -155,14 +163,7 @@ describe("cli/nine-slice", () => {
     const img = join(tmp, "panel.png");
     await writePng(img, 64, 64);
     const outDir = join(tmp, "out2");
-    await nineSliceCommand([
-      img,
-      "--guides",
-      "8,8,8,8",
-      "--out",
-      outDir,
-      "--android-9patch"
-    ]);
+    await nineSliceCommand([img, "--guides", "8,8,8,8", "--out", outDir, "--android-9patch"]);
     expect(existsSync(join(outDir, "panel.9.png"))).toBe(true);
   });
 
@@ -194,9 +195,7 @@ describe("cli/nine-slice", () => {
     if (!sharp) return;
     const img = join(tmp, "panel.png");
     await writePng(img, 32, 32);
-    await expect(
-      nineSliceCommand([img, "--guides", "1,2,3"])
-    ).rejects.toBeInstanceOf(ProcessExit);
+    await expect(nineSliceCommand([img, "--guides", "1,2,3"])).rejects.toBeInstanceOf(ProcessExit);
     expect(io.err.join("")).toMatch(/--guides/);
   });
 });

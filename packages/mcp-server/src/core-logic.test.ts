@@ -3,17 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseBrandSource, hashBundle } from "./brand.js";
-import {
-  computeCacheKey,
-  cachePath,
-  readCache,
-  writeCache,
-  writeArtifact
-} from "./cache.js";
-import {
-  checkDataIntegrity,
-  assertDataIntegrityAtBoot
-} from "./data-integrity.js";
+import { computeCacheKey, cachePath, readCache, writeCache, writeArtifact } from "./cache.js";
+import { checkDataIntegrity, assertDataIntegrityAtBoot } from "./data-integrity.js";
 import { route, isForbiddenForAsset, getModelInfo } from "./router.js";
 
 // ── brand ─────────────────────────────────────────────────────────────────────
@@ -90,7 +81,9 @@ describe("parseBrandSource", () => {
   });
 
   it("falls back to raw-text parser on invalid JSON", () => {
-    const b = parseBrandSource("Our palette is #abcdef and #123.\nDo not: use photos\nAvoid clip art");
+    const b = parseBrandSource(
+      "Our palette is #abcdef and #123.\nDo not: use photos\nAvoid clip art"
+    );
     expect(b.palette).toEqual(expect.arrayContaining(["#abcdef", "#123"]));
     expect(b.do_not.length).toBeGreaterThan(0);
   });

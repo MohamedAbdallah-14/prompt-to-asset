@@ -129,10 +129,7 @@ function setKey(name: keyof typeof CONFIG.apiKeys, value: string | undefined): v
 
 function resetKeys(): void {
   for (const k of Object.keys(CONFIG.apiKeys))
-    setKey(
-      k as keyof typeof CONFIG.apiKeys,
-      ORIGINAL_KEYS[k as keyof typeof ORIGINAL_KEYS]
-    );
+    setKey(k as keyof typeof CONFIG.apiKeys, ORIGINAL_KEYS[k as keyof typeof ORIGINAL_KEYS]);
   (CONFIG as { cloudflareAccountId: string }).cloudflareAccountId = ORIGINAL_CF_ACCOUNT;
   (CONFIG as { dryRun: boolean }).dryRun = ORIGINAL_DRY_RUN;
 }
@@ -152,8 +149,7 @@ beforeEach(() => {
   for (const k of ENV_TO_RESTORE) envSnapshot[k] = process.env[k];
   for (const k of ENV_TO_RESTORE) delete process.env[k];
   // Clear every API key by default so tests opt-in.
-  for (const k of Object.keys(CONFIG.apiKeys))
-    setKey(k as keyof typeof CONFIG.apiKeys, undefined);
+  for (const k of Object.keys(CONFIG.apiKeys)) setKey(k as keyof typeof CONFIG.apiKeys, undefined);
   (CONFIG as { cloudflareAccountId: string }).cloudflareAccountId = "";
   (CONFIG as { dryRun: boolean }).dryRun = false;
 });
@@ -167,9 +163,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function installFetch(
-  ...responses: ResponseSpec[]
-): { calls: FetchCall[]; restore: () => void } {
+function installFetch(...responses: ResponseSpec[]): { calls: FetchCall[]; restore: () => void } {
   const { mock, calls } = createFetchMock(responses);
   const original = global.fetch;
   global.fetch = mock;
@@ -198,9 +192,7 @@ describe("OpenAIProvider", () => {
   });
 
   it("throws actionable error when key is missing (no dry run)", async () => {
-    await expect(OpenAIProvider.generate("gpt-image-1", baseReq)).rejects.toThrow(
-      /OPENAI_API_KEY/
-    );
+    await expect(OpenAIProvider.generate("gpt-image-1", baseReq)).rejects.toThrow(/OPENAI_API_KEY/);
   });
 
   it("returns a dummy png in dry-run with no key", async () => {
@@ -274,9 +266,7 @@ describe("OpenAIProvider", () => {
     }
     handle = installFetch({ kind: "json", body: { data: [{}] } });
     try {
-      await expect(OpenAIProvider.generate("gpt-image-1", baseReq)).rejects.toThrow(
-        /no b64_json/
-      );
+      await expect(OpenAIProvider.generate("gpt-image-1", baseReq)).rejects.toThrow(/no b64_json/);
     } finally {
       handle.restore();
     }
@@ -359,7 +349,11 @@ describe("GoogleProvider", () => {
       }
     );
     try {
-      await GoogleProvider.generate("gemini-3-pro-image", { ...baseReq, width: 1200, height: 1600 });
+      await GoogleProvider.generate("gemini-3-pro-image", {
+        ...baseReq,
+        width: 1200,
+        height: 1600
+      });
       await GoogleProvider.generate("imagen-3", { ...baseReq, width: 1024, height: 768 });
       await GoogleProvider.generate("imagen-4", baseReq);
       await GoogleProvider.generate("imagen-4", { ...baseReq, width: 1900, height: 1000 });
@@ -389,9 +383,7 @@ describe("GoogleProvider", () => {
     }
     handle = installFetch({ kind: "json", body: { candidates: [] } });
     try {
-      await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(
-        /no inline image/
-      );
+      await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(/no inline image/);
     } finally {
       handle.restore();
     }
@@ -470,7 +462,9 @@ describe("IdeogramProvider", () => {
     }
     handle = installFetch({ kind: "json", body: { data: [] } });
     try {
-      await expect(IdeogramProvider.generate("ideogram-3", baseReq)).rejects.toThrow(/no image URL/);
+      await expect(IdeogramProvider.generate("ideogram-3", baseReq)).rejects.toThrow(
+        /no image URL/
+      );
     } finally {
       handle.restore();
     }
@@ -486,7 +480,10 @@ describe("RecraftProvider", () => {
     (CONFIG as { dryRun: boolean }).dryRun = true;
     const dryPng = await RecraftProvider.generate("recraft-v3", baseReq);
     expect(dryPng.format).toBe("png");
-    const drySvg = await RecraftProvider.generate("recraft-v4", { ...baseReq, output_format: "svg" });
+    const drySvg = await RecraftProvider.generate("recraft-v4", {
+      ...baseReq,
+      output_format: "svg"
+    });
     expect(drySvg.format).toBe("svg");
     expect(drySvg.native_svg).toBe(true);
     (CONFIG as { dryRun: boolean }).dryRun = false;
@@ -571,7 +568,10 @@ describe("BflProvider", () => {
       return 0 as unknown as NodeJS.Timeout;
     }) as typeof setTimeout);
     const { calls, restore } = installFetch(
-      { kind: "json", body: { id: "job-1", polling_url: "https://api.bfl.ai/v1/get_result/job-1" } },
+      {
+        kind: "json",
+        body: { id: "job-1", polling_url: "https://api.bfl.ai/v1/get_result/job-1" }
+      },
       { kind: "json", body: { status: "Pending" } },
       {
         kind: "json",
@@ -1065,7 +1065,10 @@ describe("ReplicateProvider", () => {
         kind: "json",
         body: { id: "p3", status: "starting", urls: { get: "https://rep/get/p3" } }
       },
-      { kind: "json", body: { id: "p3", status: "processing", urls: { get: "https://rep/get/p3" } } },
+      {
+        kind: "json",
+        body: { id: "p3", status: "processing", urls: { get: "https://rep/get/p3" } }
+      },
       {
         kind: "json",
         body: { id: "p3", status: "succeeded", output: ["https://rep/out.png"] }
@@ -1148,9 +1151,7 @@ describe("PollinationsProvider", () => {
   });
 
   it("maps pollinations-kontext + unknown model id + webp detection + http error", async () => {
-    const webpMagic = Buffer.from([
-      0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50
-    ]);
+    const webpMagic = Buffer.from([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]);
     const short = Buffer.from([0x89]);
     let handle = installFetch({ kind: "buffer", body: webpMagic });
     try {
@@ -1325,9 +1326,7 @@ describe("ComfyUiProvider", () => {
       throw new Error("econnrefused");
     }) as typeof fetch;
     try {
-      await expect(ComfyUiProvider.generate("comfyui-x", baseReq)).rejects.toThrow(
-        /fetch failed/
-      );
+      await expect(ComfyUiProvider.generate("comfyui-x", baseReq)).rejects.toThrow(/fetch failed/);
     } finally {
       global.fetch = original;
     }
@@ -1363,9 +1362,7 @@ describe("paste-only providers", () => {
   it("Adobe Firefly is paste-only and throws helpful error", async () => {
     expect(AdobeProvider.supportsModel("firefly-3")).toBe(true);
     expect(AdobeProvider.isAvailable()).toBe(false);
-    await expect(AdobeProvider.generate("firefly-3", baseReq)).rejects.toThrow(
-      /enterprise IMS/
-    );
+    await expect(AdobeProvider.generate("firefly-3", baseReq)).rejects.toThrow(/enterprise IMS/);
   });
 
   it("Krea is paste-only and throws helpful error", async () => {

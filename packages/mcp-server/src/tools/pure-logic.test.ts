@@ -203,7 +203,7 @@ describe("svg-briefs.buildSvgBrief", () => {
   it("icon_pack uses currentColor fallback and stroke skeleton", () => {
     const brief = buildSvgBrief({ asset_type: "icon_pack" });
     expect(brief.palette.hex).toContain("currentColor");
-    expect(brief.skeleton).toContain("stroke-width=\"2\"");
+    expect(brief.skeleton).toContain('stroke-width="2"');
   });
 
   it("app_icon authoring opens with an opaque background <rect>", () => {

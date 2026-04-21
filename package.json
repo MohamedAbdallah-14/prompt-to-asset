@@ -1,6 +1,6 @@
 {
   "name": "prompt-to-asset-monorepo",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "private": true,
   "description": "prompt-to-asset for dev assets — reliably generate production-grade software assets (logos, app icons, favicons, OG images, vectors, transparent marks) from simple briefs.",
   "license": "MIT",

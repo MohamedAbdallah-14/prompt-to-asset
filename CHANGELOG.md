@@ -11,6 +11,26 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+## [0.4.3] — 2026-04-22
+
+Deep test-coverage pass. No behavior changes — every source module surfaces more of its branches to the test harness so regressions surface in CI instead of in user bug reports.
+
+### Added
+
+- **Provider registry test suite** (`providers.test.ts`, 62 tests). Exercises all 17 image-generation providers through a `fetch` mock: `supportsModel`, `isAvailable`, `generate` happy path, `dryRun`, `ProviderError` on missing keys, HTTP error propagation, asynchronous polling (BFL, Leonardo, Replicate), aspect-ratio bucketing (Google Imagen 4, Ideogram), and native-format detection (Recraft SVG, Pollinations image/png vs image/jpeg).
+- **Tool-coverage test suite** (`tools-coverage.test.ts`, 36 tests). Drives the `asset_generate_*` family through `inline_svg`, `external_prompt_only`, and `api` soft-fallback paths, plus `validateAsset`, `ingestExternal`, `trainBrandLora`, and the `removeBackground` / `vectorizeImage` / `upscaleRefine` thin wrappers.
+- **Pure-logic test suite** (`pure-logic.test.ts`, 24 tests). Locks behavior for `rewriter` dialects (tag-salad, prose+quoted, prose+flags, prose), `svg-briefs` per asset type, `modelsList` / `modelsInspect` filters, `capabilities`, and `doctor`.
+- **Core-logic test suite** (`core-logic.test.ts`, 25 tests). Brand-source parsing (native JSON, DTCG tokens, AdCP, markdown, raw text), cache key stability, data-integrity assertions, and router branches (transparency, vector, text-length ceilings).
+- **Pipeline extras** (`pipeline-extras.test.ts`, 22 tests). Exercises `matte` (RGBA passthrough, chroma-white fallback, remote RMBG), `upscale` (Lanczos, remote hook), `vectorize` (placeholder SVG, remote Recraft), `tier1Alignment` (remote VQA), and `tier2Vlm` (remote VLM-as-judge).
+- **CLI tests** (`cli.test.ts`, `cli-image.test.ts`, `cli-export-init.test.ts`, `pick.test.ts`, 46 tests total). Drives `p2a` through `main`, `models`, `doctor`, `sprite-sheet`, `nine-slice`, `export`, `init --yes`, `pick --yes`, and `mcp` (transport validation).
+- **Generate-api tests** (`generate-api.test.ts`, 10 tests). Full `api`-mode pipeline for `logo`, `favicon`, `app-icon`, `hero`, `illustration`, `splash-screen` (existing mark), and `ingestExternal`, with a deterministic `fetch` mock that feeds OpenAI / Ideogram / Recraft / Gemini stubs.
+- **`init-brand` tests** (`init-brand.test.ts`, 18 tests). Covers every project-detection branch (Next.js, Astro, Vite, Remix, Nuxt, Expo, Flutter, Xcode, Android, Electron, React Native, plain Node, unknown) and the overwrite guard.
+- **`doctor-fix` tests** (`doctor-fix.test.ts`, 3 tests). Dry-run path, skip list, step well-formedness.
+
+### Changed
+
+- **Coverage climbed from 37.25% → 87.25% statements / 90.52% → 95.37% functions.** 477 total tests now pass (from 186). The remaining gaps are Satori WASM paths in `og-render.ts` (can't load in the test sandbox), `sharp`-missing fallbacks in `pipeline/sharp.ts`, and real shell-out paths in `doctor-fix.ts` (won't exercise without installing binaries).
+
 ## [0.4.2] — 2026-04-22
 
 Documentation accuracy pass for Google's image generation offerings. No runtime or routing changes — everything here corrects pricing and free-tier claims across the repo after verifying against Google's official pricing page.

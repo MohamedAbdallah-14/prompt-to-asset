@@ -1,12 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-  existsSync,
-  readFileSync,
-  mkdirSync
-} from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { exportCommand } from "./export.js";
@@ -37,11 +30,9 @@ function captureIo() {
       err.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf-8"));
       return true;
     });
-  const exitSpy = vi
-    .spyOn(process, "exit")
-    .mockImplementation(((_code?: number) => {
-      throw new ProcessExit(_code ?? 0);
-    }) as typeof process.exit);
+  const exitSpy = vi.spyOn(process, "exit").mockImplementation(((_code?: number) => {
+    throw new ProcessExit(_code ?? 0);
+  }) as typeof process.exit);
   return {
     out,
     err,
