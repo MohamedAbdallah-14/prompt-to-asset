@@ -11,6 +11,15 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+## [0.4.4] — 2026-04-22
+
+Hotfix release. The 0.4.3 commit introduced three Windows-only test failures (hardcoded `/` path separators in `core-logic.test.ts` and `init-brand.test.ts`) plus one Satori-WASM flake in `tools-coverage.test.ts`. All local tests passed on macOS; CI only surfaced the failures on `windows-latest`.
+
+### Fixed
+
+- **Windows path-separator tests.** `core-logic.test.ts` and `init-brand.test.ts` now build expected paths with `path.join` / `path.sep` instead of hard-coded `/`, so the `deadbeefcafebabe` cache-key test and the Next.js / custom-assets-dir detection tests pass on Windows.
+- **Tolerate Satori WASM failures.** `tools-coverage.test.ts` "api mode renders the Satori template end-to-end" now accepts a thrown error — `satori` + `@resvg/resvg-js` ship as optional deps and can fail to load on Windows and alpine-musl runners. The happy path is still asserted when the module loads.
+
 ## [0.4.3] — 2026-04-22
 
 Deep test-coverage pass. No behavior changes — every source module surfaces more of its branches to the test harness so regressions surface in CI instead of in user bug reports.

@@ -1,6 +1,6 @@
 {
   "name": "prompt-to-asset",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "mcpName": "io.github.MohamedAbdallah-14/prompt-to-asset",
   "description": "Prompt enhancer + asset pipeline for developers. One brief → a validated bundle (iOS AppIconSet, Android adaptive, PWA, favicon, OG, visionOS) via routed image models. Three modes: inline_svg (zero-key), external_prompt_only (paste into your subscription), api (server-driven). MCP + CLI.",
   "license": "MIT",
