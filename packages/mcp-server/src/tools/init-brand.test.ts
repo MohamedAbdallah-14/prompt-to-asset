@@ -54,7 +54,8 @@ describe("asset_init_brand", () => {
     );
     const r = await initBrand({ app_name: "site", overwrite: false });
     expect(r.detected.kind).toBe("nextjs");
-    expect(r.assets_dir).toMatch(/public\/branding$/);
+    // Normalize for Windows (path.join returns backslashes on win32).
+    expect(r.assets_dir.replace(/\\/g, "/")).toMatch(/public\/branding$/);
   });
 
   it("refuses to overwrite without overwrite=true", async () => {
