@@ -1,17 +1,27 @@
 ---
 title: "Prompt Enhancement for AI-Generated Software Development Assets — Master Synthesis"
-scope: "Logos, app icons, favicons, OG images, UI illustrations, vector/SVG, transparent backgrounds, brand assets"
+scope: "Logos, app icons, favicons, OG images, UI illustrations, vector/SVG, transparent backgrounds, brand assets, agentic orchestration, evaluation, skills ecosystem"
 models_covered: [Gemini 2.x / Imagen 3/4, gpt-image-1 / gpt-image-1.5, DALL·E 3, Stable Diffusion 1.5/2.1/XL, Flux.1/.2/Pro/Kontext, Midjourney v6/v7, Ideogram 2/2a/3, Recraft V2/V3, Firefly 3, Leonardo, Playground, Krea, Lumalabs Photon]
-date: 2026-04-19
-categories_synthesized: 20
-angle_files_synthesized: 104
+date: 2026-04-21
+waves:
+  - wave: 1
+    categories: 01–23
+    topic: "Prompt dialects, asset-type playbooks, correctness layer, ecosystem & stack combinations"
+  - wave: 2
+    categories: 24–34 + skills-for-p2a
+    topic: "Agentic orchestration, structured generation, reflection, evaluation, CI/CD, RAG, memory, cost, streaming, routing, skills landscape"
+  - wave: future
+    categories: future/
+    topic: "Deferred tracks (3D, Lottie/Rive, CC0, audio, moderation, mockups, etc.)"
+categories_synthesized: 36
+angle_files_synthesized: 185
 ---
 
 # Prompt Enhancement for AI-Generated Software Development Assets — Master Synthesis
 
 ## Executive Summary
 
-**The single biggest insight: producing production-grade software assets from text-to-image models is a *routing and post-processing* problem, not a prompt-engineering problem.** Across 20 categories and 104 angle files, every category arrives at variations of the same conclusion: the user's raw prompt is not what the model was trained on, no single model can satisfy the full asset taxonomy (logo + app icon + favicon + OG + illustration + transparent + vector), and the hardest failures (checkerboard "transparency," misspelled logo text, raster-only SVG, brand drift across a set) are architectural limits that **cannot be fixed with prompt tricks**. They are fixed by classifying intent, routing to the right model, and owning a deterministic post-processing pipeline (matting, vectorization, platform packaging, validation, repair).
+**The single biggest insight: producing production-grade software assets from text-to-image models is a *routing and post-processing* problem, not a prompt-engineering problem.** Across 36 categories and 185 angle files — wave 1 (cat 01–23, prompt dialects / asset playbooks / correctness / ecosystem) plus wave 2 (cat 24–34 + skills-for-p2a, agentic orchestration / structured generation / reflection / eval / CI-CD / RAG / memory / cost / streaming / routing / skills landscape) — every category arrives at variations of the same conclusion: the user's raw prompt is not what the model was trained on, no single model can satisfy the full asset taxonomy (logo + app icon + favicon + OG + illustration + transparent + vector), and the hardest failures (checkerboard "transparency," misspelled logo text, raster-only SVG, brand drift across a set) are architectural limits that **cannot be fixed with prompt tricks**. They are fixed by classifying intent, routing to the right model, and owning a deterministic post-processing pipeline (matting, vectorization, platform packaging, validation, repair) wrapped in an agentic loop with structured generation at its core.
 
 For a builder of a prompt-to-asset plugin that lives inside AI coding assistants (Cursor, Claude Code, Codex, Gemini CLI, Copilot), the practical implications are:
 
@@ -389,31 +399,107 @@ Where the 104-angle compendium did not land a definitive answer:
 - **G15 — OAuth Dynamic Client Registration (RFC 7591) client coverage.** Uneven across MCP clients. Must support both DCR and pre-provisioned client IDs (19b).
 - **G16 — JetBrains AI / Zed integration.** Not mapped in the compendium; future work once their formats stabilize.
 
+## Wave 2 — Agentic Orchestration, Evaluation, Memory, Skills Ecosystem
+
+Wave 2 takes the wave-1 pipeline and wraps it in an agentic loop. None of these categories changes the fundamental routing-plus-post-processing insight; they change how the loop is orchestrated, validated, remembered, priced, and streamed back to the user.
+
+### W2-1 — Structure at both ends is non-negotiable (25, 26, 33)
+
+Wave-1 established that the enhancer must return a structured `AssetSpec` (not a rewritten string) and that SVG output must pass a validator. Wave-2 formalizes this with **constrained decoding at both ends**: Outlines / Instructor / Pydantic enforce the `AssetSpec` schema on input; SVG CFG grammars (pyparsing / Lark over the SVG spec) enforce authored SVG; tool-call JSON Schemas are the agent-side contract. Structure is not optional: it is what lets the orchestrator reason about outputs, run reflection loops, and route to repair primitives without re-parsing free-form text (see 25a–25g).
+
+### W2-2 — The generate → judge → regenerate loop has a known convergence curve (26)
+
+Reflexion / Self-Refine converge in 3–4 iterations on asset generation; past iteration 4, the Reflexion paper shows diminishing returns and judge drift into stylistic bikeshedding. Stopping criteria (from 26d): stop when (a) all tier-0 validators pass AND the VLM judge returns ≥ 0.85 on the rubric, OR (b) a capability-mismatch "hard block" fires (don't iterate — reroute providers), OR (c) iteration count reaches `iter_max = 4`, OR (d) score plateau: `max(score_t) - max(score_{t-1}) < 0.15` for two consecutive rounds. Budget the loop explicitly; the worst failure mode is an agent that regenerates forever on a hopeless request (see 26a §Reflexion; 26d §recommended stopping policy; asset-validation-debug skill retry budget).
+
+### W2-3 — VLM-as-judge is the dominant evaluator and it needs per-asset rubrics (26, 27)
+
+Generic "rate this image 1–10" prompts to Claude-Sonnet-vision / GPT-5-vision are noise. Asset-specific 5–7 criteria rubrics (logo: "reads at 16²?", "no unintended text?", "matches brand palette?"; app icon: "safe zone respected?", "centered?"; favicon: "legible at 16×16 against white and black?") yield ~0.8 agreement with human raters. Build the rubric library once per asset type; version it; A/B it against human gold labels quarterly (see 26b, 26c, 27d).
+
+### W2-4 — Golden-dataset regression testing is what catches provider drift (27)
+
+Image-gen providers ship silent behavior changes. gpt-image-1 updated in early 2026 and started pushing "corporate" styling into logo prompts; Imagen 4's transparency behavior is worse than Imagen 3 on certain prompts. A held-out golden set (~50 `(prompt, asset_type, expected_validator_outcomes)` triples) re-run on every provider release catches this before users do. Without it, regressions propagate into every asset shipped until someone opens an issue (see 27c, 27e).
+
+### W2-5 — Memory belongs in MCP resources, not in the tool call (30, 29)
+
+A stateless asset server with a stateful UX requires three memory tiers: session (in-context, free — last N messages), preference (MCP resource, cheap — "user picks Recraft for marks"), brand (MCP resource, canonical — the full `BrandBundle`). Letta-style tiered memory is overkill for P2A; the winning abstraction is resources addressed by `prompt-to-asset://brand/{slug}` with content hashing and explicit `notifications/resources/updated` invalidation. The brand bundle is the memory for an asset set (see 30a, 30c; 29c, 29e).
+
+### W2-6 — RAG over brand guidelines is high-leverage and underrated (29)
+
+"Ingest the brand PDF" is a real user request. CLIP-image / text-embedding retrieval over a brand style guide can surface the right voice/tone/palette segment for every asset generation without dumping the whole PDF into the prompt. Figma design tokens (DTCG) are the other authoritative brand source. P2A should read both; indexing is ~100 LoC on top of any vector DB; the ROI lands on every asset a returning user generates (see 29a, 29b, 29d).
+
+### W2-7 — Cost is dominated by thumbnail-first → validate → upscale (31, 17)
+
+The cheap-to-expensive routing ladder (Pollinations / Stable Horde free → HF free → Gemini free → gpt-image-1 / Ideogram / Recraft paid) compounds with a two-stage generation: 512² draft → user picks → 1024² refine. This alone cuts paid API spend by ~4× vs naive 1024²-every-time. Combined with content-addressed caching by `(model, version, seed, prompt_hash, params_hash)`, the expected steady-state cache hit rate on brand-iterative workflows is 30–50% (see 31a, 31b, 31d; 18e on cache key design).
+
+### W2-8 — Semantic de-dup is not LSH — it's CLIP-cosine over a brand set (31)
+
+Classical perceptual hashing (pHash / dHash) misses near-duplicates that differ in color but not composition. CLIP-image cosine @ 0.92 is the right threshold for "this is basically the same asset." Run it on every asset added to a set; short-circuit generation if the new request collides with a cached asset within the brand. This closes off an entire class of wasted generations ("make me another empty state" → returns the one from last week with a frame tweak) (see 31e; dovetails with asset-set coherence in 30e).
+
+### W2-9 — Streaming is an MCP-transport decision, not a protocol invention (32)
+
+Wave-1 pegged Streamable HTTP as the 2025-06-18 baseline. Wave-2 confirms: for 3–30 s image generation with meaningful intermediate state (prompt enhanced, route chosen, generation started, validator running), SSE-style progress frames from the MCP server to the client give the user the right mental model. The canonical stack: BullMQ job → SSE endpoint → the MCP streaming response → agent UI. Optimistic previews (cheap local sharpie render while the real generation runs) are a 2× perceived-speed improvement for almost no code (see 32a, 32b, 32d, 32e).
+
+### W2-10 — Model routing is five independent layers stacked together (33)
+
+The `routing-table.json` wave-1 pattern ("match asset_type + requirements → primary + fallbacks") is only one of five. Wave-2 adds: (a) **confidence-based escalation** (VLM judge under threshold → re-route to a costlier model), (b) **best-of-N parallel generation** (N=3 at 1:1 cost ratio on cheap models; pick-by-VLM), (c) **Elo-based model selection** (A/B results feed back into the routing table), (d) **async race-with-validation** (first valid response wins). These compose; stack them behind the same `route()` function (see 33a–33e).
+
+### W2-11 — Orchestration patterns for asset pipelines: plan-execute dominates (24)
+
+The multi-agent handoff / plan-execute-ReAct / parallel-fan-out / retry-fallback / state-machine taxonomy applies. For P2A specifically, **plan-execute** is the right default: (1) plan = classify intent + pick route + build validation budget, (2) execute = generate + validate + repair in a bounded loop. ReAct's tight interleave is unnecessary for a pipeline that's already structurally known; state machines are overkill until the pipeline has ≥5 branches. Parallel fan-out comes in for best-of-N; retry chains come in for provider outages. Multi-agent handoff is the wrong abstraction — P2A is one agent with clear phases, not a team (see 24a–24g).
+
+### W2-12 — Installable skills are thin wrappers; correctness is the unclaimed whitespace (34, 24-skills-for-p2a)
+
+The 2026 skills ecosystem (VoltAgent 46.6k stars; Composio 55k; OpenAI official 17.1k; fal.ai community; Nano Banana single skill 347 stars; ~250 skills across dmgrok's directory) is crowded at the "route one prompt to one API" layer. Zero skills validate alpha, enforce safe zones, or emit platform bundles. The skills P2A ships — `logo`, `app-icon`, `favicon`, `og-image`, `illustration`, `transparent-bg`, `svg-authoring`, `vectorize`, `asset-enhancer`, `t2i-prompt-dialect`, `brand-consistency`, `asset-validation-debug` — occupy exactly this gap. The installable-skills survey is a validation that the correctness layer is empty, not a warning that the space is crowded (see 34 §The media-generation gap is real; 24-skills-for-p2a §Gap Analysis).
+
+### W2-13 — CI/CD for asset pipelines: GitHub Actions is the baseline (28)
+
+Every change to the prompt-enhancer, routing table, or validator should run against the golden set in CI. GitHub Actions matrix over (provider, asset_type) + OIDC for provider keys (no long-lived secrets in the repo) + Octokit for PR-preview comments with generated samples = the working pattern. Release automation is `changesets` + `npm publish` with provenance. Nothing exotic; nothing novel; just the bar (see 28a–28e).
+
+### W2-14 — Scoped-out future tracks need the post-processing layer P2A already owns (future)
+
+The twelve future tracks (stock photos, illustration sets, 3D/mockups, patterns/gradients, visual-diff testing, perceptual hashing, SVG motion libs, Lottie/Rive, audio/SFX, CC0 aggregators, image moderation, mockup libraries) overwhelmingly depend on the same primitives as wave-1: matte / vectorize / validate / cache. The two future tracks with the highest pull-forward priority are **perceptual hashing** (dedup) and **visual-diff testing** (regression) — both directly support the core correctness layer. Audio / 3D / moderation are deferred indefinitely; licensing is the blocker on CC0 / stock (see `future/SYNTHESIS.md`).
+
 ## Category Index
 
 | # | Category | One-sentence synthesis | Index |
 |---|---|---|---|
-| 01 | Prompt engineering theory | CFG, negative prompts, cross-attention control, weighting, LLM rewriting — the user's prompt is never what the model was trained on. | [01/INDEX.md](./01-prompt-engineering-theory/INDEX.md) |
-| 02 | Image generation models | Architectural landscape from diffusion → DiT + rectified flow → autoregressive; every family has distinct prompt-adherence and text-rendering behaviors. | [02/INDEX.md](./02-image-generation-models/INDEX.md) |
-| 03 | Evaluation metrics | No single metric suffices; ship a tiered VQAScore + human-preference + VLM-as-judge + deterministic-validator pipeline. | [03/INDEX.md](./03-evaluation-metrics/INDEX.md) |
-| 04 | Gemini / Imagen prompting | The "checkerboard" transparency failure is architectural, not promptable; Imagen is T2I, Gemini is multimodal edit — two different stacks. | [04/INDEX.md](./04-gemini-imagen-prompting/INDEX.md) |
-| 05 | OpenAI DALL·E / gpt-image | `gpt-image-1/1.5` supports native RGBA, strong in-image text, `input_fidelity`; DALL·E 3 deprecated; all outputs go through invisible rewriter + moderation stack. | [05/INDEX.md](./05-openai-dalle-gpt-image/INDEX.md) |
-| 06 | Stable Diffusion / Flux | Two prompting contracts (CLIP tag-salad vs T5/VLM prose); Flux rejects `negative_prompt`; ControlNet + IP-Adapter + LoRA are the consistency primitives. | [06/INDEX.md](./06-stable-diffusion-flux/INDEX.md) |
-| 07 | Midjourney / Ideogram / Recraft | Three specialists: MJ for aesthetic (no API), Ideogram for text, Recraft for native SVG + brand styles; "concept → clean → vector" pipeline. | [07/INDEX.md](./07-midjourney-ideogram-recraft/INDEX.md) |
-| 08 | Logo generation | Logos are a routing + post-processing problem; re-parameterize user intent; route by text-length; never let diffusion render brand text. | [08/INDEX.md](./08-logo-generation/INDEX.md) |
-| 09 | App icon generation | Single 1024² master → platform-specific fan-out (iOS squircle, Android adaptive layers, PWA maskable, visionOS parallax); strict validator against HIG. | [09/INDEX.md](./09-app-icon-generation/INDEX.md) |
-| 10 | UI illustrations & graphics | Consistency is the primary problem; freeze style with LoRA/IP-Adapter/Recraft style_id; materials have specific physics vocabulary; anti-slop clause mandatory. | [10/INDEX.md](./10-ui-illustrations-graphics/INDEX.md) |
-| 11 | Favicon / web assets | SVG-first, minimal, deterministic; Satori + resvg is the canonical OG engine; `apple-touch-icon` opaque; 26-file iOS PWA splash matrix. | [11/INDEX.md](./11-favicon-web-assets/INDEX.md) |
-| 12 | Vector / SVG generation | Three paths: LLM-author SVG, Recraft native vector, raster + `vtracer`/`potrace`; path count is a quality signal; LayerDiffuse is the alpha trick. | [12/INDEX.md](./12-vector-svg-generation/INDEX.md) |
-| 13 | Transparent backgrounds | The #1 pain: checkerboard-drawn-as-pixels is an architectural limit of most VAEs; fix by routing or by post-matte; positive anchors beat negative prompts. | [13/INDEX.md](./13-transparent-backgrounds/INDEX.md) |
-| 14 | Negative prompting & artifacts | Negative prompts are a CFG sampler trick, not universal; build a regenerate-vs-repair decision matrix + deterministic validator first + ML scorer + VLM rubric. | [14/INDEX.md](./14-negative-prompting-artifacts/INDEX.md) |
-| 15 | Style consistency & brand | Machine-readable brand bundle (DTCG + style refs + LoRA/sref/style_id + `do_not[]`) injected at every call; K-means + ΔE2000 palette validation. | [15/INDEX.md](./15-style-consistency-brand/INDEX.md) |
-| 16 | Background removal & vectorization | Post-processing spine: rembg/BiRefNet (default) + BRIA RMBG (hosted) + SAM 2 + vtracer + potrace + SVGO; two-stage segment → matte; ONNX + session reuse. | [16/INDEX.md](./16-background-removal-vectorization/INDEX.md) |
-| 17 | Upscaling & refinement | Route by asset type, not by image; DAT2 fine-tunes are the 2026 generalist default; never diffusion refine a logo; upscale last. | [17/INDEX.md](./17-upscaling-refinement/INDEX.md) |
-| 18 | Asset pipeline tools | `appicon.co`-killer stack: sharp + resvg + `@capacitor/assets` + icon-gen + BullMQ + R2; content-addressed storage; prompt-hash cache is the economic lever. | [18/INDEX.md](./18-asset-pipeline-tools/INDEX.md) |
-| 19 | Agentic MCP / skills / architectures | One MCP binary + one SKILL.md + one un-frontmattered rule body satisfies 6 IDEs via ~60 lines of sync script; Humazier is the reference repo. | [19/INDEX.md](./19-agentic-mcp-skills-architectures/INDEX.md) |
-| 20 | OSS repos landscape | Crowded at wrapper and UI layers, empty at correctness layer; the unclaimed whitespace is asset-correctness-first, research-grounded, multi-model, agent-parity. | [20/INDEX.md](./20-open-source-repos-landscape/INDEX.md) |
+| 01 | Prompt engineering theory | CFG, negative prompts, cross-attention control, weighting, LLM rewriting — the user's prompt is never what the model was trained on. | [01/SYNTHESIS.md](./01-prompt-engineering-theory/SYNTHESIS.md) |
+| 02 | Image generation models | Architectural landscape from diffusion → DiT + rectified flow → autoregressive; every family has distinct prompt-adherence and text-rendering behaviors. | [02/SYNTHESIS.md](./02-image-generation-models/SYNTHESIS.md) |
+| 03 | Evaluation metrics | No single metric suffices; ship a tiered VQAScore + human-preference + VLM-as-judge + deterministic-validator pipeline. | [03/SYNTHESIS.md](./03-evaluation-metrics/SYNTHESIS.md) |
+| 04 | Gemini / Imagen prompting | The "checkerboard" transparency failure is architectural, not promptable; Imagen is T2I, Gemini is multimodal edit — two different stacks. | [04/SYNTHESIS.md](./04-gemini-imagen-prompting/SYNTHESIS.md) |
+| 05 | OpenAI DALL·E / gpt-image | `gpt-image-1/1.5` supports native RGBA, strong in-image text, `input_fidelity`; DALL·E 3 deprecated; all outputs go through invisible rewriter + moderation stack. | [05/SYNTHESIS.md](./05-openai-dalle-gpt-image/SYNTHESIS.md) |
+| 06 | Stable Diffusion / Flux | Two prompting contracts (CLIP tag-salad vs T5/VLM prose); Flux rejects `negative_prompt`; ControlNet + IP-Adapter + LoRA are the consistency primitives. | [06/SYNTHESIS.md](./06-stable-diffusion-flux/SYNTHESIS.md) |
+| 07 | Midjourney / Ideogram / Recraft | Three specialists: MJ for aesthetic (no API), Ideogram for text, Recraft for native SVG + brand styles; "concept → clean → vector" pipeline. | [07/SYNTHESIS.md](./07-midjourney-ideogram-recraft/SYNTHESIS.md) |
+| 08 | Logo generation | Logos are a routing + post-processing problem; re-parameterize user intent; route by text-length; never let diffusion render brand text. | [08/SYNTHESIS.md](./08-logo-generation/SYNTHESIS.md) |
+| 09 | App icon generation | Single 1024² master → platform-specific fan-out (iOS squircle, Android adaptive layers, PWA maskable, visionOS parallax); strict validator against HIG. | [09/SYNTHESIS.md](./09-app-icon-generation/SYNTHESIS.md) |
+| 10 | UI illustrations & graphics | Consistency is the primary problem; freeze style with LoRA/IP-Adapter/Recraft style_id; materials have specific physics vocabulary; anti-slop clause mandatory. | [10/SYNTHESIS.md](./10-ui-illustrations-graphics/SYNTHESIS.md) |
+| 11 | Favicon / web assets | SVG-first, minimal, deterministic; Satori + resvg is the canonical OG engine; `apple-touch-icon` opaque; 26-file iOS PWA splash matrix. | [11/SYNTHESIS.md](./11-favicon-web-assets/SYNTHESIS.md) |
+| 12 | Vector / SVG generation | Three paths: LLM-author SVG, Recraft native vector, raster + `vtracer`/`potrace`; path count is a quality signal; LayerDiffuse is the alpha trick. | [12/SYNTHESIS.md](./12-vector-svg-generation/SYNTHESIS.md) |
+| 13 | Transparent backgrounds | The #1 pain: checkerboard-drawn-as-pixels is an architectural limit of most VAEs; fix by routing or by post-matte; positive anchors beat negative prompts. | [13/SYNTHESIS.md](./13-transparent-backgrounds/SYNTHESIS.md) |
+| 14 | Negative prompting & artifacts | Negative prompts are a CFG sampler trick, not universal; build a regenerate-vs-repair decision matrix + deterministic validator first + ML scorer + VLM rubric. | [14/SYNTHESIS.md](./14-negative-prompting-artifacts/SYNTHESIS.md) |
+| 15 | Style consistency & brand | Machine-readable brand bundle (DTCG + style refs + LoRA/sref/style_id + `do_not[]`) injected at every call; K-means + ΔE2000 palette validation. | [15/SYNTHESIS.md](./15-style-consistency-brand/SYNTHESIS.md) |
+| 16 | Background removal & vectorization | Post-processing spine: rembg/BiRefNet (default) + BRIA RMBG (hosted) + SAM 2 + vtracer + potrace + SVGO; two-stage segment → matte; ONNX + session reuse. | [16/SYNTHESIS.md](./16-background-removal-vectorization/SYNTHESIS.md) |
+| 17 | Upscaling & refinement | Route by asset type, not by image; DAT2 fine-tunes are the 2026 generalist default; never diffusion refine a logo; upscale last. | [17/SYNTHESIS.md](./17-upscaling-refinement/SYNTHESIS.md) |
+| 18 | Asset pipeline tools | `appicon.co`-killer stack: sharp + resvg + `@capacitor/assets` + icon-gen + BullMQ + R2; content-addressed storage; prompt-hash cache is the economic lever. | [18/SYNTHESIS.md](./18-asset-pipeline-tools/SYNTHESIS.md) |
+| 19 | Agentic MCP / skills / architectures | One MCP binary + one SKILL.md + one un-frontmattered rule body satisfies 6 IDEs via ~60 lines of sync script; Humazier is the reference repo. | [19/SYNTHESIS.md](./19-agentic-mcp-skills-architectures/SYNTHESIS.md) |
+| 20 | OSS repos landscape | Crowded at wrapper and UI layers, empty at correctness layer; the unclaimed whitespace is asset-correctness-first, research-grounded, multi-model, agent-parity. | [20/SYNTHESIS.md](./20-open-source-repos-landscape/SYNTHESIS.md) |
+| 21 | OSS deep dive | Per-topic OSS audits (logo/brand LoRAs, vector-SVG OSS, rewriter training, native RGBA, in-image text, eval harnesses, brand-DNA extractors, MCP registries, cross-IDE installers, etc.). Validates: every subsystem has ≥1 OSS candidate worth borrowing from. | [21/SYNTHESIS.md](./21-oss-deep-dive/SYNTHESIS.md) |
+| 22 | Repo deep dives | Twenty repo-specific audits (Hunyuan, Promptist, nutlope/logocreator, shinpr/mcp-image, logoloom, arekhalpern/mcp-logo-gen, niels-oz/icon-mcp, appicon-forge, pwa-asset-generator, icon-gen, Iconify, svgl, rembg, vtracer, ComfyUI-LayerDiffuse, Vercel stack, etc.). Every repo is thin wrapper or single-asset; none own the full pipeline. | [22/SYNTHESIS.md](./22-repo-deep-dives/SYNTHESIS.md) |
+| 23 | Stack combinations | Nine candidate assemblies from wave-1 components — 2-week MVP, license-clean commercial, quality-max, self-hosted sovereign, free-tier, agent-native, hybrid, edge-browser, ComfyUI-native — + a RECOMMENDED.md. Free-tier plus hybrid is the ship shape. | [23/SYNTHESIS.md](./23-combinations/SYNTHESIS.md) |
+| 24 | Agentic orchestration patterns | Multi-agent handoff, plan-execute-ReAct, parallel fan-out / best-of-N, retry / fallback chains, state-machine creative pipelines. Plan-execute is the right default for P2A. | [24/SYNTHESIS.md](./24-agentic-orchestration-patterns/SYNTHESIS.md) |
+| 24′ | Skills for P2A | Skill-level design notes — frontend-design analysis, SVG-authoring, T2I dialect, MCP API-integration, brand-consistency, validation-debug, gap analysis, marketplace survey. Drives the shipped skill surface. | [24-skills-for-p2a/SYNTHESIS.md](./24-skills-for-p2a/SYNTHESIS.md) |
+| 25 | Structured generation / constrained decoding | Outlines / Instructor / Pydantic + SVG CFG grammars + AssetSpec schema design + runtime validation + MCP tool-schema design. Structure is non-negotiable at both ends of the pipeline. | [25/SYNTHESIS.md](./25-structured-generation-constrained-decoding/SYNTHESIS.md) |
+| 26 | Reflection / self-refinement | Reflexion / Self-Refine converge in 1–3 iterations on asset generation; stop on (tier-0 pass ∧ judge ≥ 0.85) ∨ iter ≥ 3. VLM-as-judge with asset-specific rubric. | [26/SYNTHESIS.md](./26-reflection-self-refinement/SYNTHESIS.md) |
+| 27 | Agent evaluation frameworks | Golden-dataset regression testing is what catches provider drift; per-asset VLM rubrics; CI eval suite; provider-update regression detection. | [27/SYNTHESIS.md](./27-agent-evaluation-frameworks/SYNTHESIS.md) |
+| 28 | CI/CD asset automation | GitHub Actions + OIDC for provider keys + matrix over (provider, asset_type) + changesets for release. Nothing exotic; this is the baseline. | [28/SYNTHESIS.md](./28-cicd-asset-automation/SYNTHESIS.md) |
+| 29 | RAG / brand knowledge | CLIP-image and text-embedding retrieval over brand PDF + Figma DTCG; brand bundle as MCP resource; cross-session consistency via resource hashing. | [29/SYNTHESIS.md](./29-rag-brand-knowledge/SYNTHESIS.md) |
+| 30 | Agent memory / state | Three tiers: session (in-context), preference (MCP resource), brand (MCP resource). Letta-style tiered memory is overkill for P2A; resources are the answer. | [30/SYNTHESIS.md](./30-agent-memory-state/SYNTHESIS.md) |
+| 31 | Cost optimization (agentic) | Thumbnail-first → validate → upscale cuts paid API spend ~4×; content-addressed cache keyed on `(model, version, seed, prompt_hash, params_hash)`; CLIP-cosine semantic dedup @ 0.92. | [31/SYNTHESIS.md](./31-cost-optimization-agentic/SYNTHESIS.md) |
+| 32 | Streaming / realtime UX | MCP Streamable HTTP with SSE progress frames; BullMQ → SSE → client; optimistic local previews while real generation runs (~2× perceived speed). | [32/SYNTHESIS.md](./32-streaming-realtime-ux/SYNTHESIS.md) |
+| 33 | Model routing / ensembling | Five layers stacked: static routing table, confidence-based escalation, best-of-N parallel, Elo-based selection, async race-with-validation. | [33/SYNTHESIS.md](./33-model-routing-ensembling/SYNTHESIS.md) |
+| 34 | Installable skills survey | Thousands of installable skills; zero validate alpha, enforce safe zones, or emit platform bundles. Correctness is the unclaimed whitespace; P2A's shipped skills fill it. | [34/SYNTHESIS.md](./34-installable-skills-survey/SYNTHESIS.md) |
+| F | Future tracks | Twelve deferred tracks (stock, 3D, Lottie/Rive, audio, moderation, CC0, etc.). Pull-forward priority: **perceptual hashing** (dedup) + **visual-diff testing** (regression), both feed the correctness layer. | [future/SYNTHESIS.md](./future/SYNTHESIS.md) |
 
 ---
 
-*Synthesis composed 2026-04-19 from 20 category indexes and 104 angle files (~3.5 MB of primary-source research). Drives the design of the `prompt-to-asset` MCP server, SSOT skill bundle, and cross-IDE packaging.*
+*Synthesis composed 2026-04-19; expanded 2026-04-21 from 36 category indexes and 185 angle files (~6 MB of primary-source research). Drives the design of the `prompt-to-asset` MCP server, SSOT skill bundle, and cross-IDE packaging. See [`index.md`](./index.md) for the navigation map.*

@@ -195,12 +195,51 @@ export interface RoutingRule {
   research_sources?: string[];
 }
 
+/**
+ * Structured validation failure codes. These map 1:1 to the repair table in
+ * `skills/asset-validation-debug/SKILL.md`; keep both in sync. Consumers route
+ * on these codes to pick a repair primitive (matte / inpaint / regenerate /
+ * route change / composite).
+ *
+ * Source: docs/research/03-evaluation-metrics/ + docs/research/14-negative-prompting-artifacts/
+ */
+export type FailureCode =
+  // Tier-0 deterministic
+  | "T0_CHECKERBOARD"
+  | "T0_ALPHA_MISSING"
+  | "T0_DIMENSIONS"
+  | "T0_SAFE_ZONE"
+  | "T0_FILE_SIZE"
+  | "T0_DCT_ENTROPY"
+  // Tier-1 alignment + perceptual
+  | "T1_PALETTE_DRIFT"
+  | "T1_TEXT_MISSPELL"
+  | "T1_LOW_CONTRAST"
+  | "T1_VQASCORE"
+  // Tier-2 VLM-as-judge
+  | "T2_BRAND_DRIFT"
+  | "T2_COMPOSITION";
+
+export interface ValidationFailure {
+  code: FailureCode;
+  tier: 0 | 1 | 2;
+  detail: string;
+  data?: Record<string, number | string | boolean>;
+}
+
 export interface ValidationResult {
   pass: boolean;
   tier0: Record<string, boolean | string | number>;
   tier1?: Record<string, number | boolean | string>;
   tier2?: Record<string, boolean | string | number>;
   warnings: string[];
+  /**
+   * Structured failure codes consumed by `asset-validation-debug`. Empty when
+   * `pass === true`. Each entry carries enough context (`detail`, optional
+   * `data`) for the repair step to pick a primitive without re-running the
+   * check.
+   */
+  failures: ValidationFailure[];
 }
 
 export interface AssetBundle {

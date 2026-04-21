@@ -98,6 +98,24 @@ ROUTING:
 ☐ native SVG needed + model ≠ Recraft?                  → suggest Recraft or inline_svg
 ```
 
+## Where the codes come from
+
+`asset_validate` (and every generator that runs a tier-0 pass before returning) emits the codes as a structured array:
+
+```json
+{
+  "pass": false,
+  "warnings": [...],
+  "failures": [
+    { "code": "T0_CHECKERBOARD", "tier": 0, "detail": "checkerboard pattern detected in 42.7% of analyzed pixels; reject and route to native-RGBA provider", "data": { "ratio": 0.427 } },
+    { "code": "T1_PALETTE_DRIFT", "tier": 1, "detail": "...", "data": { "avg_delta_e2000": 14.2, "threshold": 10 } }
+  ],
+  "tier0": { "width": 1024, "height": 1024, "has_alpha": false, ... }
+}
+```
+
+Read `validations.failures` (when consuming an `AssetBundle`) or the top-level `failures` (when calling `asset_validate` directly). The `data` field on each failure carries enough context (bbox coords, ΔE value, Levenshtein distance) to pick a repair primitive without re-running the check. Source: `packages/mcp-server/src/pipeline/validate.ts`, `ValidationFailure` type in `types.ts`.
+
 ## Integration with systematic debugging
 
 Four-phase loop per failure:

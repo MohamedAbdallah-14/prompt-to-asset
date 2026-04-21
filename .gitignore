@@ -41,6 +41,17 @@ eng.traineddata
 # Per-user scratch — brainstorm / ideation notes, not part of the shipped repo.
 /ideations/
 
+# Claude Code runtime state. Skill sources under .claude/skills/ stay tracked;
+# everything below is per-session state the CLI writes itself.
+.claude/*.lock
+.claude/transcripts/
+.claude/cache/
+.claude/logs/
+.claude/settings.local.json
+
+# /graphify skill output — knowledge graph HTML/JSON/audit per run.
+/graphify-out/
+
 # Staged by `npm run prepack` right before npm publish; not committed.
 packages/mcp-server/data/
 packages/mcp-server/CHANGELOG.md

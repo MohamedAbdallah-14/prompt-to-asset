@@ -6,13 +6,13 @@
     "url": "https://github.com/MohamedAbdallah-14/prompt-to-asset",
     "source": "github"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "prompt-to-asset",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "transport": {
         "type": "stdio"
       },
@@ -67,7 +67,7 @@
         },
         {
           "name": "HF_TOKEN",
-          "description": "Free tier — enables api mode via Hugging Face Inference (SDXL / SD3 / Flux dev+schnell). Free read token, no credit card.",
+          "description": "Free tier \u2014 enables api mode via Hugging Face Inference (SDXL / SD3 / Flux dev+schnell). Free read token, no credit card.",
           "isRequired": false,
           "isSecret": true
         },
@@ -79,7 +79,7 @@
         },
         {
           "name": "CLOUDFLARE_API_TOKEN",
-          "description": "Free tier — enables api mode via Cloudflare Workers AI (10k neurons/day). Pair with CLOUDFLARE_ACCOUNT_ID.",
+          "description": "Free tier \u2014 enables api mode via Cloudflare Workers AI (10k neurons/day). Pair with CLOUDFLARE_ACCOUNT_ID.",
           "isRequired": false,
           "isSecret": true
         },

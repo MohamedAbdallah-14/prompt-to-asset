@@ -11,19 +11,36 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-04-21
+
+Patch release: structured validation failure codes (additive, non-breaking) and a full research-folder restructure.
+
 ### Added
 
-- **Four new skills (→ 12 total).** Close the long-tail gaps the asset-type skills don't cover. No MCP tool surface change; the skills guide Claude through flows the 24-tool API already supports.
+- **Structured validation failure codes.** `ValidationResult.failures: ValidationFailure[]` is now populated on every `asset_validate` / `tier0` / `tier1Alignment` / `tier2Vlm` pass. Codes match the taxonomy in `skills/asset-validation-debug/SKILL.md`: `T0_CHECKERBOARD`, `T0_ALPHA_MISSING`, `T0_DIMENSIONS`, `T0_SAFE_ZONE`, `T0_FILE_SIZE`, `T1_PALETTE_DRIFT`, `T1_TEXT_MISSPELL`, `T1_LOW_CONTRAST`, `T1_VQASCORE`, `T2_BRAND_DRIFT`. Each failure carries `tier` (0/1/2), human-readable `detail`, and a `data` payload with concrete values (bbox coords, ΔE, Levenshtein distance, etc.) that a repair step consumes without re-running the check. Closes the gap where the skill's "map code → repair primitive" contract had no matching output shape in the validator.
+- **Research folder restructure.** Every one of 36 category folders now has both `index.md` (navigation / angle map) and `SYNTHESIS.md` (cross-angle synthesis). Orphan folders `21-oss-deep-dive`, `22-repo-deep-dives`, `23-combinations`, and `future/` got fresh syntheses built from full reads of their 61 combined angle files. Top-level `docs/research/SYNTHESIS.md` expanded from 20 → 36 categories with a new Wave-2 block (W2-1 through W2-14) covering agentic orchestration, structured generation, reflection loops, evaluation, CI/CD, RAG, memory, cost optimization, streaming UX, routing, and the installable-skills survey. Master nav at `docs/research/index.md`.
+- **Four new skills (→ 12 total).** Long-tail gaps the asset-type skills don't cover. No MCP tool surface change; the skills guide Claude through flows the existing 24-tool API already supports.
   - `svg-authoring` — engaged whenever `asset_generate_*` returns an `InlineSvgPlan`. Enforces viewBox, path-budget, palette, optical balance, and small-scale (16×16) legibility rules so the emitted `<svg>` survives `asset_save_inline_svg` validation. Covers style taxonomy (flat / outlined / filled / duotone / minimal) with SVG patterns for each.
   - `t2i-prompt-dialect` — engaged during prompt rewriting. Per-model rules for `gpt-image-1`, Imagen / Gemini, SD 1.5 / SDXL, Flux.1 / Flux.2, Midjourney, Ideogram, Recraft. Handles negative-prompt translation (Flux errors on it, Imagen / `gpt-image-1` ignore it, SDXL uses it), token budgets (SDXL 77 CLIP tokens with `BREAK` chunking), transparency quirks (never prompt Imagen / Gemini for transparency), and brand-palette injection per dialect.
-  - `asset-validation-debug` — engaged when `asset_validate` or a generator returns warnings. Maps failure codes (`T0_CHECKERBOARD`, `T0_ALPHA_MISSING`, `T1_PALETTE_DRIFT`, `T1_TEXT_MISSPELL`, etc.) to concrete repair primitives (matte, inpaint, route change, seed sweep, composite). Applies a retry budget so Claude does not loop on hopeless regenerations. Cost/ROI matrix for each primitive (SVGO 0.01×, matte 0.05×, inpaint 0.3×, regenerate 4×).
-  - `brand-consistency` — engaged for multi-asset sets. Builds `BrandBundle` (palette, typography, style refs, do-not list), enforces palette per model (Recraft `controls.colors` hard-lock → IP-Adapter → Midjourney `--sref` → Flux LoRA), validates CSD style similarity + ΔE2000, promotes accepted assets into the reference set so each new generation tightens the brand lock. Covers LoRA training ROI (break-even at ~20 assets).
-- **Research synthesis** at `docs/research/24-skills-for-p2a/` — 9 documents covering the gap analysis, marketplace-skill survey, per-skill design specs, and the master `SYNTHESIS.md` with a ranked priority matrix and dependency map.
+  - `asset-validation-debug` — engaged when `asset_validate` or a generator returns warnings. Maps failure codes to concrete repair primitives (matte, inpaint, route change, seed sweep, composite). Applies a retry budget so Claude does not loop on hopeless regenerations. Cost/ROI matrix per primitive (SVGO 0.01×, matte 0.05×, inpaint 0.3×, regenerate 4×).
+  - `brand-consistency` — engaged for multi-asset sets. Builds `BrandBundle` (palette, typography, style refs, do-not list), enforces palette per model (Recraft `controls.colors` hard-lock → IP-Adapter → Midjourney `--sref` → Flux LoRA), validates CSD style similarity + ΔE2000, promotes accepted assets into the reference set so each new generation tightens the brand lock. LoRA training ROI breaks even at ~20 assets.
+- **Research synthesis** at `docs/research/24-skills-for-p2a/` — 9 documents covering gap analysis, marketplace-skill survey, per-skill design specs, and the category `SYNTHESIS.md` with a ranked priority matrix and dependency map.
 
 ### Changed
 
+- Uppercase `INDEX.md` → `SYNTHESIS.md` in 30 category folders; `34-installable-skills-survey/INDEX.md` → `LANDSCAPE.md` (preserves the landscape-survey role, frees up the `index.md` slot). All cross-references in top-level `SYNTHESIS.md` updated (40 link replacements).
+- `skills/asset-validation-debug/SKILL.md` now documents the `failures[]` output shape and links to `ValidationFailure` in `types.ts`.
+- Top-level `SYNTHESIS.md` W2-2 stopping-criteria block matches 26d's exact policy (iter_max = 4, score-plateau threshold 0.15, hard-block on capability mismatch) instead of the earlier "1–3 iterations" shorthand.
 - `rules/asset-enhancer-activate.md` gains a "Supporting skills" section pointing at the four new skills. Regenerates into `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, and every IDE mirror.
-- `scripts/sync-mirrors.sh` + `scripts/verify-repo.sh` — SKILLS array extended from 8 to 12. CI verify-repo still enforces byte-for-byte mirror consistency.
+- `scripts/sync-mirrors.sh` + `scripts/verify-repo.sh` — SKILLS array extended from 8 to 12. CI `verify-repo` still enforces byte-for-byte mirror consistency.
+
+### Tests
+
+- 7 new cases in `pipeline/validate.test.ts` covering each failure code, the graceful-degradation path, and the `pass === (failures.length === 0)` invariant. Validator: 27/27. Total suite: 241/241 passing, 2 skipped (network integration tests).
+
+### Infra
+
+- `.gitignore`: ignore `.claude/*.lock`, `.claude/transcripts/`, `.claude/cache/`, `.claude/logs/`, `.claude/settings.local.json`, `/graphify-out/`. Skill sources under `.claude/skills/` stay tracked.
 
 ## [0.3.0] — 2026-04-21
 

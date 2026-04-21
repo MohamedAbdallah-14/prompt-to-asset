@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSharp } from "./sharp.js";
-import type { AssetType, BrandBundle, ValidationResult } from "../types.js";
+import type { AssetType, BrandBundle, ValidationFailure, ValidationResult } from "../types.js";
 
 const CONTRAST_ASSETS = new Set<AssetType>(["favicon", "app_icon", "logo", "icon_pack"]);
 
@@ -36,6 +36,7 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
   const sharp = await loadSharp();
   const tier0Results: Record<string, boolean | number | string> = {};
   const warnings: string[] = [];
+  const failures: ValidationFailure[] = [];
 
   if (!sharp) {
     warnings.push(
@@ -43,7 +44,7 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
     );
     tier0Results["sharp_available"] = false;
     tier0Results["bytes"] = input.image.byteLength;
-    return { pass: true, tier0: tier0Results, warnings };
+    return { pass: true, tier0: tier0Results, warnings, failures };
   }
 
   try {
@@ -57,15 +58,31 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
     tier0Results["bytes"] = input.image.byteLength;
 
     if (input.expected_width && meta.width !== input.expected_width) {
-      warnings.push(`dimensions: expected width ${input.expected_width}, got ${meta.width}`);
+      const detail = `dimensions: expected width ${input.expected_width}, got ${meta.width}`;
+      warnings.push(detail);
+      failures.push({
+        code: "T0_DIMENSIONS",
+        tier: 0,
+        detail,
+        data: { expected: input.expected_width, got: meta.width ?? 0, axis: "width" }
+      });
     }
     if (input.expected_height && meta.height !== input.expected_height) {
-      warnings.push(`dimensions: expected height ${input.expected_height}, got ${meta.height}`);
+      const detail = `dimensions: expected height ${input.expected_height}, got ${meta.height}`;
+      warnings.push(detail);
+      failures.push({
+        code: "T0_DIMENSIONS",
+        tier: 0,
+        detail,
+        data: { expected: input.expected_height, got: meta.height ?? 0, axis: "height" }
+      });
     }
 
     if (input.transparency_required && !meta.hasAlpha) {
       tier0Results["alpha_required_but_missing"] = true;
-      warnings.push("alpha channel required but not present in image");
+      const detail = "alpha channel required but not present in image";
+      warnings.push(detail);
+      failures.push({ code: "T0_ALPHA_MISSING", tier: 0, detail });
     }
 
     if (input.transparency_required && meta.width && meta.height) {
@@ -73,18 +90,28 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
       tier0Results["checkerboard_pattern_ratio"] = checker.ratio;
       if (checker.ratio > 0.05) {
         tier0Results["checkerboard_detected"] = true;
-        warnings.push(
-          `checkerboard pattern detected in ${(checker.ratio * 100).toFixed(1)}% of analyzed pixels; reject and route to native-RGBA provider`
-        );
+        const detail = `checkerboard pattern detected in ${(checker.ratio * 100).toFixed(1)}% of analyzed pixels; reject and route to native-RGBA provider`;
+        warnings.push(detail);
+        failures.push({
+          code: "T0_CHECKERBOARD",
+          tier: 0,
+          detail,
+          data: { ratio: Number(checker.ratio.toFixed(3)) }
+        });
       }
     }
 
     const budget = fileSizeBudget(input.asset_type);
     if (budget && input.image.byteLength > budget) {
       tier0Results["file_size_over_budget"] = true;
-      warnings.push(
-        `file size ${input.image.byteLength} > budget ${budget} for ${input.asset_type}`
-      );
+      const detail = `file size ${input.image.byteLength} > budget ${budget} for ${input.asset_type}`;
+      warnings.push(detail);
+      failures.push({
+        code: "T0_FILE_SIZE",
+        tier: 0,
+        detail,
+        data: { bytes: input.image.byteLength, budget }
+      });
     }
 
     // Source: docs/research/03-evaluation-metrics/3e-asset-specific-evaluation.md
@@ -111,9 +138,21 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
         const insideY = bbox.y >= marginY - 1 && bbox.y + bbox.height <= meta.height - marginY + 1;
         if (!insideX || !insideY) {
           tier0Results["safe_zone_violation"] = true;
-          warnings.push(
-            `subject bbox ${bbox.width}×${bbox.height} @ (${bbox.x},${bbox.y}) exceeds ${input.asset_type} safe zone ${Math.round(expectedW)}×${Math.round(expectedH)}`
-          );
+          const detail = `subject bbox ${bbox.width}×${bbox.height} @ (${bbox.x},${bbox.y}) exceeds ${input.asset_type} safe zone ${Math.round(expectedW)}×${Math.round(expectedH)}`;
+          warnings.push(detail);
+          failures.push({
+            code: "T0_SAFE_ZONE",
+            tier: 0,
+            detail,
+            data: {
+              bbox_x: bbox.x,
+              bbox_y: bbox.y,
+              bbox_w: bbox.width,
+              bbox_h: bbox.height,
+              safe_w: Math.round(expectedW),
+              safe_h: Math.round(expectedH)
+            }
+          });
         } else {
           tier0Results["safe_zone_ok"] = true;
         }
@@ -128,9 +167,16 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
       tier0Results["palette_delta_e2000_avg"] = Number(avgDe.toFixed(2));
       if (avgDe > 10) {
         tier0Results["palette_drift"] = true;
-        warnings.push(
-          `dominant colors drift from brand palette (avg ΔE2000 ${avgDe.toFixed(1)} > 10)`
-        );
+        const detail = `dominant colors drift from brand palette (avg ΔE2000 ${avgDe.toFixed(1)} > 10)`;
+        warnings.push(detail);
+        // Palette drift lives at tier-1 in the skill's taxonomy (perceptual,
+        // post-ΔE2000), even though we compute it in the tier-0 pass for cost.
+        failures.push({
+          code: "T1_PALETTE_DRIFT",
+          tier: 1,
+          detail,
+          data: { avg_delta_e2000: Number(avgDe.toFixed(2)), threshold: 10 }
+        });
       }
     }
 
@@ -150,9 +196,19 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
       const minContrast = Math.min(onWhite, onDark);
       if (minContrast < 3.0) {
         tier0Results["contrast_low"] = true;
-        warnings.push(
-          `brand primary ${primary} has contrast ${onWhite.toFixed(2)}:1 on white and ${onDark.toFixed(2)}:1 on #0F172A. At least one side is below WCAG AA non-text 3:1 — a ${input.asset_type} will be hard to see on that background.`
-        );
+        const detail = `brand primary ${primary} has contrast ${onWhite.toFixed(2)}:1 on white and ${onDark.toFixed(2)}:1 on #0F172A. At least one side is below WCAG AA non-text 3:1 — a ${input.asset_type} will be hard to see on that background.`;
+        warnings.push(detail);
+        failures.push({
+          code: "T1_LOW_CONTRAST",
+          tier: 1,
+          detail,
+          data: {
+            primary,
+            on_white: Number(onWhite.toFixed(2)),
+            on_dark: Number(onDark.toFixed(2)),
+            threshold: 3.0
+          }
+        });
       }
     }
 
@@ -169,9 +225,18 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
         tier0Results["ocr_levenshtein"] = dist;
         if (dist > 1) {
           tier0Results["ocr_mismatch"] = true;
-          warnings.push(
-            `OCR read "${ocr.text.trim()}" vs intended "${input.intended_text.trim()}" (Levenshtein ${dist} > 1). Diffusion samplers mis-render text past ~3 words — regenerate text-free mark + composite real typography.`
-          );
+          const detail = `OCR read "${ocr.text.trim()}" vs intended "${input.intended_text.trim()}" (Levenshtein ${dist} > 1). Diffusion samplers mis-render text past ~3 words — regenerate text-free mark + composite real typography.`;
+          warnings.push(detail);
+          failures.push({
+            code: "T1_TEXT_MISSPELL",
+            tier: 1,
+            detail,
+            data: {
+              ocr: ocr.text.trim(),
+              intended: input.intended_text.trim(),
+              levenshtein: dist
+            }
+          });
         }
       } else {
         tier0Results["ocr_available"] = false;
@@ -186,9 +251,10 @@ export async function tier0(input: ValidateInput): Promise<ValidationResult> {
   }
 
   return {
-    pass: warnings.length === 0,
+    pass: failures.length === 0,
     tier0: tier0Results,
-    warnings
+    warnings,
+    failures
   };
 }
 

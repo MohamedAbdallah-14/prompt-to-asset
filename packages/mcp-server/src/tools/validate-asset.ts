@@ -39,9 +39,15 @@ export async function validateAsset(input: ValidateAssetInputT): Promise<Validat
         if (vqa.notes && vqa.notes.length > 0) t1["notes"] = vqa.notes.join(" | ");
         result.tier1 = t1;
         if (vqa.score !== undefined && vqa.score < 0.5) {
-          result.warnings.push(
-            `VQAScore ${vqa.score.toFixed(2)} < 0.5 — output does not clearly satisfy the prompt.`
-          );
+          const detail = `VQAScore ${vqa.score.toFixed(2)} < 0.5 — output does not clearly satisfy the prompt.`;
+          result.warnings.push(detail);
+          result.failures.push({
+            code: "T1_VQASCORE",
+            tier: 1,
+            detail,
+            data: { score: Number(vqa.score.toFixed(2)), threshold: 0.5 }
+          });
+          result.pass = false;
         }
       }
     }
@@ -68,6 +74,18 @@ export async function validateAsset(input: ValidateAssetInputT): Promise<Validat
       }
       result.tier2 = t2;
       if (vlm.pass === false) {
+        const detail =
+          vlm.notes && vlm.notes.length > 0
+            ? `VLM judge failed: ${vlm.notes.join(" | ")}`
+            : "VLM-as-judge rejected the asset (no notes provided).";
+        result.failures.push({
+          code: "T2_BRAND_DRIFT",
+          tier: 2,
+          detail,
+          ...(vlm.score !== undefined && {
+            data: { score: Number(vlm.score.toFixed(2)) }
+          })
+        });
         result.pass = false;
       }
     }
