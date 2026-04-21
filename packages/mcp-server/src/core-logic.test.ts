@@ -164,7 +164,7 @@ describe("cache", () => {
 
   it("cachePath places under <bucket>/<key>", () => {
     const p = cachePath("abcd1234efef5678", "preview.png");
-    expect(p.endsWith("ab/abcd1234efef5678/preview.png")).toBe(true);
+    expect(p.endsWith(join("ab", "abcd1234efef5678", "preview.png"))).toBe(true);
   });
 
   it("readCache returns null for missing file", () => {

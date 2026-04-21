@@ -11,6 +11,14 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+## [0.4.5] — 2026-04-22
+
+Windows CI hotfix #2. The 0.4.4 release fixed most Windows path-separator asserts but missed the `cachePath` test in `core-logic.test.ts`, which still hard-coded `ab/abcd1234.../preview.png`. This release finishes the job.
+
+### Fixed
+
+- **`cachePath` windows test**: replaced the last hard-coded forward slashes with `path.join(...)` so the bucket/key layout assertion passes on `windows-latest` (GitHub Actions Git Bash).
+
 ## [0.4.4] — 2026-04-22
 
 Hotfix release. The 0.4.3 commit introduced three Windows-only test failures (hardcoded `/` path separators in `core-logic.test.ts` and `init-brand.test.ts`) plus one Satori-WASM flake in `tools-coverage.test.ts`. All local tests passed on macOS; CI only surfaced the failures on `windows-latest`.
