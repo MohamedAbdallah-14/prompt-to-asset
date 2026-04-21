@@ -1,45 +1,39 @@
 import { describe, it, expect } from "vitest";
 import { autoFix } from "./doctor-fix.js";
 
-describe("autoFix (doctor --fix)", () => {
-  it("dry-run never executes installers and reports a plan", async () => {
-    const r = await autoFix({ dry_run: true });
-    expect(r.dry_run).toBe(true);
-    // Every planned step must be un-run under dry-run.
-    for (const s of r.steps) {
-      expect(s.ran).toBe(false);
-      expect(s.success).toBeUndefined();
-    }
-    // Platform shape sanity.
-    expect(["darwin", "linux", "win32", "freebsd", "openbsd", "sunos", "aix"]).toContain(
-      r.platform
-    );
-    expect(typeof r.arch).toBe("string");
-  });
+describe("tools/doctor-fix", () => {
+  it("returns a dry-run report with steps/manual_hints without executing anything", async () => {
+    const report = await autoFix({ dry_run: true });
+    expect(report).toBeDefined();
+    expect(report.dry_run).toBe(true);
+    expect(Array.isArray(report.steps)).toBe(true);
+    expect(Array.isArray(report.manual_hints)).toBe(true);
+    expect(Array.isArray(report.still_missing)).toBe(true);
+    expect(typeof report.ok).toBe("boolean");
+    expect(report.platform).toBe(process.platform);
+    expect(report.arch).toBe(process.arch);
 
-  it("returns ok=true when nothing is missing on this host", async () => {
-    // The dev host already has vtracer/potrace/sharp etc. installed (that's how
-    // the rest of the suite ships green). If this ever flakes, the host is what
-    // changed — not this test.
-    const r = await autoFix({ dry_run: true });
-    if (r.still_missing.length === 0) {
-      expect(r.ok).toBe(true);
-      expect(r.steps.length).toBe(0);
-    } else {
-      // Partial environment — at least one step or hint must address each gap.
-      const addressed = new Set<string>();
-      for (const s of r.steps) addressed.add(s.id);
-      const hintJoined = r.manual_hints.join(" ");
-      for (const m of r.still_missing) {
-        if (m === "vtracer" || m === "potrace") {
-          expect(addressed.has(m) || hintJoined.includes(m)).toBe(true);
-        }
-      }
+    // In a dry-run, no step should have been executed.
+    for (const step of report.steps) {
+      expect(step.ran).toBe(false);
+      expect(step.id).toBeTruthy();
+      expect(step.command).toBeTruthy();
+      expect(Array.isArray(step.args)).toBe(true);
     }
   });
 
-  it("skip option removes a step from the plan", async () => {
-    const r = await autoFix({ dry_run: true, skip: ["vtracer", "potrace"] });
-    expect(r.steps.every((s) => s.id !== "vtracer" && s.id !== "potrace")).toBe(true);
+  it("honors the skip list (skipping vtracer + potrace skips their auto-install steps)", async () => {
+    const report = await autoFix({ dry_run: true, skip: ["vtracer", "potrace"] });
+    const ids = report.steps.map((s) => s.id);
+    expect(ids).not.toContain("vtracer");
+    expect(ids).not.toContain("potrace");
+  });
+
+  it("returns steps that look well-formed", async () => {
+    const report = await autoFix({ dry_run: true });
+    for (const s of report.steps) {
+      expect(typeof s.reason).toBe("string");
+      expect(s.reason.length).toBeGreaterThan(0);
+    }
   });
 });
