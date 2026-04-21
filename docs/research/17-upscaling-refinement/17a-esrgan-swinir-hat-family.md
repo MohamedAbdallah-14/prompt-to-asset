@@ -217,6 +217,8 @@ Concrete empirical ranking on flat-logo preservation (community consensus from t
 
 Release 0.24 (June 2024) added conditional branching (Compare / Conditional nodes) and ~1.25× faster PyTorch upscaling. That makes chaiNNer usable as a *server-side batch processor* driven by a CLI export, which is exactly the pattern an agent wants.
 
+> **Updated 2026-04-21:** chaiNNer's latest stable release is **v0.25.1** (January 7, 2026). Development had paused for over a year but resumed at reduced capacity, with active nightly builds continuing through early 2026.
+
 Typical asset-generation upscale chain in chaiNNer:
 
 ```

@@ -8,16 +8,21 @@ status: draft
 models_covered:
   - midjourney-v6
   - midjourney-v7
+  - midjourney-v8
   - sdxl
   - flux-1-dev
   - flux-1-pro
   - recraft-v3
+  - recraft-v4
   - ideogram-2
+  - ideogram-3
   - gemini-2.5-flash-image
+  - gemini-3-pro-image
   - imagen-3
   - imagen-4
   - dall-e-3
   - gpt-image-1
+  - gpt-image-1-5
 tags:
   - logo
   - prompt-engineering
@@ -50,9 +55,9 @@ Secondary findings: (a) designer style-anchors (Paul Rand, Saul Bass, Aaron Drap
 | 1 | Flat Vector | `flat vector, solid fill, two-color, white background` | `geometric shapes, clean edges, illustrator style` | `gradient, 3d, shading, photo, realistic, text` | Recraft, Ideogram, MJ v6, SDXL |
 | 2 | Minimalist | `minimal mark, single shape, high contrast, lots of whitespace` | `one or two colors, swiss design, restrained` | `detail, ornate, decorative, busy, gradient` | Flux, MJ v6, Imagen 4 |
 | 3 | Geometric | `geometric icon, grid construction, golden ratio, circles and triangles` | `vector, symmetric, modular, bauhaus` | `organic, hand-drawn, messy, sketch` | SDXL, MJ v6, Recraft |
-| 4 | Gradient | `smooth gradient mark, duotone to tritone, vibrant hues` | `modern tech logo, web3, fintech, soft light` | `flat, monochrome, grainy, photo` | MJ v6/v7, Flux, DALL·E 3 |
+| 4 | Gradient | `smooth gradient mark, duotone to tritone, vibrant hues` | `modern tech logo, web3, fintech, soft light` | `flat, monochrome, grainy, photo` | MJ v6/v7/v8, Flux, gpt-image-1.5 |
 | 5 | Isometric | `isometric logo, 30-degree axonometric, three-tone shading, cube grid` | `vector, flat-shaded, ortho projection` | `perspective, realistic lighting, photo, 3d render` | SDXL + isometric LoRA, Recraft |
-| 6 | 3D Rendered | `3d rendered brand mark, soft studio lighting, glossy plastic, clay render` | `octane, cinema 4d style, subsurface scattering` | `flat, vector, 2d, outline, sketch` | MJ v6, DALL·E 3, Imagen 4 |
+| 6 | 3D Rendered | `3d rendered brand mark, soft studio lighting, glossy plastic, clay render` | `octane, cinema 4d style, subsurface scattering` | `flat, vector, 2d, outline, sketch` | MJ v7/v8, gpt-image-1.5, Imagen 4 |
 | 7 | Mascot / Character | `mascot logo, bold outline, friendly character, sports-team style` | `thick black outline, cel shading, chunky shapes` | `photorealistic, scary, hyperreal, anatomical` | MJ v6, SDXL + mascot LoRA |
 | 8 | Badge / Emblem | `vintage badge, circular emblem, banner ribbon, monochrome ink` | `letterpress, heritage, americana, 1920s` | `3d, gradient, neon, futuristic` | MJ v6, SDXL vintage LoRAs |
 | 9 | Monoline | `monoline logo, single continuous line, uniform stroke weight, no fill` | `one-line drawing, rounded caps, minimal` | `fill, shading, gradient, double line, broken line` | Flux, Recraft, Ideogram |
@@ -86,7 +91,7 @@ All 15 below follow a consistent pattern: a *naive user request* → a *rewritte
 
 - **Before:** `modern fintech logo with a gradient`
 - **After (MJ v7):** `smooth duotone gradient brand mark, abstract hexagon folding into an upward arrow, violet to magenta, soft inner glow, modern fintech, flat-ish vector, centered on white, high contrast --style raw --no text, grain, noise, 3d`
-- **After (DALL·E 3):** `A smooth duotone gradient logo mark for a fintech app. The mark is an abstract hexagon that folds into an upward arrow. Gradient runs from violet to magenta. Crisp vector edges with a subtle inner glow. Centered on a pure white background. No text, no letters, just the symbol.`
+- **After (gpt-image-1.5, formerly DALL·E 3):** `A smooth duotone gradient logo mark for a fintech app. The mark is an abstract hexagon that folds into an upward arrow. Gradient runs from violet to magenta. Crisp vector edges with a subtle inner glow. Centered on a pure white background. No text, no letters, just the symbol.`
 
 #### 5. Isometric — developer tool
 
@@ -235,13 +240,16 @@ These are distilled from repeated failure modes observed in community prompt thr
 
 ## Model-Specific Tuning
 
-### Midjourney v6 / v7
+### Midjourney v6 / v7 / v8
+
+> **Updated 2026-04-21:** Midjourney V8 Alpha launched March 17, 2026; V8.1 Alpha preview launched April 14, 2026 on alpha.midjourney.com. V8 is ~5× faster than V7, produces native 2K images, and has significantly improved text rendering — wrapping text in double quotes now produces substantially more accurate results. However V8 is still alpha and Ideogram 3 remains the text-rendering benchmark leader for logo wordmarks. V7 remains the stable production choice as of April 2026; v8 is accessible on alpha.midjourney.com.
 
 - **Prompt shape:** comma-separated aesthetic tags, 30–80 tokens, followed by parameters.
 - **Key params for logos:** `--style raw` (removes MJ's default painterly bias), `--no text, background, shadow, 3d`, `--ar 1:1`, `--stylize 100` (lower stylize = cleaner mark), `--weird 0`, `--chaos 0`.
 - **Strongest tokens:** `flat vector`, `icon mark`, `geometric`, `minimal`, `monoline`, `negative space`, `bauhaus`, `swiss design`, `art deco`.
 - **Known quirks:** MJ loves to add grain and texture even to "flat" prompts. Counter with `--style raw` and explicit `crisp edges, no grain, no texture, no noise`.
 - **Multi-prompt weighting:** `flat vector logo::3 photorealistic::-2` can push hard away from rendered styles.
+- **V8 text rendering:** V8 renders quoted text with significantly improved accuracy (readable signage, clean labels). Still not at Ideogram 3 level for typography-focused prompts but a night-and-day improvement over v7.
 
 ### SDXL (base, Juggernaut, RealVis, logo-specific LoRAs)
 
@@ -260,11 +268,13 @@ These are distilled from repeated failure modes observed in community prompt thr
 - **Guidance scale:** 3.5 default works well for logos; raise to 5 for tighter style adherence.
 - **No classical negative prompt** in Flux.1 [dev] — embed negatives into prose: "no text, no letters, no gradient, no shadow."
 
-### Recraft V3 / Recraft SVG
+### Recraft V3 / Recraft V4 / Recraft SVG
 
-- **Best-in-class for logo-style generation** as of 2024–2026 because it was explicitly trained on brand assets and supports native vector output.
+> **Updated 2026-04-21:** Recraft V4 was released in February 2026. V4 is a ground-up rebuild with four variants: V4 (raster, 1024²), V4 Vector (SVG), V4 Pro (raster, 2048²), and V4 Pro Vector (SVG, 2048²). V4 continues to be the only mainstream model producing native SVG output. The `controls.colors` (RGB array) API parameter remains the most precise color-control mechanism across any commercial image API, now carried forward to V4 with the same JSON structure. References to "Recraft V3" in generation pipelines should be updated to "Recraft V4" for new work.
+
+- **Best-in-class for logo-style generation** as of 2025–2026 because it was explicitly trained on brand assets and supports native vector output. V4 improved text-in-image accuracy, compositional control, and photorealistic rendering over V3.
 - **Use the `style` parameter**: `vector_illustration`, `digital_illustration`, `icon`, `realistic_image`, `logo_raster`. Prompt tokens matter less — the style param does heavy lifting.
-- **Palette parameter:** pass explicit hex array; Recraft honors these more faithfully than prompt-only models.
+- **Palette parameter:** pass explicit RGB array via `controls.colors`; Recraft honors these more faithfully than prompt-only models. V4 API: `"providerSettings": {"recraft": {"colors": [{"rgb": [r,g,b]}]}}`.
 - **Native SVG export:** outputs are generated as vectors, not raster traced — no `potrace` pass needed for clean marks.
 
 ### Ideogram 2 / 3
@@ -274,18 +284,25 @@ These are distilled from repeated failure modes observed in community prompt thr
 - **`magic_prompt` toggle:** off for logos (it adds scene/environment fluff).
 - **Style presets:** `design`, `3d`, `anime`, `general`. `design` is the logo lane.
 
-### Gemini 2.5 Flash Image ("Nano Banana") / Imagen 3 / Imagen 4
+### Gemini Flash Image / Nano Banana family / Imagen 4
+
+> **Updated 2026-04-21:** The model landscape has shifted significantly. "Nano Banana" refers to `gemini-2.5-flash-image` (the free-tier flash model). "Nano Banana Pro" refers to `gemini-3-pro-image-preview` (billed only, no free API tier). "Nano Banana 2" is `gemini-3.1-flash-image-preview`, released February 26, 2026, with 4K output and improved text rendering. Imagen 4 has no free tier whatsoever (all tiers are billed). The free API tier for Nano Banana (gemini-2.5-flash-image) was restored to ~500 req/day after a Dec 2025 cut. Nano Banana Pro has 0 free API RPD — a billing-enabled project is required.
 
 - **Prompt shape:** natural prose, multi-sentence okay.
-- **Transparency problem:** Gemini 2.5 Flash Image is known for rendering a *checkered pattern* in the background when asked for a transparent PNG, instead of emitting true alpha. Mitigation: ask for a plain white background and post-process with `rembg` / BRIA RMBG (category 13 + 16). Do not rely on the model for alpha.
+- **Transparency problem:** Gemini Flash Image models are known for rendering a *checkered pattern* in the background when asked for a transparent PNG, instead of emitting true alpha. Mitigation: ask for a plain white background and post-process with `rembg` / BRIA RMBG (category 13 + 16). Do not rely on the model for alpha.
 - **Safety filter aggressive on "brand" / commercial language.** Rephrasing `a logo for a gun-store` → `a geometric icon mark for a hunting outfitter` clears filters.
-- **Imagen 4** significantly better at vector-flat style than Imagen 3; Imagen 3 leans photo-realistic by default.
+- **Imagen 4** significantly better at vector-flat style than Imagen 3; Imagen 3 leans photo-realistic by default. Imagen 4 is available only via paid Vertex AI (no free tier).
+- **Nano Banana 2 (gemini-3.1-flash-image-preview):** Released Feb 2026. 4K resolution, improved text rendering, up to 14 style reference images. Free dev tier access (limited RPD).
+- **Nano Banana Pro (gemini-3-pro-image-preview):** Best-in-class for multilingual text in images and long-passage rendering. No free API tier — requires a billed Google Cloud project.
 
-### DALL·E 3 / gpt-image-1
+### DALL·E 3 / gpt-image-1 / gpt-image-1.5
 
-- **Prompt shape:** natural prose. gpt-image-1 is strong at following long descriptions.
+> **Updated 2026-04-21:** DALL·E 3 is being deprecated from the OpenAI API on May 12, 2026 (announced November 2025). ChatGPT already switched to gpt-image-1.5 in December 2025. Migrate to `gpt-image-1` or `gpt-image-1.5`. References to DALL·E 3 as a primary logo-generation model should be treated as legacy.
+
+- **Prompt shape:** natural prose. gpt-image-1 / 1.5 are strong at following long descriptions.
 - **Rewrites your prompt.** The model transforms the prompt before rendering. To minimize rewrite drift on style-sensitive logos, prefix with `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS:` (this is a documented ChatGPT-user convention; see OpenAI Cookbook "advanced prompt examples").
-- **Alpha support:** gpt-image-1 supports transparent backgrounds via API parameter (`background: "transparent"`). Prefer the API over ChatGPT UI for logo work.
+- **Alpha support:** Both gpt-image-1 and gpt-image-1.5 support transparent backgrounds via API parameter (`background: "transparent"`). gpt-image-1.5 is ~4× faster and ~20% cheaper than gpt-image-1; both support RGBA PNG and WebP transparency. Prefer the API over ChatGPT UI for logo work.
+- **gpt-image-1.5 architecture note:** Unlike diffusion-based gpt-image-1, 1.5 uses a native multimodal approach (text and images as the same data type), yielding better prompt adherence, superior text rendering, and better edit precision.
 
 ### Cross-model portability table
 
@@ -329,12 +346,14 @@ A [STYLE] logo of [SUBJECT]. [PALETTE]. [CONSTRUCTION]. Centered on a plain whit
 Negative: text, letters, watermark, signature, blurry, 3d, photo, realistic, gradient, shadow, frame, border, grain, noise
 ```
 
-**Recraft V3:**
+**Recraft V4 (formerly V3):**
 
 ```
 style=vector_illustration
 palette=[#hex1, #hex2, #hex3]
 prompt: [SUBJECT] as a [STYLE] icon mark, [CONSTRUCTION]
+# Note: in some API integrations (e.g., fal.ai), colors are passed as:
+# "providerSettings": {"recraft": {"colors": [{"rgb": [r,g,b]}]}}
 ```
 
 ---

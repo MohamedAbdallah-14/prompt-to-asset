@@ -87,7 +87,9 @@ The `name` field uses Figma's slash-separated naming convention (`brand/primary`
 
 ## DTCG transform pipeline
 
-Once you have DTCG JSON (from the API or plugin export), **Style Dictionary v4** ([styledictionary.com](https://styledictionary.com)) transforms it to any output format. For brand bundle integration, define a custom platform:
+Once you have DTCG JSON (from the API or plugin export), **Style Dictionary** ([styledictionary.com](https://styledictionary.com)) transforms it to any output format. For brand bundle integration, define a custom platform:
+
+> **Updated 2026-04-21:** Style Dictionary is now at **v5** (latest: 5.4.0, March 2026). v4 is the previous major version. v5 is ESM-native, browser-compatible out of the box, and adds async API support. Use `style-dictionary@latest` for new projects; migration guides from v4 → v5 are at [styledictionary.com/versions/v4/migration](https://styledictionary.com/versions/v4/migration/).
 
 ```js
 // style-dictionary.config.mjs
@@ -103,13 +105,13 @@ export default {
 };
 ```
 
-Add `@tokens-studio/sd-transforms` v2 for Figma-origin tokens that use math expressions, description fields, or Tokens Studio-specific syntax:
+Add `@tokens-studio/sd-transforms` for Figma-origin tokens that use math expressions, description fields, or Tokens Studio-specific syntax (current version: **2.0.3** as of Q1 2026):
 
 ```bash
 npm install @tokens-studio/sd-transforms style-dictionary
 ```
 
-The Tokens Studio plugin for Figma ([docs.tokens.studio](https://docs.tokens.studio)) is the most popular authoring tool for design tokens in Figma and supports two-way sync (Figma → GitHub → CI pipeline). It exports both legacy TS JSON and DTCG 2025.10 format.
+The Tokens Studio plugin for Figma ([docs.tokens.studio](https://docs.tokens.studio)) is the most popular authoring tool for design tokens in Figma and supports two-way sync (Figma → GitHub → CI pipeline). It exports both legacy TS JSON and DTCG format.
 
 ---
 
@@ -159,7 +161,7 @@ This gives design-system-level governance over brand bundle updates — changes 
 - Figma Variables Plugin API — [developers.figma.com/docs/plugins/working-with-variables](https://developers.figma.com/docs/plugins/working-with-variables/)
 - Figma Variables REST API — [developers.figma.com/docs/rest-api/variables-endpoints](https://developers.figma.com/docs/rest-api/variables-endpoints/)
 - figma/variables-github-action-example — [github.com/figma/variables-github-action-example](https://github.com/figma/variables-github-action-example)
-- Style Dictionary v4 — [styledictionary.com](https://styledictionary.com/)
+- Style Dictionary v5 (current) — [styledictionary.com](https://styledictionary.com/)
 - @tokens-studio/sd-transforms — [github.com/tokens-studio/sd-transforms](https://github.com/tokens-studio/sd-transforms)
 - lukasoppermann/design-tokens plugin — [github.com/lukasoppermann/design-tokens](https://github.com/lukasoppermann/design-tokens)
 - DTCG Format Module 2025.10 — [designtokens.org/tr/drafts/format](https://www.designtokens.org/tr/drafts/format/)

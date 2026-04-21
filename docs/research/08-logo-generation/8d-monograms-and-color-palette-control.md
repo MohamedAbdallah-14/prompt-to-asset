@@ -50,7 +50,7 @@ Diffusion models learn letterforms from photographs of text in the wild, not fro
 - **Stroke corruption** — the two letters blur into a non-glyph (common with SDXL at <1024px, and with Gemini 2.5 Flash Image ("Nano Banana") on cursive monograms).
 - **Spurious extra text** — the model outputs `ABCD` when asked for `AD`, or appends a serif tagline. DALL·E 3 and MJ v6 both exhibit this aggressively.
 
-Models with native typography work (Ideogram 2.0, Recraft v3, Flux.1 [pro]) handle monograms best; Ideogram and Recraft are the current leaders for two-letter marks.
+Models with native typography work (Ideogram 3.0, Recraft V4, Flux.1 [pro]) handle monograms best; Ideogram 3 and Recraft V4 are the current leaders for two-letter marks.
 
 ### Working Prompt Pattern
 
@@ -127,11 +127,11 @@ Ordered from "pixel-exact" to "vibes-only."
 ### Tier 3 — Prompt-only (hint, not spec)
 
 7. **Named palettes** (strongly prefer over hex):
-   - `Pantone <Name> <Year>` — e.g., `Pantone Mocha Mousse (2025)`, `Pantone Peach Fuzz (2024)`, `Pantone Viva Magenta (2023)`. These have been re-documented across millions of tokens and ground well in LLM-backed T2I systems (DALL·E 3, Gemini, GPT-image-1). ([Pantone AI palette generator](https://infographics.fastcompany.com/91435187/pantone-color-generator-ai-tool))
+   - `Pantone <Name> <Year>` — e.g., `Pantone Mocha Mousse (2025)`, `Pantone Peach Fuzz (2024)`, `Pantone Viva Magenta (2023)`. These have been re-documented across millions of tokens and ground well in LLM-backed T2I systems (Gemini, GPT-image-1.5, gpt-image-1). Note: DALL·E 3 deprecated May 2026. ([Pantone AI palette generator](https://infographics.fastcompany.com/91435187/pantone-color-generator-ai-tool))
    - `Tailwind <shade>-<step>` — `Tailwind emerald-500`, `Tailwind slate-900`, `Tailwind indigo-600`. LLMs know the default Tailwind ramp by memory.
    - `Material Design 3 <role>` — `Material You primary`, `M3 surface-container-high`.
    - Historical/designer palettes the models know: `Bauhaus primary palette`, `Swiss design red/black/white`, `Wes Anderson pastel palette`, `Memphis Group palette`, `retro 1970s warm palette`.
-8. **Hex codes in prompt** (`"#FF5733 primary, #1E1E1E secondary, #FFFFFF background"`) — sometimes works on Ideogram 2.0, Recraft, and Flux.1 [pro]; unreliable on MJ, DALL·E 3, Gemini 2.5 Flash Image. Treat as low-confidence. The [VIOLIN benchmark](https://arxiv.org/abs/2603.00166) demonstrates that *no* current model reliably renders a requested pure-color swatch.
+8. **Hex codes in prompt** (`"#FF5733 primary, #1E1E1E secondary, #FFFFFF background"`) — sometimes works on Ideogram 3, Recraft V4, and Flux.1 [pro]; unreliable on MJ, gpt-image-1.5, Gemini Flash Image. Treat as low-confidence. The [VIOLIN benchmark](https://arxiv.org/abs/2603.00166) demonstrates that *no* current model reliably renders a requested pure-color swatch.
 9. **RGB/HSL triples in prompt** (`RGB(255,87,51)`) — worse than hex on every model tested by the community; tokenization hurts.
 10. **Color *names* (qualitative)** — `terracotta orange`, `electric indigo`, `sage green`, `bone white`, `charcoal black`. Surprisingly effective, especially when paired with one of the richer color lexicons (Crayola names, paint-chip names). Low precision but high reliability.
 
@@ -226,12 +226,15 @@ Memorize or inline these in prompts — they work across Gemini, GPT-image-1, MJ
 
 ## Per-Model Notes
 
-### Recraft v3 / Recraft API
+### Recraft V4 / Recraft API (formerly Recraft V3)
+
+> **Updated 2026-04-21:** Recraft V4 released February 2026. V4 is a ground-up rebuild with four variants: V4 raster (1024²), V4 Vector (SVG), V4 Pro raster (2048²), V4 Pro Vector (SVG 2048²). The `controls.colors` RGB API parameter is carried forward from V3 to V4 unchanged in structure. The V4 API uses `"providerSettings": {"recraft": {"colors": [{"rgb": [r,g,b]}]}}` in some integrations (e.g., fal.ai) — check the integration docs, as the parameter name may be wrapped differently per provider.
 
 - **Best-in-class** for brand color because it's the only mainstream API with an explicit `controls.colors[{rgb:[...]}]` parameter. ([Recraft endpoints](https://www.recraft.ai/docs/api-reference/endpoints))
 - Use `style: "icon"` or `style: "vector_illustration"` for monograms/symbol marks; returns SVG that's post-recolorable.
 - Custom palettes available on paid plans via the UI; free plan gets preset rotating palettes. ([palettes doc](https://recraft.ai/docs/using-recraft/color-palettes/using-color-palettes-in-generation))
 - Works best with short prompts — one crisp noun phrase, not a 200-word essay.
+- V4 improved prompt adherence and text-in-image accuracy over V3.
 
 ### Midjourney v7
 
@@ -242,16 +245,21 @@ Memorize or inline these in prompts — they work across Gemini, GPT-image-1, MJ
 
 ### DALL·E 3 / GPT-image-1 / GPT-image-1.5
 
+> **Updated 2026-04-21:** DALL·E 3 is being deprecated from the OpenAI API on May 12, 2026. Do not build new logo pipelines on DALL·E 3. ChatGPT already switched to GPT-Image-1.5 in December 2025. gpt-image-1.5 is ~4× faster and ~20% cheaper than gpt-image-1, with a native multimodal architecture and better text rendering. Both support `background: "transparent"` via the API.
+
 - No direct color-control parameter; GPT-image-1.5 docs emphasize "superior instruction following" but OpenAI publishes no benchmark on hex obedience. ([OpenAI docs](https://platform.openai.com/docs/models/gpt-image-1.5))
 - Because prompts are rewritten by an internal LLM, **named palettes** massively outperform hex. Gemini-like behavior.
-- Strongest for logos that include *some* text (DALL·E 3 leads on in-image typography). Weakest for pure palette reproduction.
+- gpt-image-1.5 has improved text rendering — better for logo wordmarks than gpt-image-1, but Ideogram 3 and Recraft V4 remain the leaders for typography-focused logo work.
 - Tends to add gradients unprompted — explicitly negate: `flat solid colors, no gradients, no shading`.
 
-### Gemini 2.5 Flash Image ("Nano Banana")
+### Gemini Flash Image / Nano Banana family
+
+> **Updated 2026-04-21:** The Nano Banana family now spans multiple models. "Nano Banana" = `gemini-2.5-flash-image` (free API tier ~500 req/day as of Feb 2026; was cut to ~20/day in Dec 2025, then partially restored). "Nano Banana 2" = `gemini-3.1-flash-image-preview` (released Feb 26, 2026; 4K output; free dev tier). "Nano Banana Pro" = `gemini-3-pro-image-preview` (no free API tier — billed project required). Imagen 4 has no free tier at all. The old claim that Google image API "has no free tier" (Dec 2025) is now partially outdated for Nano Banana / Nano Banana 2, though Nano Banana Pro and Imagen 4 remain paid-only.
 
 - Excellent prompt adherence but inconsistent on transparent/white backgrounds (known "checkered box" failure — see `13-transparent-backgrounds`).
 - Respects Tailwind/Material named palettes surprisingly well — best-in-class among LLM-fronted T2I for named colors.
 - Hex codes: interprets them but clamps to nearest "safe" color ~60% of the time in informal testing.
+- **Nano Banana Pro** (billed) is the best-in-class multilingual text renderer in the Gemini family; trained on significantly more CJK text-image pairs.
 
 ### Flux.1 [pro] / [dev]
 
@@ -259,10 +267,12 @@ Memorize or inline these in prompts — they work across Gemini, GPT-image-1, MJ
 - Flux Pro Finetuning is the recommended brand-color path when hex-in-prompt isn't enough. ([BFL blog](https://bfl.ai/blog/25-01-16-finetuning))
 - Pairs well with IP-Adapter (for [dev]) and ControlNet line-art for monograms with an existing sketch.
 
-### Ideogram 2.0
+### Ideogram 3.0 (formerly 2.0)
 
-- Best open-access model for monograms (competes with Recraft).
-- Responds well to explicit hex; has a color-palette UI selector.
+> **Updated 2026-04-21:** Ideogram 3.0 was released March 26, 2025. For new work, prefer Ideogram 3.0 over 2.0 — it has substantially improved text rendering (~90–95% accuracy vs 2.0) and better typographic control.
+
+- Best-in-class for typography-focused monograms (competes with Recraft V4; remains #1 on published text-rendering benchmarks as of Apr 2026).
+- Responds well to explicit hex; has a color-palette UI selector. Ideogram 3 docs warn non-Latin scripts "may have some difficulty."
 - Weakest on pure icon-only (tends to re-add text).
 
 ### Stable Diffusion XL (local, ComfyUI)
@@ -325,10 +335,10 @@ style, no additional text
 
 ## Tradeoffs and Recommendations
 
-- **For a production pipeline where exact hex matters**, use Recraft's `controls.colors` for generation, or generate grayscale/flat and programmatically recolor SVG/PNG post-hoc. Don't rely on prompt hex.
+- **For a production pipeline where exact hex matters**, use Recraft V4's `controls.colors` for generation, or generate grayscale/flat and programmatically recolor SVG/PNG post-hoc. Don't rely on prompt hex.
 - **For design exploration where "in the ballpark" is fine**, use named palettes — they're faster to type and more reliable than hex across every model.
 - **For brand consistency across a series**, invest once in a Flux Pro finetune or a Recraft custom palette; prompt-time color hints don't scale.
-- **For monograms specifically**, Ideogram 2.0 and Recraft v3 are the current leaders. MJ v7 is best for mood and style if you're willing to post-recolor. SDXL + ControlNet + IP-Adapter is the local path with the highest control ceiling.
+- **For monograms specifically**, Ideogram 3.0 and Recraft V4 are the current leaders (both released/updated 2025–2026). MJ V7 or V8 Alpha for mood and style if you're willing to post-recolor. SDXL + ControlNet + IP-Adapter is the local path with the highest control ceiling.
 - **For pure icon marks**, always include "single closed silhouette," "pictogram," and explicit text negation. Generate on white, remove background post-hoc; don't trust in-model transparency.
 
 ## References

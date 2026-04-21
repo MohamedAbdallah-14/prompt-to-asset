@@ -5,8 +5,10 @@ title: Community-documented Gemini/Imagen quirks & artifacts
 summary: Catalog of weird behaviors, safety-filter false positives, output-layer bugs, and style biases in Imagen 3/4 and Gemini 2.5/3 Flash Image ("Nano Banana" / "Nano Banana Pro") as reported by developers on Google's own forums, GitHub, Reddit, HN, and independent technical blogs between late 2024 and early 2026.
 research_value: high
 sources_primary: 14
-date_range: 2024-08 to 2026-03
+date_range: 2024-08 to 2026-04
 ---
+
+> **Updated 2026-04-21:** The quirks catalog below covers behaviors through early 2026. Key status changes since original compilation: (1) All Imagen 4.0 variants deprecated, EOL June 30, 2026 — migrate to `gemini-2.5-flash-image`; (2) programmatic image-gen via the Gemini Developer API free tier now returns HTTP 429 with `limit: 0` — billing required for all image endpoints; (3) `google-generativeai` and `vertexai.generative_models` Python packages are deprecated (removed June 24, 2026) — use `google-genai`. The SDK hang (#8, futex deadlock on `IMAGE_SAFETY` enum) and MIME-type lie (#9) remain open as of April 2026.
 
 **Research value: high** — External signal is dense: Google's own AI Developers Forum, first-party GitHub issue trackers (`googleapis/python-genai`, `google-gemini/cookbook`), and a small group of technical writers (Max Woolf, Yael Walker) have catalogued reproducible, still-open quirks well beyond the usual marketing narrative.
 

@@ -253,7 +253,7 @@ The right answer depends on the project shape. For **prompt-to-asset** specifica
 
 Mirrors appicon.co's trust story but with OSS code we ship ourselves:
 
-- **`@jsquash/png`** + **`@jsquash/resize`** ([jamsinclair/jSquash](https://github.com/jamsinclair/jSquash)) — WASM fork of Google's Squoosh codecs that actually works in browsers and Cloudflare Workers (unlike `@squoosh/lib`, which is Node-only and unmaintained). Supports lanczos3 resampling, which is what Photoshop uses and what we want.
+- **`@jsquash/png`** + **`@jsquash/resize`** ([jamsinclair/jSquash](https://github.com/jamsinclair/jSquash)) — WASM fork of Google's Squoosh codecs that works in browsers and Cloudflare Workers. `@squoosh/lib` and `@squoosh/cli` are **abandoned** (Google removed CLI from the repo; the package breaks on Node 18+). jSquash is the maintained successor. Current versions: `@jsquash/png` v3.1.1, `@jsquash/avif` v2.1.1. Supports lanczos3 resampling, which is what Photoshop uses and what we want.
 - **`JSZip`** — to assemble the `AppIcons.zip`. Streamed download via `saveAs` (FileSaver.js) or the File System Access API when available.
 - **`file-saver`** or native `<a download>` — delivery.
 - (Optional) **`@resvg/resvg-wasm`** — rasterize SVG inputs in the browser without Canvas API quirks.

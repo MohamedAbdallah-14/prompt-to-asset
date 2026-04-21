@@ -76,6 +76,8 @@ Stored in SQLite. The server reads this manifest at the start of each `asset_gen
 
 **Stable Diffusion / ComfyUI:** Use Reference Only nodes or IP-Adapter to condition on the approved logo image. Seeds are reproducible within the same checkpoint version.
 
+> **Updated 2026-04-21:** Recraft's `style_id` API remains the strongest cross-call coherence primitive — it is provider-level, not prompt-level, and guarantees visual consistency regardless of how different the prompt is. Store `style_seed` as the Recraft `style_id` in the coherence schema above; for other providers `style_seed` falls back to a diffusion seed integer (session-scoped only) or a reference image path. The `ref_image_path` / IP-Adapter path via FLUX.2 (10 reference images per call) is the best cross-session fallback for non-Recraft providers — it is the correct value for the `ref_asset_id` foreign key in the coherence schema.
+
 ---
 
 ## Dual-Layer Deduplication for Cache Efficiency

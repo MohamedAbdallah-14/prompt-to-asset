@@ -72,14 +72,16 @@ Imagen 3's eval is unusually rigorous and is a reusable template for any prompt-
 
 On **GenAI-Bench overall preference** (Elo with 99% CI), the updated Dec 2024 scores were:
 
-| Model | Elo |
-|---|---|
-| Imagen 3 | **1,098** |
-| Stable Diffusion 3 | 1,047 |
-| DALL·E 3 | 1,028 |
-| Midjourney v6 | 1,027 |
-| Imagen 2 | 941 |
-| SDXL 1.0 | 860 |
+> **Updated 2026-04-21:** These Elo scores are from the Imagen 3 technical report (Dec 2024 version) and reflect the competitive landscape as of late 2024. DALL·E 3 is being deprecated by OpenAI on May 12, 2026 (superseded by gpt-image-1 / gpt-image-1.5). Midjourney v6 was superseded by v7 (April 2025, default June 2025) and v8 Alpha (March 2026). The current model ranking on LMArena (April 2026) has Gemini 3 Pro Image / Nano Banana Pro at the top, with gpt-image-1.5, Imagen 4, and FLUX.1 Kontext competing in the mid-to-upper tier.
+
+| Model | Elo | Note |
+|---|---|---|
+| Imagen 3 | **1,098** | Reported in Dec 2024 tech report |
+| Stable Diffusion 3 | 1,047 | — |
+| DALL·E 3 | 1,028 | Deprecated May 12, 2026; succeeded by gpt-image-1 |
+| Midjourney v6 | 1,027 | Superseded by v7 (Apr 2025) / v8 Alpha (Mar 2026) |
+| Imagen 2 | 941 | — |
+| SDXL 1.0 | 860 | — |
 
 Imagen 3 led or tied on every reported axis. On **prompt–image alignment** on GenAI-Bench the margin was largest; on DALL·E 3 Eval the four leading models had overlapping CIs, i.e. no decisive winner. [imagen3-arxiv §3.1.1–3.1.2]
 

@@ -97,7 +97,7 @@ The target shape is the one codified in 20e: a single repo that ships **(1)** a 
 
 ### `vercel-labs/skills` — the CLI/skill-pack layer, standalone
 
-- <https://github.com/vercel-labs/skills> — **~14,620★**, largest star count in this survey. `npx skills` installs/searches/updates/removes agent skills across **OpenCode, Claude Code, Codex, Cursor + 41 other agents**, from GitHub/GitLab/git URLs/local paths, globally or per-project, symlink or copy, CI/CD-friendly.
+- <https://github.com/vercel-labs/skills> — **~14.7k★** (as of 2026-04), largest star count in this survey. `npx skills` installs/searches/updates/removes agent skills across **OpenCode, Claude Code, Codex, Cursor + 41 other agents**, from GitHub/GitLab/git URLs/local paths, globally or per-project, symlink or copy, CI/CD-friendly. v1.1.1 added interactive discovery (`npx skills find`) and enhanced agent support.
 - Not a starter — it's the distribution tool. Our CLI should *integrate with* `npx skills`, not compete.
 
 ### Also-rans

@@ -40,10 +40,10 @@ conditioning, (2) post-generation palette remapping for the colors the model
 still drifts on, and (3) automated ΔE2000 validation before the asset is
 released to downstream pipelines.
 
-Among current generators, **Recraft v3** is the only major API that exposes
-a first-class `controls.colors` array of RGB triplets; its palette feature is
-the closest we have to "hex enforcement at generation time" and is the
-strongest single signal for brand compliance. For open pipelines (SDXL / Flux),
+Among current generators, **Recraft v3** was the first major API to expose
+a first-class `controls.colors` array of RGB triplets.
+
+> **Updated 2026-04-21:** **Recraft V4** (released February 2026) also supports `controls.colors` (RGB triplets and `background_color`), so the palette-enforcement feature is now available on both V3 and V4. However, **custom `style_id` (brand style) is not supported in V4** — it remains V3/V3 Vector only. V4 offers superior base generation quality but no trained brand-style anchor; for palette enforcement alone (without a custom style ID), V4 is preferred. Sources: [Recraft API docs](https://www.recraft.ai/docs/api-reference/styles), [Cloudflare Recraft V4 docs](https://developers.cloudflare.com/ai/models/recraft/recraftv4/). For open pipelines (SDXL / Flux),
 **IP-Adapter conditioning on a 3×N swatch image** is the best prompt-time nudge
 but is statistical, not exact. For everything else — including Gemini, DALL·E,
 Midjourney, and even Recraft outputs that still drift — the reliable answer is a
@@ -66,7 +66,7 @@ that passes it instead of fighting the model.
 |---|---|---|---|---|---|---|
 | 1 | **Post-process nearest-palette remap in LAB** (K-means → ΔE2000 swap) on a vector/flat illustration | CPU post | ~0 (exact hex) | Exact | **Yes** on raster; no on true SVG | The only technique that guarantees hex accuracy. Combine with edge-aware remap (only remap pixels whose cluster assignment is confident) to protect anti-aliased edges. |
 | 2 | **Regenerate at vector level with Recraft**, then edit the SVG `fill=""` attributes programmatically to brand hex | Recraft API + svg parsing | 0 | Exact | No | Best for logos/icons. See `15-style-consistency-brand/15a`. |
-| 3 | **Recraft v3 `controls.colors`** (RGB triplets) + full raster/vector output | Recraft API | 1–5 most runs | High | No | Only major hosted API with explicit palette input. |
+| 3 | **Recraft v3/v4 `controls.colors`** (RGB triplets) + full raster/vector output | Recraft API | 1–5 most runs | High | No | Both V3 and V4 support `controls.colors`; V4 offers better quality but no custom `style_id`. |
 | 4 | **3-D LUT bake** from a reference palette + apply to any image | Pillow-LUT / libvips | 2–8 | Good for photographic | No (smooth) | Preserves gradients, ideal for illustrations & photography. |
 | 5 | **Reinhard color transfer** from a "hero on-brand" reference | `color_transfer` | 3–10 | Moderate | No | Photographic only; good for backgrounds. |
 | 6 | **IP-Adapter color-palette swatch** conditioning | SD/SDXL/Flux local | 5–15 | Moderate | No | Biases generation; not exact. |
@@ -505,9 +505,7 @@ remap, or (c) human review.
 For the prompt-to-asset product, the default brand-asset generation pipeline
 should be:
 
-1. **If target is a flat/vector asset:** prefer Recraft v3 with
-   `controls.colors` populated from the brand palette. Use `style_id` for
-   additional visual-style anchoring.
+1. **If target is a flat/vector asset:** prefer Recraft V3 or V4 with `controls.colors` populated from the brand palette. Use `style_id` for additional visual-style anchoring (V3/V3 Vector only — `style_id` is not supported in V4 as of April 2026).
 2. **If target is an illustration/photograph:** use the preferred generator
    (Imagen 4 / SDXL / Flux), optionally with IP-Adapter palette conditioning.
 3. **Validate** with `validate_palette()` at threshold 3.0. If pass → ship.

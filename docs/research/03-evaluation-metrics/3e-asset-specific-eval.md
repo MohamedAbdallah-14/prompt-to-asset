@@ -42,6 +42,8 @@ Logos and icons frequently embed text (brand name, initial, short tagline). This
 
 **Empirical signal**: Ideogram V3 is the current SOTA for text-in-image rendering; Recraft V3 is strongest at long strings and vector output [24]. Use them as reference points when scoring your own outputs.
 
+> **Updated 2026-04-21:** STRICT-Bench was accepted to **EMNLP 2025** and has been evaluated against a broader model set including GPT-4o, Seedream 3.0, Recraft V3, HiDream-I1-Dev, Imagen 3, FLUX 1.1 pro, and Gemini 2.0. Key finding: **GPT-4o and Gemini 2.0 outperform all other models by a large margin** on character accuracy, word accuracy, and instruction adherence. This positions gpt-image-1 (GPT-4o's image API) and Gemini-class models as the strongest choices for wordmark-critical logo generation from a text-rendering correctness standpoint — consistent with the routing table's "strong-text renderers" classification. Additionally, **Recraft V4** has superseded Recraft V3 for native vector/SVG output and logos; it holds #1 on the HuggingFace Text-to-Image Arena (ELO 1172, 72% win rate) as of 2026 and is the current SOTA for production SVG generation. References [24] and the source list below have been annotated accordingly.
+
 ---
 
 ## 2. Alpha-channel correctness (transparent logos, RGBA icons)
@@ -249,7 +251,7 @@ Where literature is thin and the field needs a benchmark:
 21. **VQAScore + GenAI-Bench** (Lin et al., ECCV 2024). — VQA-based alignment metric; beats CLIPScore on 8 benchmarks; GenAI-Bench ships 1,600 prompts + 15k human ratings. <https://www.ecva.net/papers/eccv_2024/papers_ECCV/papers/01435.pdf>
 22. **MLLM-as-a-Judge: Assessing Multimodal LLM-as-a-Judge with Vision-Language Benchmark** (Chen et al., ICML 2024). arXiv:2402.04788. — GPT-4V reliable only in pair-comparison mode, not absolute scoring. <https://mllm-judge.github.io/>
 23. **HPSv2: Human Preference Score v2** (Wu et al. 2023). arXiv:2306.09341. — 798k preference choices; 4 style categories, no logo/icon category. <https://arxiv.org/html/2306.09341v1>
-24. **Ideogram V3 vs Recraft V4 text-rendering comparison** (2026 industry benchmark). — Ideogram V3 strongest for legible in-image text; Recraft V3 strongest for long strings and vector. <https://tryversusai.com/compare/ideogram-vs-recraft>
+24. **Ideogram V3 vs Recraft V4 text-rendering comparison** (2026 industry benchmark). — Ideogram V3 strongest for legible in-image text; Recraft V3 strongest for long strings and native vector. **Updated 2026-04-21: Recraft V4 (released 2025–2026) has superseded V3 for logo and SVG output**, holding #1 on the HuggingFace Text-to-Image Arena (ELO 1172, 72% win rate) and generating truly native SVG (editable paths, not raster-to-vector trace). Any reference to "Recraft V3" as SOTA for vector should now read "Recraft V4." <https://tryversusai.com/compare/ideogram-vs-recraft>; <https://www.recraft.ai/docs/recraft-models/recraft-V4>
 25. **Logo Synthesis and Manipulation with Clustered Generative Adversarial Networks** (Sage, Agustsson, Timofte, Van Gool, CVPR 2018) — introduces LLD dataset (548k 32×32 favicons + 123k 400×400 logos); CORNIA + MS-SSIM eval. arXiv:1712.04407. <https://arxiv.org/abs/1712.04407>
 26. **LoGAN: Generating Logos with a Generative Adversarial Neural Network Conditioned on Color** (Mino & Spanakis 2018). — Color-conditioned ACGAN-WGP on LLD-icon. <https://cris.maastrichtuniversity.nl/ws/files/54135292/Spanakis_2018_LoGAN_Generating_Logos_with_a_Generative.pdf>
 27. **LogoSticker: Inserting Logos into Diffusion Models for Customized Generation** (ECCV 2024). arXiv:2407.13752. — Two-phase actor-critic + decoupled identity learning; benchmarked vs DALL·E 3. <https://arxiv.org/html/2407.13752v1>
@@ -260,7 +262,7 @@ Where literature is thin and the field needs a benchmark:
 
 ## TL;DR for downstream consumers
 
-- **For text in logos**: OCR round-trip + OCRGenScore / MARIO-Eval / STRICT-style char-drop tracking — at multiple scales.
+- **For text in logos**: OCR round-trip + OCRGenScore / MARIO-Eval / STRICT-style char-drop tracking — at multiple scales. As of EMNLP 2025 STRICT-Bench results: GPT-4o and Gemini 2.0 lead on character accuracy; Ideogram V3 remains the reference for legible in-image branding text.
 - **For transparent assets**: prefer native RGBA (LayerDiffuse) over matte; measure with LayerBench non-ref alpha edge + alpha-matting Gradient/Connectivity. Never use SAD/MSE alone.
 - **For app icons / favicons**: build a programmatic compliance linter (mask-survival IoU, safe-zone mass ratio, manifest lint) — this is a *lint* problem, not a *perception* problem.
 - **For brand consistency**: DINOv2 embeddings, not CLIP. Add palette ΔE and font-classifier agreement for a `BrandPackScore`.

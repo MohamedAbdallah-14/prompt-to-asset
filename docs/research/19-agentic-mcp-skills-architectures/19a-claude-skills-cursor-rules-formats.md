@@ -31,7 +31,9 @@ Every major coding agent in 2025–2026 now ships a "drop a file in a folder and
 
 2. **Rules are not skills — they are "always-on context", and every IDE has its own frontmatter dialect.** Cursor (`.cursor/rules/*.mdc`) uses `description`, `globs`, `alwaysApply`. Windsurf (`.windsurf/rules/*.md`) uses `description` plus an `always_on`/`glob`/`model_decision`/`manual` activation mode. Cline (`.clinerules/*.md`) concatenates every file alphabetically and optionally honors a `paths:` glob list. Claude Code, Codex, and Gemini CLI use `CLAUDE.md`/`AGENTS.md`/`GEMINI.md` as their always-on rule surface. The frontmatter fields **are not portable** — the markdown body is. Any rule we ship must be the same body with six different two-line frontmatter wrappers.
 
-3. **Hooks (SessionStart, UserPromptSubmit) are the missing piece between skills and rules, and Humazier already demonstrates the reference pattern** for cross-IDE hook shipping. Claude Code accepts hooks in `.claude-plugin/plugin.json`; Codex accepts the same hook shape in `.codex/hooks.json` with minor renames (`timeout` → `timeoutMs`, `command`+`args` split). Cursor ships hooks through a separate `hooks.json` contract. Gemini CLI does not have lifecycle hooks yet — it only loads `contextFileName` markdown. The prompt-to-asset bundle should treat hooks as a Claude/Codex-only mechanism and degrade to pure `SKILL.md` + rule loading everywhere else.
+3. **Hooks (SessionStart, UserPromptSubmit) are the missing piece between skills and rules, and Humazier already demonstrates the reference pattern** for cross-IDE hook shipping. Claude Code accepts hooks in `.claude-plugin/plugin.json`; Codex accepts the same hook shape in `.codex/hooks.json` with minor renames (`timeout` → `timeoutMs`, `command`+`args` split). Cursor ships hooks through a separate `hooks.json` contract.
+
+> **Updated 2026-04-21:** Gemini CLI now has a full lifecycle hooks system. Hooks shipped as a documented feature (v0.26.0+) and extensions can bundle their own hooks via a `hooks/hooks.json` file inside the extension directory (PR #14460 merged). Supported events include `SessionStart`, `SessionEnd`, `BeforeAgent`, `AfterAgent`, `BeforeModel`, `AfterModel`, `BeforeTool`, `AfterTool`, `Notification`, `PreCompress`, and `BeforeToolSelection`. The `SessionStart` hook fires on startup, resume, or after `/clear`. Extension hooks require explicit user consent (security warning shown at install time). The prompt-to-asset bundle can now ship Gemini CLI hooks alongside Claude/Codex hooks — this is no longer a Claude/Codex-only mechanism.
 
 ---
 
@@ -411,7 +413,9 @@ Following Humazier's pattern, we register two hooks that are byte-identical node
 - **`SessionStart`** → `hooks/prompt-to-asset-activate.js` — writes `.prompt-to-asset-active` flag, reads the loaded `SKILL.md` body, emits it as hidden system context so the agent starts the session already "armed" with the asset-generation checklist.
 - **`UserPromptSubmit`** → `hooks/prompt-to-asset-mode-tracker.js` — watches the incoming turn for `/pe off`, `/pe logo`, `/pe icon` tokens and updates the flag file. Statusline scripts read the flag for a visible indicator.
 
-Claude Code wires these via `.claude-plugin/plugin.json.hooks`; Codex via `.codex/hooks.json`. Cursor has an independent hooks system (`hooks.json` at the repo root) — we can plumb the same two scripts into it later if needed, but it is not day-one. Windsurf, Cline, and Gemini CLI have no lifecycle hooks, so behavior there relies entirely on the always-on rule + `SKILL.md` context.
+Claude Code wires these via `.claude-plugin/plugin.json.hooks`; Codex via `.codex/hooks.json`. Cursor has an independent hooks system (`hooks.json` at the repo root) — we can plumb the same two scripts into it later if needed, but it is not day-one. Windsurf and Cline have no lifecycle hooks, so behavior there relies entirely on the always-on rule + `SKILL.md` context.
+
+> **Updated 2026-04-21:** Gemini CLI now supports lifecycle hooks via `hooks/hooks.json` inside an extension directory (merged PR #14460, v0.26.0+). The extension can define `SessionStart`, `BeforeTool`, `AfterTool`, `BeforeModel`, `AfterModel`, etc. hooks. These require explicit user consent on install. Wire the `prompt-to-asset-activate` hook into `hooks/hooks.json` alongside the Claude/Codex wiring. Note that Gemini CLI does not have an exact `UserPromptSubmit` equivalent — use `BeforeModel` (fires before each model call) as the closest substitute for turn-level re-checking.
 
 ### Commands (Claude Code)
 
@@ -471,9 +475,9 @@ The MCP layer is where execution actually lives (call image APIs, run `rembg`, w
 | `SKILL.md` discovery | native | native | via `.cursor/skills/` | via `.windsurf/skills/` | no — use `.clinerules/` | via `contextFileName` glob |
 | YAML-frontmatter rules | `CLAUDE.md` (no frontmatter) | `AGENTS.md` (no frontmatter) | `.mdc` with `alwaysApply`/`globs` | `.md` with `activation:` | `paths:` only | `GEMINI.md` (no frontmatter) |
 | Slash commands | `commands/*.md` | `commands/*.md` | `.cursor/commands/` | no | no | no |
-| SessionStart hook | yes (`plugin.json`) | yes (`.codex/hooks.json`) | yes (separate `hooks.json`) | no | no | no |
-| UserPromptSubmit hook | yes | yes | yes | no | no | no |
-| PreToolUse / PostToolUse | yes | yes | partial | no | no | no |
+| SessionStart hook | yes (`plugin.json`) | yes (`.codex/hooks.json`) | yes (separate `hooks.json`) | no | no | yes (v0.26.0+, via `hooks/hooks.json` in extension) |
+| UserPromptSubmit hook | yes | yes | yes | no | no | no (nearest equivalent: `BeforeModel` or `BeforeAgent`) |
+| PreToolUse / PostToolUse | yes | yes | partial | no | no | yes (`BeforeTool` / `AfterTool`) |
 | MCP servers in manifest | `plugin.json.mcpServers` | `config.toml` | settings UI | settings UI | settings UI | `gemini-extension.json.mcpServers` |
 | Marketplace format | `.claude-plugin/marketplace.json` | `.agents/plugins/marketplace.json` | none (git clone) | none (git clone) | none (git clone) | `gemini extensions install` |
 | Enforce tool allowlist | `allowed-tools` in `SKILL.md` | `allowed-tools` (best-effort) | no | no | no | `excludeTools` in manifest |
@@ -481,9 +485,11 @@ The MCP layer is where execution actually lives (call image APIs, run `rembg`, w
 
 **Practical takeaways from the matrix:**
 
-1. Only Claude Code and Codex give us true lifecycle hooks. Everything else relies on always-on context plus agent judgment. If the prompt-to-asset needs *enforcement* (e.g. "never call the image API without first running `enhance_prompt`"), enforcement lives in Claude/Codex hooks — the other agents get a strong-worded rule and a prayer.
-2. Gemini CLI is the *weakest* surface: no hooks, no commands, no scoped activation. But its `contextFileName` glob means we can vacuum up every `SKILL.md` into the default prompt, which actually produces surprisingly good behavior because SKILL bodies are written to be self-describing.
-3. Cline is the *simplest*: alphabetical concat is the whole API. A single `01-prompt-to-asset.md` file gets us to parity-with-Gemini behavior.
+> **Updated 2026-04-21:** Point 1 and 2 below are revised — Gemini CLI now has lifecycle hooks.
+
+1. Claude Code, Codex, and **Gemini CLI** (v0.26.0+) all have lifecycle hooks. If the prompt-to-asset needs *enforcement* (e.g. "never call the image API without first running `enhance_prompt`"), enforcement lives in Claude/Codex/Gemini hooks. Windsurf and Cline still rely entirely on always-on context + agent judgment.
+2. Gemini CLI is no longer hookless. It now supports `SessionStart`, `BeforeTool`, `AfterTool`, `BeforeModel`, and more via extension `hooks/hooks.json`. Its `contextFileName` glob still vacuums up every `SKILL.md` at session start, giving good default behavior — hooks add enforcement on top.
+3. Cline is the *simplest*: alphabetical concat is the whole API. A single `01-prompt-to-asset.md` file gets us to parity with the other hook-less surfaces (now only Windsurf).
 4. Cursor and Windsurf are peers on rules, but only Cursor's `.mdc` frontmatter survives a round-trip copy without a rename — Windsurf uses a different activation key (`activation:` vs `alwaysApply:`). Our install script must translate, not symlink.
 
 ### Concrete SKILL.md example for `transparent-png`

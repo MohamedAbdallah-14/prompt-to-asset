@@ -5,6 +5,8 @@ role: index
 status: future
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Research — Future Tracks
 
 Scoped-out tracks researched during the 104-angle sweep but not required for v1. Each file sits here (rather than in `docs/research/assets/`) so readers don't assume there is a production code path backing it today. See `SYNTHESIS.md` for the cross-cutting read and the prioritization ranking; see the parent `../SYNTHESIS.md` + `../index.json` for the canonical research map.

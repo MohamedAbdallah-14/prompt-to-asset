@@ -6,6 +6,8 @@ optimization_criterion: "Asset correctness above all — best possible quality"
 date: 2026-04-19
 ---
 
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # Quality-max combination — best-in-class asset correctness by day 90
 
 ## Thesis
@@ -79,7 +81,7 @@ controversy 4 in the INDEX:
 | Flat / minimalist logo mark          | **Imagen 4 Ultra**                            | Ideogram 3.0                               | SDXL + LogoRedmond + Flux-Logo-Design LoRA  |
 | Logo with wordmark                   | **Ideogram 3.0**                              | AnyText2 (SDXL, Apache-2.0)               | Glyph-ByT5 on SDXL once weights return       |
 | Native transparent PNG / sticker     | **`gpt-image-1` `background:"transparent"`**  | LayerDiffuse over SDXL + FLUX              | LayerDiffuse (huchenlei port, Apache-2.0)    |
-| Editable vector / SVG                | **Recraft V3 SVG**                            | StarVector 8B (MIT)                        | SVGDreamer + vtracer fallback                |
+| Editable vector / SVG                | **Recraft V4 Vector** (Feb 2026, SOTA)        | StarVector 8B (MIT)                        | SVGDreamer + vtracer fallback                |
 | OG / social card (text-heavy)        | **Satori + `@vercel/og` deterministic**       | Ideogram 3.0 compose-then-overlay          | Polotno templates                            |
 | App icon single-glyph                | **Iconify/SVGL deterministic compose**        | appicon-forge 275k Iconify marks           | —                                            |
 | Multilingual text in image           | **AnyText2** (Apache-2.0)                     | Qwen-Image                                 | GlyphControl                                 |
@@ -146,6 +148,8 @@ post-hoc matting as the default path — the resolution of controversy 2:
 3. **Never: the free `rembg` default** as the primary path. It ships as an
    optional free-tier fallback only, with a loud banner explaining the
    fringing / edge-erosion tradeoff.
+
+> **Updated 2026-04-21:** `rembg` defaults to the `u2net` session, not BiRefNet. To use BiRefNet you must explicitly call `remove(input, session=new_session("birefnet-general"))`. Any code using `remove(input)` bare is running U²-Net, not BiRefNet — quality difference is material on soft-edge subjects.
 
 Every generated asset, regardless of path, is scored by the alpha-coverage gate
 (below). If it fails the fringing, halo, or stray-pixel test we regenerate,
@@ -265,10 +269,12 @@ registry on day 80.
 ### Days 1–14 — Foundation and router
 
 Vercel AI SDK v5 `generateImage` as the typed polyglot. First-party providers:
-`@ai-sdk/openai` (`gpt-image-1`), `@ai-sdk/google` (Imagen 4 Ultra / Nano
+`@ai-sdk/openai` (`gpt-image-1.5`), `@ai-sdk/google` (Imagen 4 Ultra / Nano
 Banana Pro), `@ai-sdk/togetherai` (FLUX.2 pro, 8-ref), `@ai-sdk/fal`
-(LayerDiffuse endpoint, BRIA RMBG 2.0), `@ai-sdk/replicate` (Recraft V3 SVG,
-Ideogram 3.0). Direct provider SDKs alongside for latency-critical paths and
+(LayerDiffuse endpoint, BRIA RMBG 2.0), `@ai-sdk/replicate` (Recraft V4 Vector SVG,
+Ideogram 3.0).
+
+> **Updated 2026-04-21:** Route `svg === "required"` to **Recraft V4 Vector** (Feb 2026, $0.08/img) — V3 stays as a fallback only when `style_id` from a prior V3 generation is required (V4 does not yet support existing V3 style IDs). Also corrected: `gpt-image-1` is now the "previous" model; `gpt-image-1.5` is the current production OpenAI image model. Ideogram transparency: use the dedicated `/ideogram-v3/generate-transparent` endpoint — the `style: "transparent"` parameter does not exist; the correct API path is a separate POST endpoint. Direct provider SDKs alongside for latency-critical paths and
 provider-specific features (fal realtime, Together 8-reference, Replicate
 model chaining). Capability matrix and capability-based router (not
 vendor-based). Hunyuan-32B self-hosted on H100 via vLLM with prefix caching

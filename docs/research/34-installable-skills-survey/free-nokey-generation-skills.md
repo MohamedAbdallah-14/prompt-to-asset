@@ -7,6 +7,8 @@ date: 2026-04-20
 scope: "Claude Code, MCP, prompt-to-asset external_prompt_only, api mode without keys"
 ---
 
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # Free / No-Key Generation Skills and MCPs
 
 This document surveys every installable skill and MCP server that can generate images without requiring the user to supply an API key. It also covers services with genuinely free tiers and their Claude Code skill/MCP integrations.
@@ -48,8 +50,10 @@ Query parameters: `width`, `height`, `seed`, `model`, `nologo=true`, `enhance`, 
 
 **External paste target (external_prompt_only):** https://pollinations.ai (web UI for Flux, turbo, Kontext).
 
+> **Updated 2026-04-21:** The Pollinations Spore (free registration) tier's rate limit was reduced from 1 req/day to ~1.5 req/week in February 2026 per GitHub issue #8542, effectively making it unusable for batch generation. The anonymous tier (1 req/15s) remains unchanged. Seed-tier (free signup at auth.pollinations.ai) still provides 1 req/5s. Free-tier images may include a "Powered by Pollinations" watermark; removing it requires a paid Pollen balance. The `nologo=true` parameter is documented but requires account verification to apply on the free tier as of 2026.
+
 **Use in prompt-to-asset routing table:**
-- Zero-key concept drafts: yes (anonymous tier)
+- Zero-key concept drafts: yes (anonymous tier, 1 req/15s)
 - Transparent logo/icon: no — requires post-matte
 - Text wordmark rendering: no
 - SVG output: no
@@ -351,6 +355,8 @@ PromptPilot (`npx promptpilot-mcp`) wraps Pollinations and claims 20+ models, so
 
 ## Summary Table — Free / No-Key Generation Options
 
+> **Updated 2026-04-21:** Pollinations anonymous rate: 1 req/15s (unchanged). Spore (registered free) is effectively unusable (reduced to ~1.5 req/week per issue #8542). Seed-tier signup at auth.pollinations.ai gives 1 req/5s. Watermark removal requires account verification on the free tier as of 2026; `nologo=true` param alone no longer suppresses watermarks for anonymous users. Together.ai FLUX.1 [schnell]-Free endpoint is now confirmed unlimited free access (rate-limited) and should be added as a zero-key paste target. MCP spec 2025-11-25: MCPollinations, PromptPilot, and Nakkas MCPs should target Streamable HTTP transport; SSE deprecated, backward compat until 30 June 2026.
+
 | Option | Type | Key required | Image quality | Transparent output | SVG output | Install |
 |--------|------|-------------|---------------|-------------------|-----------|---------|
 | Pollinations anonymous (GET) | HTTP API | None | Medium (Flux/turbo) | No | No | URL only |
@@ -436,11 +442,12 @@ For `external_prompt_only` mode documentation presented to users:
 
 | Service | Free limit | Registration required |
 |---------|-----------|----------------------|
-| Pollinations.ai (web) | 1 req/15s (anonymous) | No |
-| Pollinations.ai (web, Seed) | 1 req/5s | Free signup |
-| Ideogram.ai (web) | ~10 images/day free | Yes |
-| Google AI Studio (Imagen 4) | ~50 images/day free | Google account |
-| fal.ai playground | $10 credit (~200–3000 images) | Yes |
-| Midjourney | No free tier (was removed) | Paid only |
-| Recraft.ai (web) | 50 free images/month | Yes |
-| Together.ai | $1 free credit (~333 Flux Schnell images) | Yes |
+| Pollinations.ai (web) | 1 req/15s (anonymous); Spore tier ~1.5 req/week (effectively unusable) | No (anonymous); free signup for Seed (1 req/5s) |
+| Ideogram.ai (web) | 10 prompts/day (~40 images, 4 per prompt) | Yes |
+| Google AI Studio (Imagen 4 / Nano Banana web UI) | ~500–1,000 images/day (web UI only; **API image-gen requires billed project** as of 2025-12) | Google account |
+| fal.ai playground | $10 credit new accounts (~65 images at Nano Banana Pro pricing / ~3,000 at Flux Schnell pricing) | Yes |
+| Midjourney | No free tier (suspended April 2023; niji·journey mobile app limited trial only) | Paid only |
+| Recraft.ai (web) | 30–50 credits/day (all free-plan images posted to public gallery; no commercial license) | Yes |
+| Together.ai | $25 free credit new accounts; FLUX.1 [schnell]-Free endpoint has **unlimited free access** (rate-limited; no credit required) | Yes |
+
+> **Updated 2026-04-21:** Several rate limits in this table have changed since the file was originally drafted. Ideogram now gives 10 prompts/day (not "~10 images" — each prompt yields 4 images). Google AI Studio's free web-UI allowance is now ~500–1,000 images/day, but this is the web UI only; programmatic API image generation requires a billed project. Together.ai now gives $25 credit (was $1) and offers a FLUX.1 [schnell]-Free endpoint with unlimited free access. Recraft's free plan allows 30–50 daily credits depending on account age; all free-plan images are posted to the public community gallery with no commercial license.

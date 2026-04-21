@@ -16,14 +16,16 @@ score = scorer(images=["logo.png"], texts=["a minimalist compass logo on transpa
 # returns tensor([[0.82]])
 ```
 
-**Applicability to prompt-to-asset:** Strong for checking prompt-to-image fidelity after generation. Run as a tier-1 check after the existing tier-0 deterministic checks (dimensions, alpha channel, FFT). The `clip-flant5-xl` model (smaller) runs on 16 GB GPU; `xxl` needs 40 GB. For CI without GPU, use the GPT-4o or Gemini-2.5-pro VQAScore backends — cost is ~$0.01–0.05 per image.
+**Applicability to prompt-to-asset:** Strong for checking prompt-to-image fidelity after generation. Run as a tier-1 check after the existing tier-0 deterministic checks (dimensions, alpha channel, FFT). The `clip-flant5-xl` model (smaller) runs on 16 GB GPU; `xxl` needs 40 GB. For CI without GPU, use the GPT-4o VQAScore backend — cost is ~$0.01–0.05 per image.
+
+> **Updated 2026-04-21:** The t2v_metrics library has extended VQAScore to **video evaluation** and added support for newer VLM backends: LLaVA-OneVision, Qwen2.5-VL, InternVideo2, InternVL2, InternVL3, and InternLMXC2.5. For image-only asset eval, `clip-flant5-xxl` remains the recommended local model. **CameraBench** was added (arXiv 2025) as a new benchmark for camera motion understanding in video — not relevant to still-image asset eval. The Gemini-2.5-pro backend mentioned in older notes may be deprecated; confirm via the repo README before using non-GPT-4o cloud backends.
 
 **Caveats:** Does not check aesthetic quality, only prompt fidelity. A grey blob that vaguely matches the prompt scores high. For logo/icon eval, pair with ImageReward for preference signal.
 
 ---
 
 ### ImageReward (NeurIPS 2023)
-**Repo:** https://github.com/zai-org/ImageReward  
+**Repo:** https://github.com/THUDM/ImageReward  
 **PyPI:** `pip install image-reward`
 
 Human preference reward model trained on 137k expert comparison pairs. Outperforms CLIP by 38.6% and Aesthetic by 39.6% at predicting human preference. Returns a raw reward scalar (positive = preferred, negative = dispreferred).
@@ -37,6 +39,8 @@ score = model.score("a minimalist flat compass logo", ["logo_v1.png", "logo_v2.p
 ```
 
 **Applicability to prompt-to-asset:** Use as a relative ranking signal when comparing two provider outputs for the same brief (e.g., Ideogram vs. gpt-image-1 for the same logo). Also useful for detecting when a provider update shifts output quality: run the same prompt against both the old and new model version and compare ImageReward deltas.
+
+> **Updated 2026-04-21:** The canonical ImageReward repo is at **https://github.com/THUDM/ImageReward** (not `zai-org/ImageReward` which appears to be a fork/mirror). The model is still `ImageReward-v1.0` — no new version has been released. As of 2026, newer preference models such as **HPSv2** (Human Preference Score v2) and **PickScore** have emerged; PickScore achieves 62.8% preference accuracy vs. ImageReward's 65.1%, making ImageReward still the stronger baseline for photorealistic preference ranking. For flat-vector logo eval specifically, none of these models have logo-specific training data; they remain rough signals only.
 
 **Caveats:** Trained on general text-to-image human preferences (LAION-style photorealistic imagery). Its preference model may not generalize well to flat-vector logos or abstract icon marks — no logo-specific training data was used. Treat as a rough signal, not ground truth, for non-photorealistic assets.
 
@@ -55,11 +59,13 @@ Classic prompt-image cosine similarity. Fast, no GPU minimum, deterministic. Fai
 ### DeepEval TextToImageMetric
 **Docs:** https://deepeval.com/docs/multimodal-metrics-text-to-image
 
-GPT-4V-based scorer that decomposes quality into Semantic Consistency (prompt adherence) and Perceptual Quality (naturalness, artifact absence). Score formula: `O = sqrt(min(SC) * min(PQ))`. Returns 0–1 with optional reasoning text.
+MLLM-based scorer that decomposes quality into Semantic Consistency (prompt adherence) and Perceptual Quality (naturalness, artifact absence). Score formula: `O = sqrt(min(SC) * min(PQ))`. Returns 0–1 with optional reasoning text.
 
 **Applicability to prompt-to-asset:** Best all-in-one eval for CI without GPU. Catches both misaligned generation (wrong subject) and quality artifacts (compression noise, rendering failures). The reasoning text is useful for debugging prompt regressions — the judge explains why a score dropped.
 
-**Cost:** ~$0.02–0.05 per image with GPT-4V. For a 50-prompt test suite, that is $1–2.50 per CI run. Acceptable for nightly runs; consider sampling for PR-triggered runs.
+> **Updated 2026-04-21:** **GPT-4V is deprecated by OpenAI** — use GPT-4o as the judge backend. DeepEval v3.0 supports GPT-4o and Claude 3.x series as judge models. The **default threshold is 0.5** (not 0.7); recalibrate per your golden dataset before using in gates. The metric is now documented as a "self-explaining MLLM-Eval" with reasoning included by default in newer versions. Cost with GPT-4o is approximately $0.01–0.03 per image (lower than GPT-4V pricing).
+
+**Cost:** ~$0.01–0.03 per image with GPT-4o. For a 50-prompt test suite, that is $0.50–1.50 per CI run. Acceptable for nightly runs; consider sampling for PR-triggered runs.
 
 ---
 

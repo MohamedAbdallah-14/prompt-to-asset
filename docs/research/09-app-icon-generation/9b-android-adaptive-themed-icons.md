@@ -146,7 +146,20 @@ The monochrome drawable can be a vector `<vector>` with `android:fillColor="#FFF
 
 ### Gating
 
+> **Updated 2026-04-21:** Android 16 QPR2 (shipped December 2025) changed the gating model significantly. See the section below.
+
 Themed icons only display when **all four** conditions hold: device is on Android 13+, OEM has Monet enabled (all Pixels do; Samsung One UI 5+ does; Huawei EMUI does not), the launcher supports it, and the user has toggled "Themed icons" in Wallpaper & style. If any condition fails the launcher falls back to the regular adaptive icon. **This means the monochrome layer is an additive requirement, not a replacement** — never ship an app with only a monochrome layer.
+
+### Android 16 QPR2 — mandatory auto-theming (December 2025+)
+
+Android 16 QPR2 shipped in December 2025 and changed the optionality of themed icons:
+
+- **Auto-theming is now mandatory.** If an app does not supply a `<monochrome>` layer, the OS applies a color-filtering algorithm to the existing adaptive foreground to generate one automatically. Developers cannot opt out.
+- **Google Play DDA updated.** Revisions to DDA section 5.3, effective September 15 2025 for new developers and October 15 2025 for existing developers, require that apps "grant to users permission to modify colors or adjust themes of apps." This is now a Play Store policy requirement, not just a platform feature.
+- **Three OS-generated icon modes:** Default (developer-authored icon), Minimal (auto-monochrome from foreground), and Create (user-customizable). The auto-generated monochrome fallback uses a color-filtering algorithm and is reliably inferior to a hand-authored `<monochrome>` layer for complex brandmarks.
+- **Recommendation:** The `<monochrome>` layer has changed from "recommended" to effectively required for any app targeting Android 13+ and distributed through Google Play. Apps without a monochrome layer on Android 16 QPR2+ devices will display a system-generated monochrome that may not represent the brand correctly.
+
+Sources: [Android 16 QPR2 Beta 1 blog post](https://android-developers.googleblog.com/2025/08/android-16-qpr2-beta-1-is-here.html), [Android Police — Google mandates themed icon support](https://www.androidpolice.com/google-forces-android-app-developers-to-play-nice-with-themed-icons/), [9to5Google — Android 16 auto-themed icons](https://9to5google.com/2025/09/16/android-16-auto-themed-icons-apps-cant-opt-out/).
 
 ## Density Matrix
 
@@ -202,9 +215,13 @@ For AI-generated content, the tension is that models produce raster output, but 
 
 ## Prompt Strategy — Layered Generation
 
-The core insight for a prompt-to-asset targeting Android is that a *single* image generation call is almost always wrong; the correct unit of work is **three parallel calls sharing a style anchor**. This section codifies that strategy for Gemini 3 Pro Image ("Nano Banana Pro"), Gemini 2.5 Flash Image, Imagen 4, DALL·E 3, and GPT-image-1.
+The core insight for a prompt-to-asset targeting Android is that a *single* image generation call is almost always wrong; the correct unit of work is **three parallel calls sharing a style anchor**. This section codifies that strategy for Gemini 3 Pro Image ("Nano Banana Pro"), Gemini 3.1 Flash Image (Nano Banana 2), Imagen 4, DALL·E 3, and GPT Image 1.5.
+
+> **Updated 2026-04-21:** Gemini 2.5 Flash Image was shut down January 15, 2026; current model is Gemini 3.1 Flash Image. GPT Image 1.5 replaces gpt-image-1 as the primary OpenAI model. Both Gemini image models require billing as of December 2025 — the free API tier returns HTTP 429.
 
 ### Pattern A: Split generation (preferred)
+
+> **Updated 2026-04-21:** Due to Android 16 QPR2's mandatory auto-theming, the monochrome layer has moved from optional to effectively required. Always generate all three layers. The auto-generated system fallback is typically inferior to a hand-authored monochrome for multi-element or gradient-heavy brandmarks.
 
 Generate three separate images, all 1024 × 1024 (models oversample this better than 432×432), post-process to the density matrix.
 
@@ -358,6 +375,8 @@ convert ic_launcher_background.png ic_launcher_foreground.png \
 
 - [Firebase AI Logic: Generate images with Gemini](https://firebase.google.com/docs/ai-logic/generate-images-gemini) — Nano Banana / Nano Banana Pro model availability, `responseModalities` requirement.
 - [Gemini API image generation](https://ai.google.dev/gemini-api/docs/image-generation) — official prompt guide.
+
+> **Updated 2026-04-21:** The Gemini API image generation free tier changed significantly. As of December 7, 2025, the free tier for image-generation models has 0 IPM (images per minute) — every image request from an unbilled project returns HTTP 429 `RESOURCE_EXHAUSTED`. Enabling billing (even with a $0 spending cap) moves the account to Tier 1 and unlocks image generation. The Gemini 3.1 Flash Image (Nano Banana 2) model is available as of early 2026 but has no free-tier API access. The AI Studio web UI at `https://aistudio.google.com` remains free for interactive generation — use `asset_ingest_external` to round-trip those results. Do NOT point users to the API as a free image-gen path for Gemini/Imagen models.
 
 ---
 

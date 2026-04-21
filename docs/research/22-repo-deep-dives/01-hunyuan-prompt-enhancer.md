@@ -33,7 +33,7 @@ tags: [prompt-to-asset, hunyuan, grpo, align-evaluator, cot, qwen2_5_vl, cvpr-20
 
 | Metric | Value |
 |---|---|
-| Stars / Forks / Contributors | **3,667** / 316 / 3 |
+| Stars / Forks / Contributors | **~3,700** / 316 / 3 (confirmed ~3.7k via web search Apr 2026) |
 | Primary language | Python (98.9%) |
 | Repo created | 2025-09-09 |
 | Release timeline | 7B (Sep 7 2025) → 32B (Sep 18) → GGUF (Sep 22) → Img2Img-Edit (Sep 30) |

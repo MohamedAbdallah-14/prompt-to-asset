@@ -171,17 +171,20 @@ Two more small touches that matter:
 - **vtracer** ([github.com/visioncortex/vtracer](https://github.com/visioncortex/vtracer)) — color-aware, runs in Rust+WASM, produces multi-color SVG suitable for flat illustrations and logos with 2–20 colors. Default tuning: `--colormode color --filter_speckle 4 --color_precision 6 --gradient_step 16 --corner_threshold 60 --segment_length 4 --splice_threshold 45`.
 - Always follow with **SVGO** to collapse transforms, drop default attributes, remove comments, and round path data to 2 decimals. The config below is the safe minimum:
 
+> **Updated 2026-04-21:** SVGO v4 (current: v4.0.1) changed `preset-default`: `removeViewBox` and `removeTitle` are now **disabled by default**. The `overrides: { removeViewBox: false }` pattern from v3 configs is now a no-op — safe to leave but should be cleaned up to avoid confusion. The `removeTitle` and `removeDesc` plugins listed as standalone additions below are also now no-ops since v4 disables them in `preset-default`. Upgrade to `svgo@4` and simplify configs accordingly.
+
 ```js
-// svgo.config.js
+// svgo.config.js (SVGO v4 compatible)
+// In v4, removeViewBox and removeTitle are disabled by default in preset-default.
+// No overrides needed for those. The removeTitle/removeDesc standalone entries
+// are also no longer needed since v4 doesn't strip them by default.
 module.exports = {
   multipass: true,
   floatPrecision: 2,
   plugins: [
-    { name: 'preset-default', params: { overrides: { removeViewBox: false } } },
+    { name: 'preset-default' },
     'removeDimensions',
     'sortAttrs',
-    'removeTitle',
-    'removeDesc',
   ],
 };
 ```

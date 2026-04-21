@@ -37,6 +37,8 @@ tags:
   - mcp
 ---
 
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # 05 — OpenAI DALL·E / gpt-image: Category Index
 
 ## Category Executive Summary
@@ -65,7 +67,9 @@ The nine angles collectively establish that OpenAI's image surface in 2026 is **
 
 11. **Three sizes, no others.** `1024x1024`, `1536x1024`, `1024x1536`, or `auto` — period (5b-gpt-image-1-api §File Size Limits). All favicon/app-icon workflows must generate at 1024² and downscale client-side with Lanczos. Composition is coupled to aspect ratio (5a-dalle3-prompt-guide-and-rewriter §Size): square biases cluttered snapshot framing, landscape biases professional hero-banner framing, portrait biases phone-mockup/story-frame framing. Changing `size` on an identical prompt materially changes composition — do not treat size as "pixels only".
 
-12. **Pricing is per output token, deterministic per (quality, size).** At $40/1M image-output tokens for `gpt-image-1` (~$32/1M for `gpt-image-1.5`), 1024² high = 4,160 tokens ≈ $0.167 (the famous ~$0.19 figure with prompt tokens included). Low/medium/high for a square = **272 / 1,056 / 4,160** tokens, a **15× spread** (5b-gpt-image-1-api §Token Pricing; 5b-gpt-image-1-api-and-transparency §5). Streaming adds 100 tokens per `partial_image` (0–3, ~7 % uplift for 3 partials). `input_fidelity="high"` adds ~2–4× input-image tokens. **Batch API gives 50 % discount** with 24 h SLA — correct for brand-kit sweeps but cannot be combined with partial_images (5c-openai-cookbook-asset-workflows §Recipe 7).
+12. **Pricing is per output token, deterministic per (quality, size).** At $40/1M image-output tokens for `gpt-image-1` (~$32/1M for `gpt-image-1.5`), 1024² high = 4,160 tokens ≈ $0.167 for `gpt-image-1` (the famous ~$0.19 figure with prompt tokens included) or **~$0.133 for `gpt-image-1.5`** (same token count, lower per-token rate). Low/medium/high for a square = **272 / 1,056 / 4,160** tokens, a **15× spread** (5b-gpt-image-1-api §Token Pricing; 5b-gpt-image-1-api-and-transparency §5). Streaming adds 100 tokens per `partial_image` (0–3, ~7 % uplift for 3 partials). `input_fidelity="high"` adds ~2–4× input-image tokens. **Batch API gives 50 % discount** with 24 h SLA — correct for brand-kit sweeps but cannot be combined with partial_images (5c-openai-cookbook-asset-workflows §Recipe 7).
+
+> **Updated 2026-04-21:** gpt-image-1.5 pricing corrected to $0.009 / $0.034 / $0.133 (low/medium/high, 1024²). Earlier drafts incorrectly stated ~$0.19 for gpt-image-1.5 — that figure is for gpt-image-1. Max output resolution for both models is 1536 px long edge (same three fixed sizes); the 2048 figure appearing in earlier 5e-production-integrations.md draft was incorrect and has been fixed. **gpt-image-2** is in ChatGPT-side testing as of April 2026 but has not been officially released to the API; monitor `developers.openai.com/api/docs/changelog` for the API launch announcement.
 
 13. **Rate-limit ceiling is IPM, not TPM.** Tier 1 = 5 IPM; Tier 5 = 250 IPM. A single high-quality 1024² consumes ~4,260 TPM out of the Tier-1 100k TPM budget, so images-per-minute bites first (5b-gpt-image-1-api §Rate Limits; 5e-production-integrations §Scaling). Multi-tenant deployments need per-tenant buckets + exponential-backoff-with-jitter (`tenacity.wait_random_exponential(min=1, max=60)` per OpenAI's cookbook).
 
@@ -125,6 +129,8 @@ Several themes appear across **every** angle and therefore constitute plugin-lev
 - **No per-category moderation dial.** The Image API `moderation` parameter is a two-tier binary (`auto`/`low`). Enterprise tenants wanting "allow medical, block sexual" currently have no API-level lever and must pre-filter via the text moderation endpoint (5d-system-style §Open Questions).
 - **`input_fidelity="high"` multiplier is unpublished.** ~2–4× input-image tokens is the field estimate; the exact multiplier would make budgeting deterministic (5b-api §Token Pricing).
 - **No official opt-out for the Responses-API rewrite.** DALL·E 3 had an explicit "workaround"; `gpt-image-1*` via Responses has no documented knob at all. Teams that need deterministic output have no supported hook (5d-system-style §Open Questions).
+- **gpt-image-2 capabilities not yet documentable.** As of April 21, 2026, `gpt-image-2` is undergoing gray testing in LM Arena (codenames: maskingtape-alpha, gaffertape-alpha, packingtape-alpha) and limited ChatGPT rollout. Reported capabilities include near-perfect text rendering (~99% accuracy), 4096×4096 px output, and 2× generation speed vs gpt-image-1.5. No official API release or pricing as of research date. Monitor `developers.openai.com/api/docs/changelog`; the plugin's routing-table will need a new entry when the API launches.
+- **Public-figure moderation policy partially relaxed.** 2026 policy shift allows named public figures (politicians, celebrities) in many non-harmful contexts. The pre-2026 research in 5a-dalle3-prompt-guide and 5d-failure-modes treats this as a hard block; those sections should be revised once the new policy is fully documented. Current evidence is from third-party reports and TechCrunch (Mar 2025) — OpenAI has not published the revised blocklist.
 
 ## Actionable Recommendations for the Plugin's OpenAI Routing
 

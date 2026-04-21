@@ -75,17 +75,21 @@ async function generateLogo(args, jobId) {
 }
 ```
 
-## Async Tasks Pattern (Emerging Standard)
+## Async Tasks Pattern (Now in Spec — Experimental)
 
-The SEP-1686 proposal (tracked in https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1391) formalizes a **call-now, fetch-later** pattern:
+> **Updated 2026-04-21:** SEP-1686 Tasks shipped in the `2025-11-25` MCP spec as an **experimental** feature. This is no longer "not yet in the stable spec" — it is in the spec with an experimental label. The prior SEP-1391 (tool-specific async) was rejected in favor of the more general Tasks primitive. SDK implementations (Python, Kotlin) are being tracked in their respective repos. The recommendation to defer implementation should be revised: Tasks are safe to adopt but remain subject to lifecycle-gap revisions (retry semantics, expiry policies).
 
-1. Tool call returns immediately with `{ taskId, pollInterval, status: "working" }`.
-2. Client polls `tasks/get` using the `taskId`.
-3. When `status === "completed"`, client calls `tasks/result` to retrieve the output.
+The SEP-1686 Tasks primitive, now shipping as experimental in the `2025-11-25` MCP spec, formalizes a **call-now, fetch-later** pattern:
 
-This is not yet in the stable spec but multiple production MCP platforms (WorkOS, AWS Bedrock AgentCore) implement it. It cleanly handles timeouts without requiring SSE at all, at the cost of polling overhead.
+1. Tool call returns immediately with task metadata (taskId, status: "working").
+2. Client polls using the taskId or subscribes to task updates.
+3. Tasks follow a five-state lifecycle: `working → input_required → completed / failed / cancelled`.
 
-Reference: https://agnost.ai/blog/long-running-tasks-mcp/
+Tasks are scoped to `tools/call`, `sampling/createMessage`, and `elicitation/create`. Multiple production MCP platforms (WorkOS, AWS Bedrock AgentCore) already implement compatible patterns. The Tasks primitive cleanly handles timeouts without requiring SSE.
+
+Reference: https://modelcontextprotocol.io/community/seps/1686-tasks  
+Reference: https://workos.com/blog/mcp-2025-11-25-spec-update  
+Original proposal (superseded): https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1391
 
 ## SSE Constraints and Caveats
 
@@ -93,19 +97,21 @@ Reference: https://agnost.ai/blog/long-running-tasks-mcp/
 - **Proxies**: Corporate proxies often buffer SSE or kill idle connections after 30–60 seconds. Include a keepalive ping every 15 seconds.
 - **Browser limit**: Browsers allow max 6 SSE connections per origin. Not a concern for CLI hosts.
 - **Claude Code stdio mode**: Progress notifications over stdio are silently discarded by the MCP transport layer. The IDE does show tool call state ("Using tool...") but it is binary, not granular. HTTP transport required for real progress bars.
+- **Claude Code HTTP transport**: As of 2026, Claude Code supports Streamable HTTP for remote MCP servers. SSE transport is deprecated in favor of HTTP. Progress notifications sent over HTTP transport are receivable, though there is a known bug (#29688) where Claude Code may still spawn a stdio child process even when the server is declared as HTTP — verify behavior in practice.
 - **Cursor**: Supports Streamable HTTP; progress notifications render in the tool call panel.
 
 ## Recommended Approach for prompt-to-asset
 
 - Implement `notifications/progress` in all `asset_generate_*` handlers (zero extra infra, just works when host supports HTTP transport).
 - Add a `/events/:jobId` sidecar SSE endpoint as a fallback for web UIs and for validating progress without a capable host.
-- Do not implement the Tasks polling pattern until SEP-1686 is merged into the stable spec.
+- The Tasks pattern (SEP-1686) is now experimental in the `2025-11-25` spec and safe to adopt for long-running `api` mode calls. Implement if transport timeouts become a real problem in HTTP deployments.
 
 ## Key References
 
-- https://modelcontextprotocol.io/specification/2025-03-26/basic/transports
+- https://modelcontextprotocol.io/specification/2025-11-25/basic/transports (current stable spec)
+- https://modelcontextprotocol.io/community/seps/1686-tasks (Tasks SEP — experimental in 2025-11-25)
+- https://modelcontextprotocol.io/specification/2025-03-26/basic/transports (Streamable HTTP origin)
 - https://github.com/microsoft/mcp-for-beginners/blob/main/03-GettingStarted/06-http-streaming/README.md
-- https://github.com/modelcontextprotocol/modelcontextprotocol/issues/982
-- https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1391
-- https://agnost.ai/blog/long-running-tasks-mcp/
+- https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1391 (superseded by SEP-1686)
+- https://workos.com/blog/mcp-2025-11-25-spec-update
 - https://workos.com/blog/mcp-async-tasks-ai-agent-workflows

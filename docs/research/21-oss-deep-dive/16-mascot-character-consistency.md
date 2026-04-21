@@ -102,10 +102,12 @@ The "training-free" family injects one or more reference images into cross-atten
 
 ### Flux.1 Kontext (dev / pro / max)
 - **Docs:** <https://docs.bfl.ai/kontext/kontext_overview>.
-- **License:** Kontext [dev] weights = non-commercial; [pro] and [max] are hosted-API only, per-image pricing (~$0.04–0.08 / image in the BFL docs).
+- **License:** Kontext [dev] weights are non-commercial by default, **but BFL launched a self-serve commercial licensing portal (June 2025)** that lets teams purchase a commercial licence in minutes at transparent pricing — effectively removing the non-commercial restriction for paying customers. [pro] and [max] remain hosted-API only at per-image pricing (~$0.50/image for [pro] at 50 credits where 1 credit = $0.01, per BFL pricing page).
 - **Reference images:** 1 primary reference, plus a second for compositional lock in some workflows; supports in-place edit and style transfer.
 - **Consistency quality:** BFL's reference for "single mark across many edits" — locally-editable, text-editable-in-image, high subject stability.
 - **Speed:** [pro] ≈ 5–6 s / image; [max] is slower but sharper typography.
+
+> **Updated 2026-04-21:** The file originally described Kontext [dev] as "non-commercial." BFL launched a self-serve commercial licensing portal in June 2025, making commercial licences for Flux.1 Kontext [dev] (and other open-weight models including Flux.1 [dev]) purchasable in a few clicks. The "non-commercial only for dev weights" claim is still true for *unlicensed* use, but the commercial path is now straightforward and self-serve, not a custom negotiation. Update the no-fly list in the cross-cutting notes accordingly — Kontext [dev] with a purchased BFL commercial licence is a viable production path.
 
 ### Together FLUX.2 multi-reference
 - **Docs:** <https://www.together.ai/blog/flux-2-multi-reference-image-generation-now-available-on-together-ai>, <https://docs.together.ai/docs/quickstart-flux-2>.
@@ -174,7 +176,7 @@ DreamBooth-LoRA on a rare trigger token remains the default when we have 10+ can
 ## Cross-cutting notes
 
 - **One mark, many scales ≠ one face, many poses.** Mascot/logo-mark consistency is a *2-axis* problem: (a) the mark itself must be identical (vector or raster-identical for favicon/appicon) and (b) hero art must carry the mark's geometry + palette + personality. Axis (a) is solved by determinism — render SVG once, resize. Axis (b) is what IP-Adapter/PuLID/Flux-Kontext/LoRA solve.
-- **Non-commercial weight licenses are the silent trap.** Flux.1-dev, Flux.1 Redux-dev, Flux.1 Kontext-dev, IP-Adapter-FaceID v2 weights, RMBG-2.0 are all flagged non-commercial. Safe commercial paths: SDXL + IP-Adapter (Apache-2.0), PhotoMaker (Apache-2.0), StoryDiffusion (Apache-2.0), PuLID code (Apache-2.0) on Apache-2.0 base weights, hosted Flux endpoints (Replicate/fal/Together carry their own commercial licenses).
+- **Non-commercial weight licenses are the silent trap.** Flux.1-dev, Flux.1 Redux-dev, Flux.1 Kontext-dev, IP-Adapter-FaceID v2 weights, RMBG-2.0 are all flagged non-commercial **for unlicensed use**. However, BFL launched a self-serve commercial licensing portal in June 2025 for Flux.1 [dev], Flux.1 Kontext [dev], and Flux.1 Tools [dev] — commercial licences are now purchasable in minutes. Safe commercial paths without extra purchase: SDXL + IP-Adapter (Apache-2.0), PhotoMaker (Apache-2.0), StoryDiffusion (Apache-2.0), PuLID code (Apache-2.0) on Apache-2.0 base weights, hosted Flux endpoints (Replicate/fal/Together carry their own commercial licenses). With a BFL licence purchase: Flux.1-dev, Flux.1 Kontext-dev are now also commercial-safe.
 - **Reference-image floor.** Everything above works from **1 reference**; 3–5 references is the "no-regret" budget (matches Recraft's cap, PhotoMaker's sweet spot, and InstantID-multi's pattern). A per-brand LoRA becomes worth the training time only past ~200 assets/month per brand.
 
 ## Integration recommendations

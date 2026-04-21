@@ -31,7 +31,7 @@ Leonardo, Playground v3, Krea, Firefly, FLUX Pro (via Together), Luma Photon, an
 
 - **Leonardo.ai** is the most production-ready of the "second tier": Phoenix is a proprietary foundation model, Lightning XL/Kino XL are speed/cinematic variants, and the platform exposes Elements (LoRA-like style adapters), Image Guidance (ControlNet), style/character/content references, a full REST API with documented model IDs, native transparent-PNG generation (`"transparency": "foreground_only"`), and PAYG billing. For programmatic asset pipelines, Leonardo is the closest "one-stop shop" in this cohort.
 - **Playground v3 (PGv3)** is the strongest pure research play: a 24B-parameter DiT with a "Deep-Fusion" LLM integration (Llama-3 based text encoder) that scores **88.62 on DPG-Bench Hard** (vs Ideogram 2.0 80.12, Flux Pro 78.69, MJ v6.0 64.63) and **82% text-synthesis accuracy**, with human raters preferring its graphic-design outputs over human designers 60–80% of the time on stickers, T-shirts, and logos ([arXiv 2409.10695](https://arxiv.org/abs/2409.10695)). But its API is partner-gated (1M+ images/month), so it is aspirational rather than usable for most builders today.
-- **Adobe Firefly 5** (Apr 2025) plus **Firefly Services API** is the only option that ships **enforceable IP indemnification** for generated assets — but indemnity is scoped to Creative Cloud / Firefly web and **does not automatically extend to API usage**; Firefly Services requires an enterprise agreement (~$1,000/month minimum). Use Firefly when the legal surface matters (brand work, agency deliverables, stock replacement), not for cheap iteration.
+- **Adobe Firefly Image 5** entered public preview in October 2025 (announced at Adobe MAX) and is now in Photoshop (Beta) for instruction-based Generative Fill as of March 2026. It generates native 4MP images, supports intelligent layer deconstruction, and includes Instruct Edit (natural-language refinement). Custom Models remain in closed beta as of April 2026. The platform is the only option that ships **enforceable IP indemnification** for generated assets — but indemnity is scoped to Creative Cloud / Firefly web and **does not automatically extend to API usage**; Firefly Services requires an enterprise agreement (~$1,000/month minimum). Use Firefly when the legal surface matters (brand work, agency deliverables, stock replacement), not for cheap iteration.
 - **Krea** wins at interactive ideation — real-time canvas, webcam/screen-capture input, image-to-image enhance, and a simple REST API over **40+ hosted models** (FLUX, Krea 1, Qwen, Ideogram, Imagen, etc.) billed from one compute-unit pool. It's effectively a meta-router, not a model vendor, which makes it a very good **fallback-and-compare** surface for a prompt-enhancement system.
 - **FLUX.1 [1.1 pro] on Together AI** gives you Black Forest Labs' best hosted model at **$0.04/MP** behind a standard OpenAI-compatible endpoint, with the caveat that `[pro]` (non-1.1) is dedicated-endpoint only and anything "pro" requires Build Tier 2 ($50 lifetime spend). Free `flux-1-schnell` is available for cheap bulk work.
 - **Luma Photon / Photon Flash** are cheap and fast ($0.015 / $0.002 per 1080p image) with image, style, and character references exposed via API — but independent testing finds text rendering and fine-detail consistency lag SOTA. Good for illustrated backgrounds, weak for logos or anything with typography.
@@ -48,7 +48,7 @@ The practical punchline for a prompt-enhancement/asset-generation router: **Leon
 | Leonardo Kino XL | Kino XL | Moderate | Yes | Via Elements | Yes | PAYG | Paid plans | No |
 | Playground v3 / v3 HD | PGv3 (24B DiT) | **Best-in-class (82%)** | Unclear | Reference images (limited) | **Partner-gated** | $12–$45/mo | Yes on Pro | No |
 | Krea 1 + real-time | Krea 1 (BFL collab) | Moderate (Qwen variant better) | Via background removal | Up to 3 style refs | Yes (REST) | $9–$200/mo (CU) | Yes | No |
-| Firefly Image 5 | FI5 (4MP native) | Strong | Yes (Photoshop) | Structure/Style/Composition ref | Yes (Firefly Services) | Enterprise from ~$1k/mo | Yes | **Yes** (CC only, not API) |
+| Firefly Image 5 | FI5 (4MP native, Oct 2025) | Strong | Yes (Photoshop) | Structure/Style/Composition ref | Yes (Firefly Services) | Enterprise from ~$1k/mo | Yes | **Yes** (CC only, not API) |
 | FLUX 1.1 [pro] (Together) | FLUX 1.1 Pro | Very good | No (needs post) | No (baseline API) | Yes (serverless) | $0.04/MP | Yes (BFL terms) | No |
 | FLUX.1 [pro] (Together) | FLUX Pro | Very good | No | No | Dedicated only | Contact | Yes | No |
 | Luma Photon | Photon | Weak (despite marketing) | No native | Image/style/char refs | Yes | $0.015/img 1080p | Yes | No |
@@ -61,9 +61,12 @@ The practical punchline for a prompt-enhancement/asset-generation router: **Leon
 
 ### Leonardo.ai
 
+> **Updated 2026-04-21:** Leonardo Phoenix 2.0 launched in late 2025 with improved character consistency (85–90% identity preservation across generations) and better text rendering. Phoenix 2.0 architecture shares lineage with FLUX.1.
+
 **Model catalog** ([docs.leonardo.ai/docs/commonly-used-api-values](https://docs.leonardo.ai/docs/commonly-used-api-values)):
-- **Phoenix 1.0** (`de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3`) — Leonardo's proprietary foundation model, positioned as their photorealism + prompt-adherence flagship.
-- **Phoenix 0.9** (`6b645e3a-d64f-4341-a6d8-7a3690fbf042`) — earlier checkpoint retained for reproducibility.
+- **Phoenix 2.0** — latest flagship; improved character identity preservation (~85–90%), better text rendering, iterative "Edit with AI" prompting. Shares architecture lineage with FLUX.1.
+- **Phoenix 1.0** (`de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3`) — earlier proprietary foundation model, retained for reproducibility.
+- **Phoenix 0.9** (`6b645e3a-d64f-4341-a6d8-7a3690fbf042`) — older checkpoint retained for reproducibility.
 - **Lightning XL** (`b24e16ff-06e3-43eb-8d33-4416c2d75876`) — fast SDXL fine-tune; low token cost; ideal for iteration, concepting, bulk generation.
 - **Kino XL** (`aa77f04e-3eec-4034-9c07-d0f619684628`) — cinematic look, film-grade lighting.
 - Plus hosted SDXL, Flux Dev/Schnell, and community fine-tunes.
@@ -104,7 +107,7 @@ Krea's positioning has shifted since 2023 from "real-time SDXL canvas" to a full
 
 - **Real-time canvas** — text, canvas strokes, uploaded images, webcam, and screen capture all feed a diffusion model producing live previews; excellent for concepting and client-facing iteration. [aiphotolabs.com/reviews/krea-ai-review-2025](https://aiphotolabs.com/reviews/krea-ai-review-2025-real-time-creative-suite-with-multi-model-power/)
 - **Krea 1** ([docs.krea.ai/user-guide/features/krea-1](https://docs.krea.ai/user-guide/features/krea-1)) — flagship built in collaboration with Black Forest Labs. Targets the "AI look": crisp textures, accurate color science, photorealistic skin, dynamic camera angles. 6 credits/gen, 1.5K native res upscalable to 4K, up to 4 images per batch, 3 style references, LoRA support. Note that Krea's own docs recommend **Qwen 2512** over Krea 1 for typography-heavy work.
-- **Krea Edit** (Mar 2026) — region-level editing, object movement, relighting, camera changes, palette shifts, image expansion.
+- **Krea Edit** (launched Mar 9, 2026) — rebuilt editing tool with regional selection (rectangle, brush, or click-to-select), object movement with inpaint gap-fill, perspective/lighting/palette changes, and image expansion. Platform also received a major UI redesign in March 2026 with unified navigation and voice mode.
 - **FLUX.1 Krea** ([krea.ai/blog/flux-krea-open-source-release](https://krea.ai/blog/flux-krea-open-source-release)) — open-weight BFL/Krea collab, useful for self-hosting similar aesthetic.
 - **API** — REST endpoints, Bearer auth, 40+ hosted models with compute-unit billing shared with the web app ([docs.krea.ai/developers/api-keys-and-billing](https://docs.krea.ai/developers/api-keys-and-billing)).
 
@@ -114,12 +117,14 @@ Krea's positioning has shifted since 2023 from "real-time SDXL canvas" to a full
 
 ### Adobe Firefly 3 / 4 / 5
 
+> **Updated 2026-04-21:** Firefly Image 5 launched publicly at Adobe MAX in October 2025. As of March 2026, it's in Photoshop (Beta) enabling instruction-based Generative Fill. Custom Models remain in closed beta. Layered Image Editing is in private beta.
+
 Firefly's commercial thesis is **safety**: trained on Adobe Stock (licensed), openly-licensed material, and public-domain content, with an enforceable **IP indemnification** attached to the outputs.
 
 **Model lineage**:
 - **Firefly Image 3** (late 2024) — commercial baseline, Photoshop Generative Fill, Generative Expand.
 - **Firefly Image 4 / Image 4 Ultra** (Apr 2025) — up to 2K native; Ultra variant for complex scenes, small structures, and detail; better people/animals/architecture; improved in-image text. [techcrunch.com/2025/04/24](https://www.techcrunch.com/2025/04/24/adobe-releases-new-firefly-image-generation-models-and-a-redesigned-firefly-web-app/)
-- **Firefly Image 5** (preview, 2025) — **native 4MP (~2240×1792)**, intelligent layer deconstruction (scene → independent editable layers), "Instruct Edit" natural-language refinement, improved hands/anatomy, Custom Models in closed beta. [medium/CherryZhouTech](https://medium.com/@CherryZhouTech/adobe-launches-firefly-image-5-native-4mp-and-custom-models-54b4fde6903d)
+- **Firefly Image 5** (announced Adobe MAX Oct 2025; Photoshop Beta Mar 2026) — **native 4MP (~2240×1792)**, intelligent layer deconstruction (scene → independent editable layers), "Instruct Edit" natural-language refinement, improved hands/anatomy, Custom Models in closed beta. [TechCrunch Oct 2025](https://techcrunch.com/2025/10/28/adobe-firefly-image-5-brings-support-for-layers-will-let-creators-make-custom-models/); [medium/CherryZhouTech](https://medium.com/@CherryZhouTech/adobe-launches-firefly-image-5-native-4mp-and-custom-models-54b4fde6903d)
 
 **IP indemnity** ([licenseorg.com/blog/adobe-firefly-indemnification-explained](https://www.licenseorg.com/blog/adobe-firefly-indemnification-explained)):
 - Full indemnity on paid CC subscriptions ($4.99/mo and up).

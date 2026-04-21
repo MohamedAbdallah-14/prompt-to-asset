@@ -4,6 +4,10 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
+> **Audit 2026-04-21:** All angle files in this category were audited and updated. Key corrections: DALL-E 3 retiring May 12, 2026 (→ gpt-image-1.5); Recraft V3 → V4; Ideogram v3 transparent = dedicated `/ideogram-v3/generate-transparent` endpoint (not `style` param); Midjourney V8 Alpha launched March 17, 2026 (no public API still); Claude 4.0-series retires June 15, 2026 (→ claude-*-4-6); Gemini image API has no free tier; MCP spec 2025-11-25 is Latest Stable; SKILL.md is an open cross-IDE standard. See `SYNTHESIS.md` for the full corrections table.
+
 # Category 24 — Skills For P2A
 
 Skill-level design notes: frontend-design analysis, SVG-authoring skill design, T2I prompt-dialect skill, MCP API-integration skill, brand-consistency skill, validation-debug skill, gap analysis, marketplace survey.

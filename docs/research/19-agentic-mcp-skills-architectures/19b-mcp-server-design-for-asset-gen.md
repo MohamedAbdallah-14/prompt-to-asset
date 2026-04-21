@@ -103,11 +103,13 @@ The spec is dated (`YYYY-MM-DD`). Servers and clients negotiate a common version
 |--------------|----------------------------------------------------------------------------|
 | `2024-11-05` | Original public spec. HTTP+SSE transport (two endpoints).                  |
 | `2025-03-26` | Introduces **Streamable HTTP** (single endpoint). Structured tool output.   |
-| `2025-06-18` | Current **stable**. Formalizes OAuth 2.1 + PRM (RFC 9728). Output schemas. |
-| `2025-11-25` | Draft. Transport consolidation, elicitation, progress improvements.        |
+| `2025-06-18` | **Stable** (prior stable). Formalizes OAuth 2.1 + PRM (RFC 9728). Output schemas. |
+| `2025-11-25` | **Latest Stable** (as of Nov 2025). Adds async Tasks primitive, OpenID Connect Discovery, tool/resource/prompt icon metadata, incremental scope consent, elicitation URL mode, sampling tool-calling, OAuth Client ID metadata, and formalized extension capability negotiation. |
 
-Design target for this project: **negotiate `2025-06-18` as the minimum**, accept
-`2025-11-25` when the client offers it.
+> **Updated 2026-04-21:** The `2025-11-25` spec is no longer a draft — it shipped as the Latest Stable release on November 25, 2025 (MCP's first anniversary). The `2025-06-18` spec remains "Stable" but is superseded. There is no publicly announced post-`2025-11-25` draft as of April 2026.
+
+Design target for this project: **negotiate `2025-11-25` as the minimum**, accept
+`2025-06-18` as the fallback for older clients still pinned to that version.
 
 ### 1.3 Tools vs Resources vs Prompts
 
@@ -748,9 +750,10 @@ Two indispensable tools:
 
 ### 6.4 Codex CLI / Gemini CLI
 
+> **Updated 2026-04-21:** The claim below that Gemini CLI lacks native MCP support was accurate as of late 2024 but is no longer correct.
+
 - Codex CLI supports MCP over stdio as of its late-2025 releases.
-- Gemini CLI does not natively speak MCP yet; bridge via a small adapter that
-  translates Gemini's function-calling tool list to MCP `tools/list`.
+- **Gemini CLI has native MCP support** via its extensions system — declare `mcpServers` in `gemini-extension.json` and the CLI spawns the server over stdio. No adapter is needed. Gemini CLI is in fact one of the primary MCP clients with 24+ official Google MCP servers and a FastMCP `fastmcp install gemini-cli` integration (FastMCP v2.12.3+). The raw Gemini function-calling REST path (OpenAPI 3.0 `FunctionDeclaration[]`) is a separate integration for non-agent apps and does not compose with the CLI layer.
 
 ---
 
@@ -793,9 +796,7 @@ the product-shaped gap this project fills.
 6. **Hint annotations**: `enhance_prompt`, `validate_asset` are
    `readOnlyHint+idempotentHint`. `generate_*` and `upscale_refine` are
    `openWorldHint` (network-touching). None are `destructiveHint`.
-7. **Versioning**: target spec `2025-06-18`, accept `2025-11-25`; advertise a
-   server `serverInfo.version` that follows semver and bump major on
-   breaking tool-schema changes.
+7. **Versioning**: target spec `2025-11-25` (Latest Stable), accept `2025-06-18` as fallback for older pinned clients; advertise a server `serverInfo.version` that follows semver and bump major on breaking tool-schema changes.
 8. **Observability**: emit `notifications/progress` for every generation tool,
    emit `notifications/message` at `info` for each provider call (model, latency,
    cost estimate) so Cursor/Claude show an honest activity stream.
@@ -808,7 +809,7 @@ the product-shaped gap this project fills.
 
 - MCP spec index (latest) — <https://modelcontextprotocol.io/specification/latest>
 - MCP spec 2025-06-18 — <https://modelcontextprotocol.io/specification/2025-06-18>
-- MCP spec 2025-11-25 (draft) — <https://modelcontextprotocol.io/specification/2025-11-25>
+- MCP spec 2025-11-25 (Latest Stable, released Nov 25 2025) — <https://modelcontextprotocol.io/specification/2025-11-25>
 - Transports section — <https://modelcontextprotocol.io/specification/2025-11-25/basic/transports>
 - Authorization — <https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization>
 - Streamable HTTP RFC PR — <https://github.com/modelcontextprotocol/modelcontextprotocol/pull/206>

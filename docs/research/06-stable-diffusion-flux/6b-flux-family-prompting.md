@@ -42,12 +42,13 @@ The rest of this document covers the model family table, prompt semantics (inclu
 | Flux.1 Canny [pro/dev]         | 2024-11-21| 12B    | API / Non-Commercial  | T5-XXL + CLIP-L                  | 28–50        | distilled  | no              | Edge-preserving retexture[^3]                 |
 | Flux.1 Redux                   | 2024-11-21| adapter| API / Non-Commercial  | —                                | n/a          | n/a        | no              | Image-variation / style transfer adapter[^3]  |
 | Flux Pro Finetuning            | 2025-01-16| LoRA   | API-only              | inherits from base               | 28–50        | distilled  | no              | 1–5-shot persons / brands / stickers[^12]     |
-| Flux.1 Kontext [pro/max]       | 2025-05   | 12B    | API-only              | T5-XXL + CLIP-L                  | server       | distilled  | no              | Instruction-based image editing[^4][^5]       |
-| Flux.1 Kontext [dev]           | 2025-06   | 12B    | FLUX-1 Non-Commercial | T5-XXL + CLIP-L                  | 28–50        | distilled  | no              | Open-weights Kontext[^4]                      |
+| Flux.1 Kontext [pro/max]       | 2025-05-29| 12B    | API-only              | T5-XXL + CLIP-L                  | server       | distilled  | no              | Instruction-based image editing[^4][^5]       |
+| Flux.1 Kontext [dev]           | 2025-06-26| 12B    | FLUX-1 Non-Commercial | T5-XXL + CLIP-L                  | 28–50        | distilled  | no              | Open-weights Kontext[^4]                      |
 | **Flux.2 [pro]**               | 2025-11-25| —      | API-only              | **Mistral-3 24B VLM**            | server       | distilled  | no              | Frontier quality, 4 MP, 10-ref edit[^6]       |
 | **Flux.2 [flex]**              | 2025-11-25| —      | API-only              | Mistral-3 24B VLM                | 6–50 (user)  | 1.5–10     | no              | Dev-tunable steps + guidance[^6][^10]         |
-| **Flux.2 [dev]**               | 2025-11-25| **32B**| FLUX-2 Non-Commercial | Mistral-3 24B VLM                | 28–50        | distilled  | no              | Open-weights frontier; ~80 GB VRAM bf16[^6][^7]|
-| **Flux.2 [klein]**             | 2026 (beta)| 4B/9B | Apache 2.0            | Mistral-3 24B VLM (distilled)    | 4–8          | distilled  | no              | Size-distilled sub-second consumer-GPU[^6]    |
+| **Flux.2 [dev]**               | 2025-11-25| **32B**| FLUX-2 Non-Commercial | Mistral-3 24B VLM                | 28–50        | distilled  | no              | Open-weights frontier; ~80 GB VRAM bf16 (~48 GB with FP8 NVIDIA optim)[^6][^7]|
+| **Flux.2 [klein] 4B**          | 2026-01-15| **4B** | **Apache 2.0**        | Qwen3 8B text embedder (distilled)| 4 (distilled)| distilled  | no              | Sub-second consumer-GPU; ~13 GB VRAM[^6]      |
+| **Flux.2 [klein] 9B**          | 2026-01-15| **9B** | FLUX-2 Non-Commercial | Qwen3 8B text embedder           | 4 (distilled)| distilled  | no              | Flagship small model; ~29 GB VRAM (RTX 4090)[^6]|
 | Flux.2-VAE                     | 2025-11-25| VAE    | Apache 2.0            | —                                | n/a          | n/a        | —               | New latent space for all Flux.2 checkpoints[^6]|
 
 **Architecture recap.** Flux.1's 12B generator is a hybrid MM-DiT with 19 `DoubleStreamBlock` layers (SD3-style joint attention between image and text streams) and 38 `SingleStreamBlock` layers (concatenated-sequence parallel-attention blocks), trained with rectified flow and 2D RoPE[^2]. Flux.2 keeps the rectified-flow backbone but swaps the text stack entirely for Mistral-3 24B VLM and retrains the VAE for better learnability/quality/compression[^6].
@@ -186,9 +187,11 @@ All listed as Flux.2 launch partners by BFL[^6]; schemas mirror BFL's API (`guid
 ### Local inference
 
 - **diffusers**: `FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16)`; requires ~24 GB VRAM at bf16, ~12 GB with `enable_model_cpu_offload()`, ~8 GB with 4-bit quantization[^2].
-- **ComfyUI**: native nodes since 2024-08; Flux.2 [dev] support landed at launch with an NVIDIA-collaborated fp8 path that runs on RTX 4090-class GPUs at ~14–18 GB VRAM[^6][^7].
+- **ComfyUI**: native nodes since 2024-08; Flux.2 [dev] support landed at launch with an NVIDIA-collaborated fp8 path; NVIDIA's FP8 optimizations reduce VRAM requirements by ~40% and improve throughput by ~40% on RTX GPUs[^6][^7]. Flux.2 [klein] is supported via dedicated ComfyUI nodes including `FluxKVCache` for the 4-step distilled variants (Jan 2026).
 - **Forge / sd-webui-forge**: full Flux.1 + Tools support, including community CFG-distillation experiments[^3][^18].
 - **GGUF quantizations** (second-state, unsloth, city96): Flux.1 [dev] at Q4–Q8 runs on 16 GB VRAM GPUs with modest quality loss; T5-XXL Q4_1 is 3.06 GB, Q5_1 is 3.67 GB[^25].
+
+> **Updated 2026-04-21:** **Flux.2 [klein]** was released January 15, 2026 (not "2026 beta" as originally noted). The 4B variant is fully Apache 2.0 licensed, runs in ~13 GB VRAM, uses a Qwen3 8B text embedder (not Mistral-3 24B — it inherits Mistral-3's capabilities via distillation but the local checkpoint uses Qwen3 as the text encoder), and generates images in under 1 second on modern hardware. The 9B variant uses FLUX-2 Non-Commercial license and requires ~29 GB VRAM. Both variants unify generation and editing in a single model (same capability as Kontext). **Flux.1 Kontext [pro/max]** launched May 29, 2025; **Kontext [dev]** (open weights) launched June 26, 2025 — the table above has been corrected to reflect exact dates.
 
 ## Practical Takeaways for a Prompt Enhancer
 

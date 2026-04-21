@@ -17,7 +17,9 @@ Deep-dive survey of four large curated skill collections. Focus is on every imag
 
 ---
 
-## Collection 1 — ComposioHQ/awesome-claude-skills (55k stars)
+## Collection 1 — ComposioHQ/awesome-claude-skills (51.7k stars)
+
+> **Updated 2026-04-21:** Star count ~51.7k as of April 2026 per GitHub. MCP spec 2025-11-25 is Latest Stable — all references in this file to "draft spec" or "2024-11-05 spec" should be read as referring to the prior revision; the current stable spec replaced SSE transport with Streamable HTTP. SSE backward compat ends 30 June 2026. The SKILL.md format conventions used by ComposioHQ are consistent with the official Anthropic spec: required fields `name` + `description`, optional `disable-model-invocation`, `mode`, `allowed-tools`. Smithery now lists 7,000+ MCP servers (April 2026).
 
 **Type:** Claude Code SKILL.md registry.  
 **Total skills:** ~31 directories.  

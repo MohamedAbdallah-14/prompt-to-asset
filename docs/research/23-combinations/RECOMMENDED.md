@@ -7,6 +7,8 @@ status: final
 supersedes: [01, 02, 03, 04, 05, 06, 07, 08, 09]
 ---
 
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # Recommended Combination
 
 ## 1. Executive decision
@@ -123,9 +125,11 @@ describes.
 
 **Hosted APIs primary; serverless ComfyUI as the long-tail lane; no
 self-hosted GPU fleet in the first 90 days.** Hot paths go to
-`gpt-image-1` (transparency + text-heavy), Imagen 4 / Nano Banana (flat
-logos), Ideogram 3 (wordmarks), Recraft V3 (native SVG), Together FLUX.2
-(8-ref brand consistency), fal realtime (interactive refine). The OSS
+`gpt-image-1.5` (transparency + text-heavy; supports `stream:true` + `partial_images:0–3`), Imagen 4 / Nano Banana (flat
+logos), Ideogram 3 (wordmarks; for transparency use the dedicated `/ideogram-v3/generate-transparent` POST endpoint — not a `style:"transparent"` parameter), Recraft V4 Vector (native SVG, Feb 2026, $0.08/img — V3 only for existing `style_id` portability), Together FLUX.2
+(8-ref brand consistency), fal realtime (interactive refine).
+
+> **Updated 2026-04-21:** `gpt-image-1.5` is the current primary OpenAI image model (gpt-image-1 is "previous"). DALL-E 3 API shuts down May 12, 2026. Recraft V4 (Feb 2026) is SOTA for native SVG; pricing $0.04 raster / $0.08 vector. Ideogram transparency = dedicated `/ideogram-v3/generate-transparent` endpoint. MCP spec 2025-11-25 is Latest Stable. The OSS
 execution lane is `runpod-workers/worker-comfyui` on Modal, invoked only
 when `07-hybrid`'s router picks SDXL+LoRA (brand consistency at batch),
 Flux-schnell+LayerDiffuse (transparent stickers at batch), or
@@ -146,7 +150,9 @@ requests that form ~90 % of traffic (`07-hybrid` §"Capabilities Matrix").
 browser-first where possible, edge-hosted where not, adopted from
 `08-edge-browser-first` §"Surface 0".** `@imgly/background-removal-node`
 (MIT) or `rembg-webgpu` + BiRefNet-general-lite (MIT) for matte;
-`vtracer-wasm` (134 KB, MIT) for vectorization; SVGO for cleanup;
+`vtracer-wasm` (134 KB, MIT) for vectorization; SVGO v4 for cleanup;
+
+> **Updated 2026-04-21 — post-processing corrections:** (1) **rembg session**: always pass `session=new_session("birefnet-general")` explicitly — the bare `remove(input)` call defaults to U²-Net, not BiRefNet. (2) **SVGO v4**: `removeViewBox` and `removeTitle` are disabled by default in `preset-default`; old `removeViewBox: false` overrides are no-ops in v4 and should be removed. (3) **Flux `negative_prompt`**: raises TypeError on ALL Flux variants — use affirmative framing in the positive prompt.
 `@vercel/og` + Satori (MIT / MPL-2.0) for deterministic OG text
 composition; `@jsquash/png` + `@jsquash/resize` (WASM, Squoosh fork) for
 resize/encode on edge routes. No commercial matting or upscaling API
@@ -439,11 +445,11 @@ deep dives. All confirmed commercial-safe except where flagged.
 **Layer 1 — Rewriter & router glue**
 - `ai` ^5.0.167 — Apache-2.0 (Vercel) — typed dispatch spine
 - `@ai-sdk/anthropic` ^2.0 — Apache-2.0 — rewriter
-- `@ai-sdk/openai` ^2.0 — Apache-2.0 — `gpt-image-1`
+- `@ai-sdk/openai` ^2.0 — Apache-2.0 — `gpt-image-1.5` (gpt-image-1 is "previous"; DALL-E 3 API shuts down 2026-05-12)
 - `@ai-sdk/google-vertex` ^2.0 — Apache-2.0 — Imagen 4 / Nano Banana
 - `@ai-sdk/fal` ^2.0 — Apache-2.0 — Flux realtime + LayerDiffuse endpoint
 - `@ai-sdk/togetherai` ^2.0 — Apache-2.0 — FLUX.2 Pro 8-ref
-- `@ai-sdk/replicate` ^2.0 — Apache-2.0 — Recraft V3, Ideogram 3
+- `@ai-sdk/replicate` ^2.0 — Apache-2.0 — Recraft V4 Vector (SOTA SVG, Feb 2026; V3 retained as legacy alias for style_id only), Ideogram 3
 
 **Layer 2 — MCP spine**
 - `mcp-handler` ^1.1.0 — Apache-2.0 — Streamable HTTP server (Vercel)

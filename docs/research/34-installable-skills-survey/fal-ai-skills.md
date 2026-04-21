@@ -2,6 +2,8 @@
 
 Survey date: 2026-04-20. Sources fetched directly from GitHub via API.
 
+> **Updated 2026-04-21:** fal-ai-community/skills repo confirmed at 53 stars (MIT, bash scripts). The fal.ai queue API (used by fal-generate, fal-3d, fal-upscale, etc.) is transport-agnostic from the skill's perspective — skills call the REST queue endpoints directly. MCP spec context: fal-image-video-mcp (RamboRogers, 8 stars) exposes fal.ai via MCP and should target Streamable HTTP transport per the MCP 2025-11-25 spec; SSE transport deprecated, backward compat until 30 June 2026. The `--http` flag in RamboRogers MCP already serves Streamable HTTP on port 3000. Hunyuan3D pricing on fal.ai is $0.16/generation as of April 2026 (not $0.375 — that was a preview price). Nano Banana Pro pricing: $0.15/image (1K/2K), $0.30/image (4K). fal.ai now lists Nano Banana Pro (`fal-ai/nano-banana-pro`) as the default model for fal-generate, replacing earlier Flux-only defaults.
+
 ---
 
 ## Repos Surveyed

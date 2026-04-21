@@ -43,6 +43,8 @@ Metrics snapshot (April 2026):
   **low-velocity maintenance mode**, not abandoned — the author merges
   occasionally and the problem space is stable.
 
+> **Updated 2026-04-21:** `sharp` upstream has advanced to **v0.34.5** (released Nov 6, 2025). The open Dec 2025 issue requesting a bump to `sharp@0.34` remains unresolved in `icon-gen@5.0.0`. If `sharp@0.34` becomes mandatory for a security advisory in your stack, the pin `icon-gen@5.0.0 + sharp@0.33.x` described below still applies — but plan to fork-patch or bump the peer if the dependency tree forces `sharp@0.34`. The `sharp@0.34` line has known incompatibilities with Next.js 15 (GitHub lovell/sharp #4361); test before upgrading.
+
 ## What it does, end-to-end
 
 One function, one CLI command:
@@ -148,8 +150,10 @@ Concretely, to integrate into the Prompt Enhancer's `resize_icon_set` /
    tool call returns a structured `{ files[], sizes[], duration_ms }` payload
    rather than console spew.
 5. **Version pin** — pin `icon-gen@5.0.0` + `sharp@0.33.x` in our lockfile.
-   The Dec 2025 `sharp@0.34` issue is open, so we wait or fork-patch if
-   sharp's 0.34 line becomes mandatory for a security advisory.
+   The Dec 2025 `sharp@0.34` issue is open; `sharp` itself is now at v0.34.5
+   (Nov 2025) but `icon-gen` has not been updated to declare it as a peer.
+   Wait for a new `icon-gen` release or fork-patch if `sharp@0.34` becomes
+   required for a security advisory. (See Updated note above.)
 
 ## Risks
 
@@ -172,9 +176,16 @@ alongside `onderceylan/pwa-asset-generator` (PWA + favicon HTML), `ionic-team/
 capacitor-assets` (iOS/Android easy mode), and `guillempuche/appicons`
 (watchOS/tvOS/visionOS/RN/Flutter). MIT license, sharp-based (no ImageMagick
 surface-area tax), tiny dependency graph, correct ICNS RLE24 implementation
-(which is the part we absolutely do not want to rewrite), ~26.5k weekly npm
-downloads as production evidence. Pin `icon-gen@5.0.0` + `sharp@0.33.x`, wrap
-in a buffer-in/buffer-out adapter, and call it from `resize_icon_set`. If
-upstream goes fully dormant for >12 months past the next sharp major, vendor
-the four binary-writer files into our repo under MIT attribution — total cost
-of takeover is an afternoon.
+(which is the part we absolutely do not want to rewrite), ~15k weekly npm
+downloads as production evidence (down from ~26.5k in early 2026 — trend bears
+watching). Pin `icon-gen@5.0.0` + `sharp@0.33.x`, wrap in a buffer-in/buffer-out
+adapter, and call it from `resize_icon_set`. If upstream goes fully dormant for
+>12 months past the next sharp major, vendor the four binary-writer files into
+our repo under MIT attribution — total cost of takeover is an afternoon.
+
+> **Updated 2026-04-21:** No new release since v5.0.0 (July 2024). The Dec 2025
+> issue requesting a `sharp@0.34` bump remains open and unresolved as of this
+> date. Weekly npm downloads have slipped from ~26.5k (Q1 2025) to ~15k (April
+> 2026) — consistent with slow drift to alternatives, not sudden abandonment.
+> The `sharp@0.34` upgrade path remains the main operational risk; see Risks
+> section. Repo status: maintenance-mode, not abandoned.

@@ -23,9 +23,18 @@ tags: [svgl, brand-logos, trademark, svg, iconify-alternative, rest-api, nominat
 
 ## What it is
 
-`pheralb/svgl` ([GitHub](https://github.com/pheralb/svgl), ~5.77k★, MIT) is a
+`pheralb/svgl` ([GitHub](https://github.com/pheralb/svgl), ~5.7k★, MIT) is a
 community-maintained library of 400+ hand-optimized brand SVG logos with a public
-REST API at `api.svgl.app`. The website at [svgl.app](https://svgl.app) is a
+REST API at `api.svgl.app`.
+
+> **Updated 2026-04-21:** SVGL remains actively maintained as of April 2026
+> (issue #930 opened March 20, 2026; issue #927 opened March 19, 2026). Star
+> count is stable at ~5.7k. Logo count has grown beyond 400 with ongoing
+> community PR contributions; the exact total is best confirmed via the API
+> index at `api.svgl.app` (returns the full array). No breaking API changes
+> reported. The Hono + Upstash backend and the Svelte 5 + SvelteKit frontend
+> stack remain unchanged. The "don't clone the product" API clause is still
+> in force and unchanged. The website at [svgl.app](https://svgl.app) is a
 SvelteKit browse-and-copy UI; the API is a Hono worker on Cloudflare backed by
 Upstash Redis for rate limiting. The project occupies the same niche as
 `simple-icons` (CC0, ~17k★) and Iconify's "Logos" collection, but curates fewer

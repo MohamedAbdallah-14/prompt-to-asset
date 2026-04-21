@@ -2,7 +2,7 @@
 category: 29-rag-brand-knowledge
 category_title: "RAG for Brand Knowledge — retrieval patterns for consistent asset generation"
 indexer: category-indexer-29
-date: 2026-04-20
+date: 2026-04-21
 angles_indexed:
   - 29a-brand-guideline-extraction-rag
   - 29b-clip-style-embeddings-retrieval
@@ -19,6 +19,8 @@ downstream_consumers:
 primary_sources_aggregated: 40+
 ---
 
+> **📅 Research snapshot as of 2026-04-20.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 29 — RAG for Brand Knowledge
 
 ## Category Executive Summary
@@ -34,6 +36,8 @@ This category answers one product question: **how does the prompt-to-asset serve
 4. **CLIP alone is insufficient for style retrieval.** CLIP embeddings conflate semantic content and visual style — a brand moodboard of blue-sky product shots retrieves ocean photographs, not blue-palette illustrations. For brand style similarity, prefer **CSD** (Contrastive Style Descriptor, [arXiv:2404.01292](https://arxiv.org/abs/2404.01292)) which is trained specifically to suppress content and preserve style. Use both: CLIP for semantic+style combined queries, CSD for pure style matching and drift detection ([29b §CLIP limitations](./29b-clip-style-embeddings-retrieval.md)).
 
 5. **LanceDB is the right vector store for the MCP server.** It runs embedded (no server process), persists to local disk or S3, supports multimodal tables with built-in OpenCLIP embedding, and is used in production at Midjourney and Runway. ChromaDB is acceptable for prototyping; Milvus for multi-tenant at scale ([29c §Vector store](./29c-brand-bundle-storage-patterns.md)).
+
+> **Updated 2026-04-21:** ChromaDB's Rust-core rewrite is now the stable 1.x production line (1.5.x as of Feb 2026), delivering ~4× write throughput. It is no longer "still settling." The prototyping-only recommendation stands for a different reason: LanceDB's columnar storage and native Lance SQL (DuckDB integration, Jan 2026) have outpaced Chroma at multimodal scale.
 
 6. **Brand bundle storage is a three-tier problem.** JSON bundle in git (diffable, PR-reviewable). CLIP+CSD embeddings + metadata in LanceDB. Binary blobs (style reference images, LoRA weights) in S3 referenced by SHA256-validated URI. No single backend handles all three optimally ([29c §What needs to be stored](./29c-brand-bundle-storage-patterns.md)).
 
@@ -79,9 +83,11 @@ This category answers one product question: **how does the prompt-to-asset serve
 
 ## Gaps
 
+> **Updated 2026-04-21:** **LlamaParse V2 pricing model changed (December 2025).** The previous "1,000 pages/day free" framing is stale. LlamaParse now uses a credit-based system: 10,000 free credits/month for all accounts. Cost-effective mode (the default) costs ~3 credits/page ≈ ~3,300 pages/month free. Agentic/Agentic Plus modes cost significantly more per page. The `POST /api/parsing/upload` endpoint is unchanged; only the billing model changed. Check [llamaindex.ai/pricing](https://www.llamaindex.ai/pricing) for current credit costs per tier.
+
 - **No benchmark for extraction accuracy.** The ~10–20 % field error rate for hex codes from PDFs is an empirical estimate from practitioner reports, not a measured result against a labeled test set. Build a small evaluation set (20 brand guidelines PDFs with known hex codes) and measure LlamaParse + GPT-4V accuracy before shipping.
 - **Semantic role assignment is heuristic.** Calling the most-saturated extracted color "accent" and the darkest one "primary" works for most brands but fails for monochromatic brands (where saturation differences are small) and brands with inverted contrast hierarchies. Add a UI step where the user confirms role assignments before locking the bundle.
-- **CSD model is not packaged for easy deployment.** [learn2phoenix/CSD](https://github.com/learn2phoenix/CSD) requires manual checkpoint download and is not available as a pip package or LanceDB embedding function. Either package it or fall back to CLIP with explicit content-suppression prompts for style similarity queries until CSD is more accessible.
+- **CSD model is not packaged for easy deployment.** [learn2phoenix/CSD](https://github.com/learn2phoenix/CSD) requires manual checkpoint download and is not available as a pip package or LanceDB embedding function. Weights are also mirrored on Hugging Face at `yuxi-liu-wired/CSD` for easier download, but there is still no `pip install` path as of April 2026. Either package it or fall back to CLIP with explicit content-suppression prompts for style similarity queries until CSD is more accessible.
 - **Figma Styles (typography) vs. Variables (colors) split.** The Figma API requires two separate calls — Variables for colors, Styles for typography weights/sizes — and the merge logic is non-trivial when aliases cross the two systems. This needs its own integration work.
 - **brand.md auto-generation from bundle is unimplemented.** The template for converting `$extensions.ai.generation.voice` and `style_prose` into `brand.md` Visual + Voice sections is a straightforward LLM task but needs to be built explicitly.
 
@@ -107,7 +113,7 @@ This category answers one product question: **how does the prompt-to-asset serve
 
 **Design tokens and Figma:**
 - Figma Variables REST API — [developers.figma.com/docs/rest-api/variables-endpoints](https://developers.figma.com/docs/rest-api/variables-endpoints/)
-- Style Dictionary v4 — [styledictionary.com](https://styledictionary.com/)
+- Style Dictionary v5 (current as of 2026) — [styledictionary.com](https://styledictionary.com/)
 - @tokens-studio/sd-transforms — [github.com/tokens-studio/sd-transforms](https://github.com/tokens-studio/sd-transforms)
 - figma/variables-github-action-example — [github.com/figma/variables-github-action-example](https://github.com/figma/variables-github-action-example)
 - DTCG Format Module 2025.10 — [designtokens.org/tr/drafts/format](https://www.designtokens.org/tr/drafts/format/)

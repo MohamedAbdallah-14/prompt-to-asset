@@ -13,9 +13,12 @@ models_covered:
   - gpt-image-1
   - gpt-image-1.5
   - recraft-v3
+  - recraft-v4
   - midjourney-v7
+  - midjourney-v8
   - imagen-4
   - gemini-3-pro-image
+  - gemini-3.1-flash-image
   - anytext
   - textdiffuser-2
   - glyphcontrol
@@ -46,8 +49,8 @@ Three threads define the 2024–2026 landscape:
    condition diffusion on explicit glyph/layout images and enforce OCR- or
    character-level losses. This is the technique that made modern text
    rendering work.
-2. A **product lineage** — Ideogram, Recraft V3, Midjourney v7, GPT-Image-1.5,
-   Gemini 3 Pro Image ("Nano Banana Pro"), Flux 2 Pro — that shipped
+2. A **product lineage** — Ideogram, **Recraft V4** (formerly V3), Midjourney v7/v8,
+   GPT-Image-1.5, Gemini 3 Pro Image ("Nano Banana Pro"), Flux 2 Pro — that shipped
    increasingly strong Latin text rendering. By 2025/2026, "readable Latin
    text in a logo" is a solved product problem; **exact typography**
    (specific font, pixel-perfect kerning, multi-script, long phrases) is
@@ -61,10 +64,10 @@ Three threads define the 2024–2026 landscape:
 For a prompt-to-asset the operational implication is clear: choose the model
 by the **type of logo** (wordmark vs mixed mark vs icon), **script**
 (Latin vs non-Latin), and **downstream step** (final raster vs vectorize vs
-retype). Ideogram 3 or Gemini 3 Pro Image for text-forward mockups;
-Recraft V3 for brand-consistent wordmarks with native vector output;
-GPT-Image-1.5 for mixed-content logos with long phrases; Flux-family for
-iconography where text is replaced later.
+retype). Ideogram 3 or Nano Banana Pro (Gemini 3 Pro Image) for text-forward
+mockups; **Recraft V4** for brand-consistent wordmarks with native vector
+output; GPT-Image-1.5 for mixed-content logos with long phrases; Flux-family
+for iconography where text is replaced later.
 
 ## Model Comparison Benchmark
 
@@ -73,31 +76,31 @@ community reports through early 2026. Scores reflect Latin-script wordmarks
 of 1–5 words at logo scales; numbers are directional, not a single-source
 leaderboard.
 
+> **Updated 2026-04-21:** Model landscape shifts since the original draft: (1) Recraft V4 replaced V3 in February 2026 — all V3 notes apply equally to V4, which further improved text accuracy. (2) DALL·E 3 is being deprecated from the OpenAI API on May 12, 2026; migrate to gpt-image-1 or gpt-image-1.5. (3) Midjourney V8 Alpha launched March 17, 2026 with significantly improved text rendering (quoted text now produces readable output). (4) Nano Banana 2 (gemini-3.1-flash-image-preview) released February 26, 2026 with 4K resolution and improved text rendering. (5) Nano Banana Pro (gemini-3-pro-image-preview) has no free API tier — a billed project is required.
+
 | Model | Text accuracy (Latin, 1–3 words) | Long-phrase / paragraph | Font control | Non-Latin | Best for |
 |---|---|---|---|---|---|
-| **Recraft V3** | Very high (~90%+) | **Best-in-class**; only model reliable at multi-line paragraphs in raster logos | Style presets + brand refs; no named fonts | Limited | Wordmarks, brand systems, native vector |
-| **Ideogram 3.0** | ~90% perfectly readable | Good up to 6 words per quoted string | Descriptive styles ("bold serif", "art deco") | Partial (CJK, Arabic, Devanagari in 3.0, but docs warn) | Text-forward posters, logo mockups |
-| **Gemini 3 Pro Image** ("Nano Banana Pro") | Very high; marketed as "industry-leading text rendering" | Strong at 4K (up to 4096²) | Prose descriptions | **Best multilingual** (en/zh + others) | Multilingual logos, high-res |
-| **GPT-Image-1.5** | Very high; "consistent spelling on complex phrases" | Strong; handles dense UI text | Named fonts (Helvetica, Times) work *somewhat* | 48+ languages (GPT-4o native) | Mixed marks with long phrases, UI mockups |
-| **GPT-Image-1 / DALL·E 3** | Moderate; doubled letters, substitutions ("hAllo") | Weak | Minimal | Moderate | Ideation, not final |
+| **Recraft V4** (was V3) | Very high (~90%+) | **Best-in-class**; only model reliable at multi-line paragraphs in raster logos | Style presets + brand refs; no named fonts | Limited | Wordmarks, brand systems, native vector |
+| **Ideogram 3.0** | ~90–95% perfectly readable | Good up to 6 words per quoted string | Descriptive styles ("bold serif", "art deco") | Partial (CJK, Arabic, Devanagari in 3.0, but docs warn) | Text-forward posters, logo mockups — #1 for typography-focused prompts |
+| **Gemini 3 Pro Image** ("Nano Banana Pro") | Very high; marketed as "industry-leading text rendering" | Strong at 4K (up to 4096²) | Prose descriptions | **Best multilingual** (en/zh + others); CJK-specific training data | Multilingual logos, high-res — **no free API tier** |
+| **Nano Banana 2** (gemini-3.1-flash-image) | High; improved over Nano Banana | Moderate | Prose | Improved multilingual | Free dev tier, 4K; good upgrade path from Nano Banana |
+| **GPT-Image-1.5** | Very high; ~4× faster than 1.0; "consistent spelling on complex phrases" | Strong; handles dense UI text | Named fonts (Helvetica, Times) work *somewhat* | 48+ languages (GPT-4o native) | Mixed marks with long phrases, UI mockups |
+| **GPT-Image-1** | Moderate; doubled letters, substitutions ("hAllo") | Weak | Minimal | Moderate | Ideation, not final. Being superseded by 1.5. |
+| **DALL·E 3** | Moderate (legacy) | Weak | Minimal | Moderate | **Deprecated May 12, 2026.** Do not build new pipelines on DALL·E 3. |
 | **Flux.1 Pro** | Good — dual CLIP+T5 encoders help | Moderate | Weak; describe style instead | Weak | Icon-heavy logos; retype text later |
 | **Flux.1 [dev]** | Moderate | Weak | None | Weak | Local / LoRA workflows |
 | **Flux 2 Pro** | Strong; high text quality/$ | Improved vs 1.x | Descriptive only | Moderate | Budget wordmarks |
 | **Midjourney v7** | 89% readable (vs 23% on v6) | Short phrases only | "Bold sans-serif" style terms only | 27+ languages claimed; mixed in practice | Artistic / stylized logos |
+| **Midjourney v8 (alpha)** | Significantly improved; quoted text renders accurately | Short-to-medium phrases | Style descriptors | Improved vs v7 | Alpha only (alpha.midjourney.com) as of April 2026 |
 | **AnyText / TextDiffuser-2** | Near-OCR-accurate in-domain (research) | Yes, line-level | Font image conditioning | CJK via AnyText | Research; niche self-hosted |
-| **Imagen 4** | Good for Latin; CJK/Hindi in preview | Moderate | Prose | Supported, preview quality | General GCP pipelines |
+| **Imagen 4** | Good for Latin; CJK/Hindi in preview | Moderate | Prose | Supported, preview quality | General GCP pipelines — **no free API tier** |
 
 Notes on benchmark sources:
 
-- Recraft V3 held the #1 spot on the Hugging Face Text-to-Image Arena
-  (ELO ~1172) for five consecutive months in 2025 and is explicitly the
-  only model designed to *place long text at specified positions* in a
-  logo/poster.
-- Midjourney's v6→v7 jump ("23% → 89% readable") is Midjourney's own
-  marketing figure but is consistent with third-party retests.
-- 2026 "VibeDex" broad benchmarks rank GPT-Image-1.5 #1 overall and Flux 2
-  Pro above Ideogram 3 on overall quality-per-dollar; Ideogram still wins
-  on **typography-focused** prompts specifically.
+- Recraft V4 (formerly V3) remains the only mass-market model that natively outputs SVG and is explicitly designed to *place long text at specified positions* in a logo/poster. V4 released February 2026.
+- Midjourney's v6→v7 jump ("23% → 89% readable") is Midjourney's own marketing figure but is consistent with third-party retests. V8 Alpha (March 2026) improves further; not yet rated in published benchmarks.
+- 2026 "VibeDex" broad benchmarks rank GPT-Image-1.5 #1 overall and Flux 2 Pro above Ideogram 3 on overall quality-per-dollar; Ideogram still wins on **typography-focused** prompts specifically.
+- Ideogram 3.0 remains the #1 model for text-rendering accuracy across published reviews (90–95%) as of April 2026.
 
 ## Prompt Syntax by Model
 
@@ -127,7 +130,7 @@ will degrade rather than help.
 - Keep strings short; production-ready for "logo drafts", not
   pixel-perfect wordmarks.
 
-### Recraft V3
+### Recraft V4 (formerly Recraft V3)
 
 - **Canonical form:** natural-language description, no syntactic wrapper.
   Text is specified inline.
@@ -244,7 +247,9 @@ Quality tiers below: **A** = production-usable for that script; **B** =
 usable with retries and short strings; **C** = unreliable, expect
 retyping; **D** = catastrophic failure common.
 
-| Script | Representative logos | Ideogram 3 | Gemini 3 Pro Image | GPT-Image-1.5 | Recraft V3 | Flux Pro | Midjourney v7 | AnyText (self-host) |
+> **Updated 2026-04-21:** Table expanded to include Recraft V4 (same as V3 for scripts) and Midjourney v8 Alpha (improved Latin/quoted-text rendering vs v7). Nano Banana Pro column renamed from "Gemini 3 Pro Image" for clarity. Note: Nano Banana Pro has no free API tier.
+
+| Script | Representative logos | Ideogram 3 | Nano Banana Pro (Gemini 3 Pro Image) | GPT-Image-1.5 | Recraft V4 | Flux Pro | Midjourney v8α | AnyText (self-host) |
 |---|---|---|---|---|---|---|---|---|
 | Latin | any English wordmark | A | A | A | A | B | B+ | A |
 | Cyrillic | Russian/Ukrainian brands | B | B | B | B | C | C | B |
@@ -260,10 +265,11 @@ retyping; **D** = catastrophic failure common.
 
 Headline takeaways:
 
-- **Only Gemini 3 Pro Image and AnyText-family models are realistic for
-  CJK wordmarks today.** Gemini 3 Pro Image ("Nano Banana Pro") is
-  specifically tuned for cross-language text and is marketed with
-  multi-language human-eval wins.
+- **Only Nano Banana Pro (Gemini 3 Pro Image) and AnyText-family models are realistic for
+  CJK wordmarks today.** Nano Banana Pro is specifically tuned for cross-language text, was
+  trained on significantly more CJK text-image pairs, and is marketed with multi-language
+  human-eval wins. **Important: Nano Banana Pro has no free API tier — a billed Google Cloud
+  project is required.**
 - **Arabic / Hebrew / Devanagari** are where even Ideogram stumbles: each
   requires contextual shaping (position-dependent Arabic letter forms),
   conjunct formation (Devanagari), or RTL directionality that
@@ -368,7 +374,7 @@ single-shot result.
 3. **Emit model-specific syntax:**
    - Ideogram: `… with the text 'FOO' in <style>…`
    - Midjourney v7: `… text: "FOO", <style> --v 7`
-   - Recraft V3: natural language + `style=vector_illustration`
+   - Recraft V4 (formerly V3): natural language + `style=vector_illustration`
    - GPT-Image-1.5: quoted phrase + "crisp edges, optical alignment,
      pixel-perfect anti-aliasing"
    - Flux / Gemini / Imagen: prose, quote the exact string early
@@ -412,8 +418,10 @@ Vendor documentation:
   https://developer.ideogram.ai/api-reference/api-reference/generate-v3
 - Recraft — Adding text to an image:
   https://recraft.ai/docs/using-recraft/image-generation/working-with-text-and-prompts/adding-text-to-an-image
-- Recraft V3 model page:
+- Recraft V3 model page (legacy):
   https://www.recraft.ai/docs/recraft-models/recraft-V3
+- Recraft V4 model page (current — released Feb 2026):
+  https://www.recraft.ai/docs/recraft-models/recraft-V4
 - Midjourney — Text Generation:
   https://docs.midjourney.com/hc/en-us/articles/32502277092109-Text-Generation
 - Flux.1-dev model card:

@@ -2,7 +2,9 @@
 
 ## The Problem
 
-Provider model updates (Ideogram 3 → 4, gpt-image-1 → 1.5 → 2, Flux Dev → Pro 1.1) frequently change output character without breaking the API contract. A logo that looked flat and clean under Ideogram 3 may render with unwanted gradients under Ideogram 4. The diff is invisible to the routing layer and never surfaces a 4xx/5xx error. Only systematic comparison catches it.
+Provider model updates (Ideogram 3 → 3 Turbo → 4, gpt-image-1 → 1.5, Flux Dev → Pro → Pro 1.1 → Ultra) frequently change output character without breaking the API contract. A logo that looked flat and clean under Ideogram 3 may render with unwanted gradients under Ideogram 4. The diff is invisible to the routing layer and never surfaces a 4xx/5xx error. Only systematic comparison catches it.
+
+> **Updated 2026-04-21:** "gpt-image-1 → 1.5 → 2" was speculative — as of April 2026, OpenAI's image API offers `gpt-image-1` and `gpt-image-1.5` as confirmed versioned strings. A "gpt-image-2" has not been publicly announced via API. Flux progression as of 2026: Flux.1 Dev → Flux.1 Pro → Flux.1 Pro 1.1 → Flux.1 Ultra (BFL). Always check the BFL changelog and pin exact version strings.
 
 ---
 
@@ -102,10 +104,12 @@ Track which models have versioned vs. unversioned endpoints:
 | Provider | Endpoint versioning | Canary strategy |
 |---|---|---|
 | OpenAI gpt-image-1 | Model string in API (e.g., `gpt-image-1`, `gpt-image-1.5`) | Pin model string; canary on new string |
-| Ideogram | No version pinning | Weekly canary probe |
+| Ideogram | No version pinning on most endpoints | Weekly canary probe |
 | Recraft V3 | Model ID in API | Pin model ID |
-| BFL/Flux | Version tags (flux-pro-1.1) | Pin version tag |
+| BFL/Flux | Version tags (flux-pro-1.1, flux-ultra) | Pin version tag |
 | Google Imagen | `imagen-3.0-generate-002` style | Pin version string |
+
+> **Updated 2026-04-21:** MCP Inspector has a confirmed **Critical RCE Vulnerability (CVE-2025-49596)**. If using MCP Inspector for protocol conformance testing in CI, ensure you are running a patched version. Check the [MCP Inspector releases](https://github.com/modelcontextprotocol/inspector/releases) page for the fixed version before including it in automated pipelines. The MCP spec itself received a major update in November 2025 (one-year anniversary release); confirm your MCP server implementation is spec-compliant with the November 2025 version.
 
 **Critical rule:** Never call a provider's "latest" alias in production. Always pin the specific model version string. This is the single most impactful change to reduce silent regressions.
 

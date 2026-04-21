@@ -6,6 +6,8 @@ date: 2026-04-21
 
 # Marketplace Skills Survey for P2A
 
+> **Updated 2026-04-21:** SKILL.md is confirmed as an open cross-IDE standard. The same SKILL.md format works in Claude Code, Cursor (`.cursor/rules/`), Windsurf (`.windsurf/rules/`), Gemini CLI (`GEMINI.md`), and OpenAI Codex CLI — only the destination folder path changes. Skills written in this format are forward-compatible as Copilot adoption matures. Keep SKILL.md under 500 lines; only `name` and `description` frontmatter fields are loaded initially by the harness.
+
 Survey of installed Claude Code marketplace skills and their P2A relevance. Assessed across three categories: **Direct** (solves core P2A problem), **Supporting** (improves workflow), **Indirect** (minor benefit), **None**.
 
 ---
@@ -44,9 +46,10 @@ Survey of installed Claude Code marketplace skills and their P2A relevance. Asse
 
 **Specific use cases:**
 - "What's the current HuggingFace Inference API syntax for diffusion models?"
-- "Does Recraft V4 support controls.colors differently from V3?"
+- "Does Recraft V4 Vector support controls.colors differently from V3?" (V4 is current; V3 superseded)
 - "What SVG filters are supported in @resvg/resvg-js?"
-- "What's the current gpt-image-1 API parameter list?"
+- "What's the current gpt-image-1.5 API parameter list?" (DALL-E 3 retiring May 12, 2026; gpt-image-1.5 is current OpenAI image model)
+- "What is the Ideogram /ideogram-v3/generate-transparent endpoint signature?" (distinct from standard generate endpoint)
 
 **Action:** Reference in CLAUDE.md. Call when live docs are needed for any library P2A uses.
 

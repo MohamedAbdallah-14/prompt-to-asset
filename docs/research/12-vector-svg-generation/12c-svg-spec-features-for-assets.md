@@ -18,7 +18,7 @@ primary_sources:
   - "W3C — Filter Effects Module Level 1 (WD 2022), https://www.w3.org/TR/filter-effects-1/"
   - "W3C — WAI-ARIA 1.2 & SVG Accessibility API Mappings (2024), https://www.w3.org/TR/svg-aam-1.0/"
   - "MDN — SVG element/attribute references, https://developer.mozilla.org/en-US/docs/Web/SVG"
-  - "SVGO — SVG Optimizer README and plugin docs (v3.x, 2024), https://github.com/svg/svgo"
+  - "SVGO — SVG Optimizer README and plugin docs (v4.x, 2026), https://github.com/svg/svgo"
   - "Jake Archibald — 'Don't use preserveAspectRatio=\"none\"' and viewBox posts, https://jakearchibald.com/"
   - "Sara Soueidan — 'Understanding SVG Coordinate Systems and Transformations' series, https://www.sarasoueidan.com/blog/svg-coordinate-systems/"
   - "CSS-Tricks — 'A Complete Guide to SVG Fallbacks,' 'SVG `use` with External References, Take 2', https://css-tricks.com/"
@@ -162,9 +162,11 @@ Always pair motion with `@media (prefers-reduced-motion: reduce)`. Unconditional
 
 ## SVGO Optimization Safety
 
+> **Updated 2026-04-21:** SVGO **v4.0.0** was released ~February 2026 (current: v4.0.1). The defaults became safer: `removeViewBox` and `removeTitle` are **no longer part of preset-default** and must now be explicitly enabled. The config object format for `preset-default` overrides is unchanged from v3. The public API moved to named exports only (no default export). Minimum Node.js is 16. The safety preset below remains correct; the `removeViewBox: false` and `removeTitle: false` overrides are now redundant in v4 but harmless. If upgrading from v3, rename `removeScriptElement` → `removeScripts` in any custom config.
+
 SVGO cuts 30–80% from Illustrator output, but default plugins are hostile to interactivity and animation. Common silent breakage:
 
-- **`removeViewBox`** — strips `viewBox` when `width`/`height` exist; SVG becomes non-responsive. **Always disable.** Modern SVGO v3+ defaults off; legacy pipelines and Illustrator SVGO-Web export still ship it on.
+- **`removeViewBox`** — strips `viewBox` when `width`/`height` exist; SVG becomes non-responsive. **Always disable.** In SVGO v4 this is disabled by default; in v3 it was part of preset-default. Legacy pipelines and Illustrator SVGO-Web export may still ship it on.
 - **`cleanupIds` / `removeUnusedIds`** — drops IDs not referenced internally. Breaks external `<use xlink:href="sprite.svg#icon-foo">`, CSS `#id` selectors, JS animation hooks. Use with a `preserve` prefix list (`icon-`, `gradient-`).
 - **`collapseGroups`** — removes `<g>` wrappers whose transforms fold into children. Breaks CSS animations and SMIL anchored to the group.
 - **`mergePaths`** — merges sibling `<path>` elements; breaks per-path animation (letter-by-letter wordmark tween).
@@ -243,7 +245,7 @@ SVG accessibility is governed by SVG-AAM. The rules are small and almost univers
 - W3C — SVG Accessibility API Mappings 1.0: https://www.w3.org/TR/svg-aam-1.0/
 - MDN — SVG reference index: https://developer.mozilla.org/en-US/docs/Web/SVG
 - MDN — `<use>`, `<symbol>`, `currentColor`, `preserveAspectRatio`, `filter`: https://developer.mozilla.org/en-US/docs/Web/SVG/Element
-- SVGO — https://github.com/svg/svgo (README + `plugins/` docs)
+- SVGO — https://github.com/svg/svgo (README + `plugins/` docs); **current version v4.0.1** (released ~February 2026). *(Updated 2026-04-21: SVGO v4 changed the default preset — `removeViewBox` and `removeTitle` are now **disabled by default**, which makes the defaults safer for asset pipelines. The config object format for overrides is unchanged from v3. Public API now uses named exports only. See the [v3→v4 migration guide](https://svgo.dev/docs/migrations/migration-from-v3-to-v4/).)*
 - Sara Soueidan — "Understanding SVG Coordinate Systems and Transformations" (3-part series): https://www.sarasoueidan.com/blog/svg-coordinate-systems/
 - Chris Coyier — "Cascading SVG Fill Color": https://css-tricks.com/cascading-svg-fill-color/
 - CSS-Tricks — "SVG `use` with External References, Take 2": https://css-tricks.com/svg-use-external-reference-take-2/

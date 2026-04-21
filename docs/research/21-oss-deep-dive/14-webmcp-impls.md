@@ -127,8 +127,9 @@ inheriting the user's existing session, cookies, and permissions.
 - **Edge** — tracking Chromium, expected to follow silently.
 - **Firefox, Safari** — participating in the W3C CG but no implementation
   intent signaled as of April 2026.
-- **Formal announcement** expected around Google I/O 2026; until then
-  assume the flag-gated channel and plan polyfill for everyone else.
+- **Production readiness** expected mid-to-late 2026. Cloudflare has also added WebMCP support in Cloudflare Browser Run. Until full production unflag, assume the flag-gated channel and plan polyfill for everyone else.
+
+> **Updated 2026-04-21:** The "formal announcement expected around Google I/O 2026" language is forward-looking; as of April 2026 Chrome 146 remains flag-gated and production readiness is mid-to-late 2026 per community reporting. Cloudflare Browser Run has separately shipped WebMCP support, broadening the runtime surface beyond the Chrome flag.
 
 ## Real demos exposing page state to agents
 

@@ -132,7 +132,7 @@ For **dark mode on iOS PWA**, append `(prefers-color-scheme: dark)` to the media
 ### pwa-asset-generator (elegantapp) — deep dive
 
 - **Repo:** [`github.com/elegantapp/pwa-asset-generator`](https://github.com/elegantapp/pwa-asset-generator/)
-- **Version (2026-03-14):** v8.1.4 — ~3.0 k stars, 155 forks, 83 releases across 20 contributors, MIT, 89% TypeScript. Actively maintained.
+- **Version (confirmed 2026-04-21):** v8.1.4 — ~3.0 k stars, 155 forks, 83 releases across 20 contributors, MIT, 89% TypeScript. Actively maintained; open issues filed as recently as March 2026.
 - **Tech stack:** Puppeteer + headless Chrome as the rasterization canvas. This means the source can be an **SVG, PNG, JPG, or HTML fragment** — Chrome renders it at every target size, so vector sources produce perfectly sharp output at any resolution.
 - **What it generates:**
   - iOS home-screen icons (`apple-touch-icon` set)

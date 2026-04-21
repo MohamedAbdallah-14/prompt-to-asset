@@ -59,8 +59,8 @@ For a prompt-to-asset pipeline, the repair must modify the **text prompt** (or S
 
 **Repair strategy**: This is the text-in-diffusion problem. Best approaches in priority order:
 1. Generate a text-free hero image; composite real text using Canvas/Skia/SVG at the application layer. This is always correct.
-2. If text must be in the raster (client constraint): use gpt-image-1 or Ideogram 3 — the two best text renderers. Limit to ≤3 words. Pass the exact target string in the prompt as a quoted literal: `'wordmark: "Acme"'`.
-3. Do not retry Flux/SD/Imagen for text rendering. They do not fix on retry.
+2. If text must be in the raster (client constraint): use `gpt-image-1`, `gpt-image-1.5`, Ideogram 3 / Ideogram 3 Turbo, or `gemini-3-pro-image-preview` (Nano Banana Pro) — all strong-text renderers that handle short wordmarks (≤3 words / ~20 chars) reliably. Limit to ≤3 words. Pass the exact target string in the prompt as a quoted literal: `'wordmark: "Acme"'`.
+3. Do not retry Flux/SD/Imagen 3/Nano Banana non-Pro for text rendering. They do not fix on retry.
 
 ---
 

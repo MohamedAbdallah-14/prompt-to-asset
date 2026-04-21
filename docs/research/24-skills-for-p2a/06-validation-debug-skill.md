@@ -6,6 +6,13 @@ date: 2026-04-21
 
 # Asset Validation + Pipeline Debugging Skill — Design Spec
 
+> **Updated 2026-04-21:**
+> - **DALL-E 3 retiring May 12, 2026.** Any repair path that suggests routing to `dall-e-3` must be updated to `gpt-image-1.5` (current) or `gpt-image-1`. Remove all `dall-e-3` references from fallback chains.
+> - **Ideogram v3 transparency:** The transparent endpoint is `/ideogram-v3/generate-transparent` (a separate endpoint), NOT `style: "transparent"` on the standard generate endpoint. Repair notes referencing `style:"transparent"` param are incorrect.
+> - **Recraft V4 is current** (V3 superseded). Repair paths routing to Recraft for native SVG or palette enforcement should use V4 or V4 Vector.
+> - **Tier 2 VLM:** Use claude-sonnet-4-6 (claude-sonnet-4-20250514 retires June 15, 2026).
+> - **MCP spec 2025-11-25** is Latest Stable. No breaking changes to validation tool schemas.
+
 A dedicated `asset-validation-debug` skill bridges P2A's tier-0/1/2 validation system and `superpowers:systematic-debugging` into a production-grade failure recovery workflow.
 
 ---
@@ -36,7 +43,7 @@ A dedicated `asset-validation-debug` skill bridges P2A's tier-0/1/2 validation s
 
 | Code | Name | Signal |
 |---|---|---|
-| `T2_BRAND_DRIFT` | Style diverges from brand reference assets | Claude Sonnet rubric score < 0.6 |
+| `T2_BRAND_DRIFT` | Style diverges from brand reference assets | claude-sonnet-4-6 rubric score < 0.6 |
 | `T2_COMPOSITION` | Off-center subject, clutter, poor negative space | VLM aesthetic score < threshold |
 
 ---

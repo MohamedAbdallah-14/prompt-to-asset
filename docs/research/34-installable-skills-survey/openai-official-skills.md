@@ -570,6 +570,8 @@ The Remotion plugin has a well-structured SKILL.md for parameterized video from 
 
 The SKILL.md format (YAML frontmatter + markdown body) is the same format Claude Code skills use. The `name` and `description` frontmatter fields serve the same routing purpose. Any openai/skills SKILL.md could be dropped into a Claude Code skill without format changes — the difference is the routing trigger mechanism (Codex reads SKILL.md descriptions; Claude Code reads them via the Skill tool catalog).
 
+> **Updated 2026-04-21:** GitHub Copilot (Visual Studio March 2026 update) now also supports the same SKILL.md-shape agent skills via `.agent.md` files. Microsoft ships `microsoft/skills` as the official skills repo for Copilot. The `vercel-labs/skills` CLI v1.1.1 (`npx skills`) supports 19 agents including Codex, Claude Code, Cursor, Windsurf, Gemini CLI, and Copilot — it is now the de facto cross-IDE install tool. `npx skills find` provides interactive discovery; `skills.sh` is the canonical leaderboard directory. The SKILL.md format has effectively won the agent skills portability war across all major coding assistants.
+
 ### 7. The `image-enhancer` Composio skill is not a real implementation
 
 It documents desired behavior (upscale, sharpen, artifact removal) without providing scripts or specifying the underlying tool. For actual upscaling in the prompt-to-asset pipeline, use `asset_upscale_refine` which routes to a real upscaler API.

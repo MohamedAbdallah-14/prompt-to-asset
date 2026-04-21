@@ -104,7 +104,7 @@ This is the closest thing to a dependency we can *shell out to* today.
 ### `ethanjyx/OpenBrand` — the HTML-parse extractor
 
 - **URL:** https://github.com/ethanjyx/OpenBrand · https://openbrand.sh
-- **License:** MIT · **Stars:** 673 · **npm:** `openbrand` (~2.8k weekly)
+- **License:** MIT · **Stars:** ~633 (as of 2026-04) · **npm:** `openbrand` (~8.9k weekly downloads; MCP server adoption driving growth)
 - **Stack:** Next.js + TypeScript + **Cheerio + Sharp** (no browser
   automation — cheap and fast).
 - **Inputs:** `extractBrandAssets("https://stripe.com")` or

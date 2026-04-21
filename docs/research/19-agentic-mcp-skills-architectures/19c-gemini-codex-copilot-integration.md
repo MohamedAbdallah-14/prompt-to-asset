@@ -49,6 +49,7 @@ This document maps the four surfaces end‑to‑end, shows concrete tool schemas
 | Manifest file | `tools=[FunctionDeclaration]` in code | `gemini-extension.json` | `.codex-plugin/plugin.json` | `.vscode/mcp.json` + `.github/copilot-instructions.md` + (optional) Copilot Extension GitHub App |
 | Schema dialect | OpenAPI 3.0 JSON Schema | MCP `tools/list` (JSON Schema) | MCP `tools/list` + `SKILL.md` frontmatter | JSON Schema (per skill) *or* MCP `tools/list` |
 | Max functions/tools | 128 declarations / request ([docs](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/function-calling)) | Unlimited (server‑side) | Unlimited (plugins compose) | 5 skills per skillset; MCP unlimited |
+| Lifecycle hooks | n/a | **Yes (v0.26.0+)** via `hooks/hooks.json` in extension; events: SessionStart, BeforeTool, AfterTool, BeforeModel, AfterModel, etc. | Yes (`.codex/hooks.json`) | Partial (VS Code agent lifecycle) |
 | Invocation modes | `AUTO` / `ANY` / `NONE` via `toolConfig.functionCallingConfig` | `AUTO` only; approval dialog per call unless trusted | Implicit by `description` match or `$skill-name`; approval by policy preset | `#toolname` hint / Autopilot / Bypass / Default Approvals |
 | Parallel calls | ✅ Gemini 3+ (`parallel Tool IDs`) | ✅ via MCP | ✅ | ✅ |
 | Streaming args | ✅ `streamFunctionCallArguments: true` on Gemini 3 Pro | n/a (MCP) | n/a (MCP) | n/a (MCP) |
@@ -409,6 +410,8 @@ Why this works:
 ## Agent‑Specific Quirks & Gotchas
 
 ### Gemini
+
+> **Updated 2026-04-21:** Gemini CLI now has lifecycle hooks (v0.26.0+). Extensions can bundle a `hooks/hooks.json` file defining `SessionStart`, `BeforeTool`, `AfterTool`, `BeforeModel`, `AfterModel`, and other events. Users see a security consent warning at install. There is no exact `UserPromptSubmit` equivalent — use `BeforeModel` as the closest substitute. Gemini CLI also has native MCP support (not "via adapter") — declare `mcpServers` in `gemini-extension.json` and the CLI spawns the server over stdio natively.
 
 - **`ANY` mode trap.** Forcing a tool call is tempting for benchmarks but the model cannot emit a final natural‑language message, causing loops until the ~10‑call ceiling. Stick to `AUTO` + a strong description, or use `ANY` only for a single‑turn extraction pipeline.
 - **OpenAPI dialect, not full JSON Schema.** Gemini rejects `oneOf`/`anyOf` at top level of `parameters` in older 1.5‑era releases; flatten with an `"enum"` over a discriminator field.

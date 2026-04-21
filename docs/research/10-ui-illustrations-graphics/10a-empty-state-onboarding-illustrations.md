@@ -114,19 +114,24 @@ This is the heart of the angle. To ship 20+ illustrations that feel like a famil
 ### 2. IP-Adapter (image prompt adapter)
 
 - **What it is**: Tencent AI Lab's adapter that lets you pass an image as an additional conditioning input alongside the text prompt. Paper: [arXiv:2308.06721](https://arxiv.org/abs/2308.06721); repo: [github.com/tencent-ailab/IP-Adapter](https://github.com/tencent-ailab/IP-Adapter). Variants: plain IP-Adapter, IP-Adapter Plus, IP-Adapter FaceID, IP-Adapter Style-Plus (style-only mode).
+
+> **Updated 2026-04-21:** The original `tencent-ailab/IP-Adapter` repository's last commit was January 2024; it is effectively unmaintained for new model families. For FLUX.2 pipelines, use **InstantX's FLUX.1-dev IP-Adapter** (`InstantX/FLUX.1-dev-IP-Adapter`) which is the current maintained fork for Flux. For SDXL, ComfyUI IPAdapter Plus entered maintenance-only mode in April 2025. For most FLUX.2 workflows, prefer FLUX.2's native multi-reference support (≤10 refs) over an external adapter entirely.
+
 - **When to use**: You have 1–5 reference illustrations and want the style transferred to a new composition without training. Fastest path from "here's our look" to "give me 10 more".
-- **Strengths**: No training. Seconds per image. Style-only mode separates composition from aesthetics. Pairs with SD 1.5, SDXL, Flux (via [XLabs-AI/flux-ip-adapter](https://github.com/XLabs-AI/x-flux)).
+- **Strengths**: No training. Seconds per image. Style-only mode separates composition from aesthetics. Pairs with SD 1.5, SDXL, Flux (for Flux, use InstantX FLUX.1-dev IP-Adapter).
 - **Weaknesses**: Drift creeps in on unusual compositions (e.g., iso camera angle when refs are all flat). Weaker than LoRA on fine brand details (exact palette, stroke width).
-- **Concrete recipe**: Diffusers `pipeline.load_ip_adapter("h94/IP-Adapter", subfolder="sdxl_models", weight_name="ip-adapter_sdxl.safetensors")`; set `pipeline.set_ip_adapter_scale(0.6–0.8)`. Pass the style ref(s) via `ip_adapter_image=[img]`.
+- **Concrete recipe**: Diffusers `pipeline.load_ip_adapter("h94/IP-Adapter", subfolder="sdxl_models", weight_name="ip-adapter_sdxl.safetensors")`; set `pipeline.set_ip_adapter_scale(0.6–0.8)`. Pass the style ref(s) via `ip_adapter_image=[img]`. For Flux use `InstantX/FLUX.1-dev-IP-Adapter`.
 
 ### 3. `--sref` / style reference (Midjourney, Ideogram, Flux Redux, Recraft Style)
 
-- **Midjourney `--sref`**: Since v6/v7, pass one or more image URLs as `--sref <url> --sw 100`. `--sw` (style weight) 0–1000, default 100. Also `--sref random` locks to a hidden numeric style id you can then reuse. Official docs: [docs.midjourney.com/hc/en-us/articles/32162917505549-Style-Reference](https://docs.midjourney.com/hc/en-us/articles/32162917505549-Style-Reference). This is the fastest and most convenient consistency knob for a prompt-only workflow.
-- **Ideogram `Style Reference`**: supports uploading a style image; respects text-in-image much better than MJ.
-- **Flux Redux** (Black Forest Labs 2024): an adapter that re-renders an input in-style; effectively an IP-Adapter native to Flux. See [blackforestlabs.ai/announcing-flux-1-tools](https://blackforestlabs.ai/announcing-flux-1-tools/).
-- **Recraft Style** (Recraft.ai): create a "Style" from 5 images, then invoke by style ID in every subsequent generation. Native vector output. [recraft.ai](https://www.recraft.ai/).
-- **Gemini 2.5 Flash Image ("Nano Banana")**: supports multi-image conditioning; passing 2–4 on-brand references in-line achieves strong consistency for product illustrations.
-- **GPT Image 1 (OpenAI)**: supports image input references in the same API call; good for in-style generation but still weaker than Recraft for vector cleanliness.
+> **Updated 2026-04-21:** Midjourney V7 is the current stable default (released April 3, 2025; became default June 17, 2025). Midjourney V8 Alpha launched March 17, 2026 with a new `--sv 7` style-reference version that is 4× faster and cheaper than previous sref; V8.1 Alpha went live April 14, 2026 on alpha.midjourney.com. Recraft V3 has been superseded by **Recraft V4** (released February 2026), which ships four tiers (V4, V4 Vector, V4 Pro, V4 Pro SVG) — the vector tiers still produce native SVG and now support up to 2048×2048 resolution. `gpt-image-1` has been joined by **gpt-image-1.5** (December 2025), which is ~20% cheaper and adds faster generation with denser text rendering. Flux.1 has been superseded by **FLUX.2** (November 25, 2025), consisting of Pro, Flex, Dev, and Klein models; all FLUX.2 models support multi-reference editing (up to 10 references), precise hex color control, and improved text rendering. Gemini image generation via the **API** has **no free tier as of December 2025** — unbilled keys return HTTP 429 on image endpoints; use AI Studio web UI for free interactive access.
+
+- **Midjourney `--sref`**: Current version is V7 (stable) / V8 Alpha (early access). Pass image URLs as `--sref <url> --sw 100`. In V8 Alpha, use `--sv 7` for the new, faster style-reference version. Also `--sref random` locks to a hidden numeric style id. Official docs: [docs.midjourney.com/hc/en-us/articles/32162917505549-Style-Reference](https://docs.midjourney.com/hc/en-us/articles/32162917505549-Style-Reference). MJ also introduced a **Style Creator** tool that lets you generate and save reusable style codes without uploading images.
+- **Ideogram `Style Reference`**: Ideogram 3 / 3 Turbo (released March 2025, major upgrade April 2026) supports style image upload; text rendering accuracy ~90% for short strings; Turbo uses 2 credits vs. Quality's 6.
+- **Flux Redux / FLUX.2** (Black Forest Labs): FLUX.1 Tools (Redux) remain available; FLUX.2 (November 2025) natively supports multi-reference editing (up to 10 refs), making Redux-style re-rendering built-in. See [bfl.ai/models](https://bfl.ai/models).
+- **Recraft Style** (Recraft.ai): Now Recraft V4 — create a "Style" from reference images and invoke by style ID. V4 ships four tiers including V4 Pro SVG for high-resolution native vector output. [recraft.ai](https://www.recraft.ai/).
+- **Gemini 2.5 Flash Image ("Nano Banana")**: supports multi-image conditioning; passing 2–4 on-brand references in-line achieves strong consistency. **Note: the Gemini/Imagen image-gen API has no free tier as of December 2025** — use AI Studio web UI for free interactive access.
+- **GPT Image 1 / 1.5 (OpenAI)**: gpt-image-1 supports image input references; gpt-image-1.5 (December 2025) adds ~20% cost reduction, 4× faster generation, and denser text rendering. Both weaker than Recraft V4 for SVG cleanliness.
 
 ### Decision matrix
 
@@ -232,7 +237,9 @@ Below are patterns for the canonical state categories. The `{style_block}` is fr
 3. **Always include "no text, no letters, no signage"** unless the renderer is Ideogram/Recraft and you want controlled text (rare in illustrations; prefer to render copy in the DOM).
 4. **Always specify "safe area 70 percent" or "subject fully inside frame, 15% margin"** to avoid gutter clipping.
 5. **Seed-lock within a set**: generate a batch with incrementing seeds from a fixed base (e.g. 42, 43, 44…) to keep stochastic variance low.
-6. **Negative prompt boilerplate** (SD/Flux): `photorealistic, photograph, 3d render (unless wanted), text, letters, watermark, signature, frame, border, extra limbs, extra fingers, mutated hands, low quality, blurry, jpeg artifacts, dithering, grain`.
+6. **Negative prompt boilerplate** (SD/SDXL/SD3 only): `photorealistic, photograph, 3d render (unless wanted), text, letters, watermark, signature, frame, border, extra limbs, extra fingers, mutated hands, low quality, blurry, jpeg artifacts, dithering, grain`.
+
+> **Updated 2026-04-21:** Flux (all variants — FLUX.1 and FLUX.2) does NOT support `negative_prompt` — passing it raises a `TypeError`. For Flux, encode negatives as affirmative anchors in the main prompt instead: e.g., `"pure white background, no text, no watermark"`. SD, SDXL, and SD3 support `negative_prompt` natively.
 
 ## Production Integration
 
@@ -240,13 +247,17 @@ The end-to-end pipeline a skill should orchestrate:
 
 ### Step 1 — Concept image (raster)
 
-- Model: Flux.1 [dev] + style LoRA, or Midjourney v7 with `--sref`, or Gemini Nano Banana with 3 reference images, or GPT Image 1 with style refs.
+> **Updated 2026-04-21:** Model landscape has shifted significantly. Prefer FLUX.2 (Pro/Dev) over FLUX.1 for multi-reference consistency (up to 10 refs natively). Midjourney V7 is current stable; V8 Alpha available. Recraft V4 / V4 Pro SVG supersede V3 for vector work. gpt-image-1.5 supersedes gpt-image-1 (cheaper, faster, better text). Gemini image API requires billing; AI Studio web UI remains free.
+
+- Model: FLUX.2 [dev/pro] + style LoRA, or Midjourney v7/v8 with `--sref`, or Gemini Nano Banana via AI Studio (web UI, free) with 3 reference images, or GPT Image 1.5 with style refs.
 - Output: 2048×2048 or target-aspect PNG.
 - Quality gate: human (or agent) review against a 10-point checklist — on-palette, on-style, correct aspect, safe area respected, no baked text, no extra limbs, character cast consistent.
 
 ### Step 2 — Vectorization / Recraft pass
 
-- Option A — **Recraft** ([recraft.ai](https://www.recraft.ai/)) natively produces SVG. If the concept image was made in Recraft with a saved Style, skip vectorization.
+> **Updated 2026-04-21:** Recraft is now on **V4**, which ships four tiers: V4 (raster), V4 Vector (SVG, ~15 s), V4 Pro (raster 2048×2048, ~30 s), V4 Pro SVG (high-res vector, ~45 s). V4 Pro SVG is the recommended option for complex illustrations requiring fine path detail. Recraft V2 docs references in earlier revisions are now stale.
+
+- Option A — **Recraft V4 / V4 Pro SVG** ([recraft.ai](https://www.recraft.ai/)) natively produces editable SVG. If the concept image was made in Recraft with a saved Style, skip vectorization entirely.
 - Option B — **vtracer** ([github.com/visioncortex/vtracer](https://github.com/visioncortex/vtracer)) or **potrace** ([potrace.sourceforge.net](https://potrace.sourceforge.net/)) for raster→SVG. Works best on flat, low-palette illustrations; reduce palette with `pngquant` or `magick -colors 8` first.
 - Option C — **Adobe Illustrator Image Trace** when a human designer is in the loop.
 - Cleanup: run the SVG through SVGO ([github.com/svg/svgo](https://github.com/svg/svgo)) with `removeViewBox: false`, `cleanupIDs: prefix`. Remove any `<text>` nodes defensively.
@@ -306,7 +317,7 @@ The end-to-end pipeline a skill should orchestrate:
 - **DrawKit** — [drawkit.com](https://www.drawkit.com/).
 - **Popsy** — [popsy.co](https://popsy.co/) — hand-drawn freebies.
 - **Recraft** — [recraft.ai](https://www.recraft.ai/) — vector-native gen, Style feature.
-- **IP-Adapter** — [github.com/tencent-ailab/IP-Adapter](https://github.com/tencent-ailab/IP-Adapter).
+- **IP-Adapter** — [github.com/tencent-ailab/IP-Adapter](https://github.com/tencent-ailab/IP-Adapter) (original, unmaintained since Jan 2024). For Flux: [InstantX/FLUX.1-dev-IP-Adapter](https://github.com/InstantX-Team/InstantX-IP-Adapter).
 - **ai-toolkit (Flux LoRA)** — [github.com/ostris/ai-toolkit](https://github.com/ostris/ai-toolkit).
 - **kohya-ss/sd-scripts** — [github.com/kohya-ss/sd-scripts](https://github.com/kohya-ss/sd-scripts).
 - **SVGO** — [github.com/svg/svgo](https://github.com/svg/svgo).

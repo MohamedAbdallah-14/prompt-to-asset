@@ -2,7 +2,21 @@
 slug: 34-installable-skills-survey
 role: index
 date: 2026-04-21
+last_updated: 2026-04-21
 ---
+
+> **📅 Research snapshot as of 2026-04-21 (audited and updated 2026-04-21).** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+>
+> **Key facts current as of 2026-04-21:**
+> - Smithery MCP registry: 7,000+ servers
+> - AAIF (Agentic AI Foundation): 170+ member organizations; Mazin Gilbert permanent Executive Director; governs MCP spec
+> - `vercel-labs/skills`: v1.1.1, ~14.7k★, `npx skills find`, supports 19 agents; `skills.sh` is the canonical discovery directory
+> - SSE transport deprecated (MCP spec 2025-03-26); Streamable HTTP is the production standard for remote servers
+> - Claude Code supports Streamable HTTP natively for remote MCP servers
+> - GitHub Copilot added MCP + Agent Skills (SKILL.md format) GA in Visual Studio March 2026
+> - Gemini CLI added native Agent Skills support March 2026
+> - `gemini-3-pro-image-preview` dead since March 9, 2026; active model is `gemini-3.1-flash-image-preview`
+> - Gemini image API free tier removed December 2025 — all programmatic calls require billing
 
 # Category 34 — Installable Skills Survey
 

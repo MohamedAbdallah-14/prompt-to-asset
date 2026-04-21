@@ -433,17 +433,26 @@ if (spec.clarifying_questions.length > 0) {
     │        a) Pollinations HTTP        │
     │        b) Stable Horde anon       │
     │        c) HF Inference (free token)│
-    │        d) Gemini free tier        │
+    │        d) Gemini 2.5 Flash Image   │
+    │           (Nano Banana, ~500 RPD  │
+    │            free w/ API key as of  │
+    │            Feb 2026; Pro paid)    │
     │        e) Ideogram web            │
     │        f) Recraft web             │
-    │        g) Midjourney (paid)       │
+    │        g) Midjourney v8 (paid)    │
+    │           [Note: no official API; │
+    │            web UI only]           │
     │ 3rd: api (costs $$)               │
     │      [ranked by API key available]:│
-    │        a) gpt-image-1 / OpenAI   │
+    │        a) gpt-image-1.5 / OpenAI │
+    │           (DALL-E 3 retiring      │
+    │            May 12, 2026)         │
     │        b) Ideogram API            │
-    │        c) Recraft API             │
+    │        c) Recraft API (V4 / V4    │
+    │           Vector)                 │
     │        d) Flux / BFL              │
-    │        e) Gemini API (free tier+) │
+    │        e) Gemini API (paid only;  │
+    │           no free image tier)     │
     │                                   │
     └───────────┬───────────────────────┘
                 ↓
@@ -489,7 +498,9 @@ if (spec.clarifying_questions.length > 0) {
    }
 
 4. If all fallback_models exhausted:
-   → Suggest external_prompt_only (paste into Ideogram, which has style:"transparent")
+   → Suggest external_prompt_only (paste into Ideogram web UI, which supports
+     transparent generation via the /ideogram-v3/generate-transparent endpoint
+     — NOT a style:"transparent" param on the standard endpoint)
    → Or ask user to accept "white background" and matte afterward
 ```
 
@@ -648,12 +659,17 @@ if (safe_zone_violation && asset_type === "app_icon") {
                               ├─ HF Inference? (free HF_TOKEN, ~free tier)
                               │  Rank: #3
                               │
-                              ├─ Gemini free tier? (free GEMINI_API_KEY, ~1500/day)
-                              │  Rank: #4
+                              ├─ Gemini free tier? CAUTION: Gemini/Imagen image-gen
+                              │  has NO free API tier as of Dec 2025. Free GEMINI_API_KEY
+                              │  returns HTTP 429 limit:0 on image endpoints.
+                              │  AI Studio web UI (https://aistudio.google.com) is free
+                              │  for interactive generation; use external_prompt_only +
+                              │  asset_ingest_external for that flow.
+                              │  Rank: #4 (web UI only, not programmatic)
                               │
                               └─ [No free routes]
                                  ↓ offer external_prompt_only
-                                   (paste into Ideogram/Midjourney web)
+                                   (paste into Ideogram/Midjourney v8 web)
 ```
 
 **Data structure from `asset_capabilities().free_api.routes[]`:**
@@ -888,6 +904,10 @@ User result:
 ```
 
 ## References
+
+> **Updated 2026-04-21:** MCP spec version confirmed. The Latest Stable MCP specification is **2025-11-25** (released November 25, 2025, MCP's first anniversary). Key additions: OpenID Connect Discovery, async Tasks, incremental scope consent, extension framework. No breaking changes to tool schemas. Verify MCP server SDK version compatibility when referencing 2025-11-25 features.
+>
+> **SKILL.md cross-IDE portability:** SKILL.md is an open standard supported by Claude Code, Cursor (`.cursor/rules/`), Windsurf (`.windsurf/rules/`), Gemini CLI (`GEMINI.md`), and OpenAI Codex CLI. Only the destination folder path changes per IDE. Skills in this format work across all adopting tools.
 
 - `SKILL.md` — Cardinal rules and three-mode execution model
 - `server.ts` — The 24 tools and their schemas

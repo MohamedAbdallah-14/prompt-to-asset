@@ -2,6 +2,8 @@
 
 **Focus:** Cheap-to-expensive model cascades, confidence scoring, and when to escalate — applied to the asset generation pipeline.
 
+> **Updated 2026-04-21:** Cascade tiers revised to reflect current model landscape. Key changes: DALL-E 3 removed (EOL May 12, 2026; replaced by gpt-image-1.5). gpt-image-1-mini added as a new cheap RGBA-capable tier. Recraft V4 added as a vector-specialist tier. Flux.2 [klein] added as the new local consumer-GPU default. Ideogram transparent endpoint corrected to `/ideogram-v3/generate-transparent` with `rendering_speed: "TURBO"` (not `style: "transparent"`). Imagen 4.0 family removed from cascade candidates (EOL June 24–30, 2026; route to gemini-2.5-flash-image or successor).
+
 ---
 
 ## The Pattern: Model Cascade
@@ -38,11 +40,14 @@ Mapping FrugalGPT's cascade to asset generation, ordered cheapest to most expens
 | Tier | Model | Typical cost | Escalate if |
 |---|---|---|---|
 | 0 | LLM-authored SVG (`inline_svg` mode) | ~$0.001 (LLM tokens only) | path count > 40; OCR fails; safe-zone check fails |
-| 1 | `flux-schnell` (4-step) | ~$0.003/image | VLM score < 3.5; alpha missing; checkerboard FFT |
-| 2 | `flux-pro` or `recraft-v3` | ~$0.04/image | Same checks; also palette ΔE > 10 vs brand |
-| 3 | `gpt-image-1` (high quality) | ~$0.17/image | Terminal; if fails, fall back to `external_prompt_only` |
+| 1 | `flux-schnell` / `flux.2-klein` (local) | ~$0.003/image (API); ~$0.00 (local, ~13GB VRAM) | VLM score < 3.5; alpha missing; checkerboard FFT |
+| 2 | `gpt-image-1-mini` (RGBA-capable, 80% cheaper) | ~$0.008/image (1024², medium quality) | Same checks; also palette ΔE > 10 vs brand |
+| 3 | `recraft-v4` (vector) or `ideogram-3-turbo` (transparent endpoint) | $0.08/image (Recraft V4 vector); $0.03/image (Ideogram Turbo) | Same checks; text OCR Levenshtein > 1 |
+| 4 | `gpt-image-1` / `gpt-image-1.5` (high quality) | ~$0.034–0.133/image (1024², med-high) | Terminal; if fails, fall back to `external_prompt_only` |
 
-**Implementation note:** Each tier call is sequential (not parallel) in a pure cascade. The quality check between tiers adds latency (1–3 seconds for tier-0 checks, 3–8 seconds for a VLM judge call). Total worst-case latency for a 4-tier cascade: ~40–60 seconds. This is acceptable for async MCP tool calls; unacceptable for synchronous UX.
+> **Updated 2026-04-21:** Tier table revised. `flux-pro` replaced with `gpt-image-1-mini` as the mid-tier RGBA-capable option (Oct 2025, ~80% cheaper than gpt-image-1, token-based pricing: $8/M output image tokens ≈ $0.008/1024² med). `recraft-v3` upgraded to `recraft-v4` (Feb 2026, SOTA native SVG vector, $0.08 standard vector / $0.30 pro vector). DALL-E 3 removed entirely (EOL May 12, 2026). Ideogram transparent tier corrected: the endpoint is `/ideogram-v3/generate-transparent` with `rendering_speed: "TURBO"`, priced at $0.03/image — **not** `style: "transparent"` which was V3's draft parameter and is no longer documented. Flux.2 [klein] 4B (Apache 2.0, Jan 15, 2026, ~13GB VRAM, sub-second on RTX 3090) is now the local consumer GPU default replacing `flux-schnell` for self-hosted deployments. Imagen 4.0 removed from consideration: EOL June 24–30, 2026; migrate to `gemini-2.5-flash-image` (~$0.039/image, GA Oct 2 2025, EOL Oct 2 2026) or its successor `gemini-3.1-flash-image-preview` (Nano Banana 2, Feb 26, 2026).
+
+**Implementation note:** Each tier call is sequential (not parallel) in a pure cascade. The quality check between tiers adds latency (1–3 seconds for tier-0 checks, 3–8 seconds for a VLM judge call). Total worst-case latency for a 5-tier cascade: ~50–75 seconds. This is acceptable for async MCP tool calls; unacceptable for synchronous UX.
 
 ---
 
@@ -62,7 +67,12 @@ Pre-routing feature vector:
 }
 ```
 
-Route directly to tier 2+ if `transparency_required = true` (tier 0 SVG and tier 1 flux-schnell fail systematically on transparency — see `routing-table.json` `never` arrays). Route directly to tier 3 if `text_length > 0 AND transparency_required = true` (only `gpt-image-1` reliably handles both simultaneously).
+Route directly to tier 2+ if `transparency_required = true` (tier 0 SVG and tier 1 flux-schnell / flux.2-klein fail systematically on transparency — see `routing-table.json` `never` arrays). Route directly to tier 3–4 if `text_length > 0 AND transparency_required = true`:
+- `gpt-image-1-mini` (tier 2) handles transparency but text fidelity is slightly lower than gpt-image-1 for 1–3 word wordmarks.
+- `ideogram-3-turbo` transparent endpoint (tier 3) is cheaper at $0.03 and has strong text rendering.
+- `gpt-image-1` / `gpt-image-1.5` (tier 4) are the highest fidelity but most expensive.
+
+> **Updated 2026-04-21:** Added `gpt-image-1-mini` as a valid tier-2 transparent option. Ideogram transparent routing corrected to use the `/ideogram-v3/generate-transparent` endpoint, not a style parameter. For wordmarks >3 words on a transparent background, skip directly to tier 4 (gpt-image-1.5): no cheaper model reliably handles both constraints simultaneously.
 
 This eliminates wasted generation calls for cases where cheaper models are known to fail.
 
@@ -96,6 +106,8 @@ Each rule should gain a `cascade` field:
     {
       "tier": 1,
       "model": "ideogram-3-turbo",
+      "endpoint": "/ideogram-v3/generate-transparent",
+      "params": { "rendering_speed": "TURBO" },
       "escalate_if": ["vlm_score < 3.5", "ocr_levenshtein > 1"]
     },
     {
@@ -106,6 +118,9 @@ Each rule should gain a `cascade` field:
     }
   ]
 }
+```
+
+> **Updated 2026-04-21:** Ideogram tier corrected to use `endpoint: "/ideogram-v3/generate-transparent"` with `params.rendering_speed: "TURBO"`. The old `style: "transparent"` parameter was Ideogram V3's draft API field and is no longer the documented method for transparent generation. `gpt-image-1-mini` can be inserted as a tier between Ideogram and gpt-image-1 for cost savings when wordmark fidelity requirements are moderate.
 ```
 
 The `escalate_if` conditions map directly to the existing `postprocess` validation functions already in the codebase.

@@ -33,7 +33,7 @@ Most AI image models (Imagen, DALL·E, Flux, SDXL, Midjourney) still emit **rast
 For a prompt-to-asset that generates logos, icons, and illustrations:
 
 - **Default pipeline:** Gemini/Imagen/Flux → (optional) background removal → vtracer (`poster` or tuned preset) → SVGO. This is free, deterministic, and runs in-browser via WASM.
-- **Premium pipeline:** same inputs → Recraft `/images/vectorize` ($0.01/call) or Vectorizer.AI ($0.20/credit). Noticeably cleaner node counts on gradient-heavy illustrations.
+- **Premium pipeline:** same inputs → Recraft `/images/vectorize` (~$0.08/call as of V4, Feb 2026) or Vectorizer.AI ($0.20/credit). Noticeably cleaner node counts on gradient-heavy illustrations.
 - **Black-and-white logos / monograms:** pre-threshold → potrace with `turdsize=2, alphamax=1.0, opttolerance=0.2`. Still beats every modern tool on fidelity-per-byte for silhouettes.
 
 The three most important findings are captured in the "Top 3 Findings" at the end.
@@ -51,14 +51,14 @@ The three most important findings are captured in the "Top 3 Findings" at the en
 | **DiffVG** (MIT/Adobe, SIGGRAPH 2020) | Apache 2.0 | Differentiable rasterizer (analytical prefilter or MSAA); supports gradients of bezier/poly/ellipse control points w.r.t. pixel loss | Full — optimization-based, any palette | Python + CUDA; no WASM | Loss function (L2, perceptual, CLIP), # paths, # control points, optimizer lr, prefilter mode |
 | **LIVE** (CVPR 2022) | MIT | Layer-wise bezier path addition on top of DiffVG; keeps topology | Full | Same as DiffVG | `num_paths`, `num_iter`, `path_schedule`, `mask_loss` |
 | **VectorFusion / SVGDreamer / SVGFusion** | research | DiffVG-based SDS loss against Stable Diffusion / reward models; text→SVG | Full | GPU only | Text prompt, `num_particles`, `guidance_scale`, path count, style token |
-| **Adobe Illustrator Image Trace** | Proprietary | Edge-detect + curve-fit (legacy "Live Trace"). Known to emit bloated node counts (often 10k+ nodes on simple logos) | Yes, up to 256 | Desktop only | `Paths`, `Corners`, `Noise`, `Method` (abutting/overlapping), `Preset` (6 Colors, 16 Colors, Logo, Sketched Art…) |
+| **Adobe Illustrator Image Trace 2.0** | Proprietary | Enhanced edge-detect + curve-fit. v29.0 (Oct 2024 / MAX 2024) introduced gradient detection, live shape creation, transparency tracing, and Snap-Curves-to-Lines. v29.3 added gradient support to legacy presets. Node counts substantially reduced vs the original Live Trace. | Yes, up to 256 + gradient fills | Desktop only | `Paths`, `Corners`, `Noise`, `Gradients` (slider, new 2025), `Shapes` (live-shape detection), `Transparency`, `Snap Curves to Lines`, `Preset` (6 Colors, 16 Colors, Logo, Sketched Art…) |
 | **Vectorizer.AI** | SaaS | Proprietary deep-learning pipeline + classical curve fit | Full, palette-aware | Web app only | None exposed — parameters baked into "quality" tier. API: credits, output format (SVG/PDF/EPS/DXF/PNG) |
 | **Recraft `/images/vectorize`** | SaaS (paid API) | Proprietary neural vectorizer paired with their generative model | Full | HTTPS API, any client | `image` (PNG/JPG); pricing $0.01 / 10 units per request |
 
 ### Canonical repos & docs
 
 - potrace: `https://potrace.sourceforge.net/` — man page, readme; source on SourceForge.
-- vtracer: `https://github.com/visioncortex/vtracer` (5.8k★), docs `https://www.visioncortex.org/vtracer-docs`, demo `https://www.visioncortex.org/vtracer/`.
+- vtracer: `https://github.com/visioncortex/vtracer` (5.8k★), docs `https://www.visioncortex.org/vtracer-docs`, demo `https://www.visioncortex.org/vtracer/`. *(Updated 2026-04-21: latest Python bindings release is **v0.6.15**, published March 23, 2026. The Rust crate is at **v0.6.5** on crates.io. Actively maintained; pre-built binaries for Windows/macOS/Linux available. Since v0.6 the Python package uses PyO3 native bindings for full Rust performance from Python.)*
 - autotrace: `https://github.com/autotrace/autotrace` (v0.31.10, Jan 2024).
 - imagetracerjs: `https://github.com/jankovicsandras/imagetracerjs`; Java port `https://github.com/jankovicsandras/imagetracerjava`; Android `https://github.com/jankovicsandras/imagetracerandroid`.
 - svgtrace (Py): `https://github.com/FHPythonUtils/SvgTrace`.
@@ -131,7 +131,9 @@ Both strip whitespace, comments, default attrs, and optimize `d` attributes with
 - **SVGO** — 22k★, actively maintained, plugin-based. ~30–60% size reduction on typical traced SVGs. Has `prefixIds`, `cleanupIds`, `mergePaths`, `convertPathData`, and `removeHiddenElems` which are the four most impactful plugins for traced output.
 - **scour** — 858★, Python, last touched >1 year ago, but *bundled inside Inkscape's "Optimized SVG" export*. Slightly safer default config (doesn't aggressively change geometry). Useful in a Python-only toolchain.
 
-Recommended: SVGO with the default preset plus `{ plugins: [{ name: 'preset-default', params: { overrides: { removeViewBox: false, cleanupNumericValues: { floatPrecision: 2 } } } }, 'mergePaths'] }`. `floatPrecision: 2` alone typically trims 20% off a traced file with no visible difference at 1× rendering.
+> **Updated 2026-04-21:** SVGO shipped **v4.0.0** (current: 4.0.1, released ~February 2026). Key breaking changes from v3: `removeViewBox` and `removeTitle` are **no longer in preset-default** (they were previously opt-out; now opt-in), the `removeScriptElement` plugin was renamed to `removeScripts`, the public API now has named exports only (no default export), and Node.js ≥16 is required. The config object format for `preset-default` overrides is unchanged. See the [v3→v4 migration guide](https://svgo.dev/docs/migrations/migration-from-v3-to-v4/). The safety preset shown below remains correct in spirit but the `removeViewBox: false` and `removeTitle: false` overrides are now redundant — those plugins are disabled by default in v4. Still include them for defence-in-depth against accidental global config overrides.
+
+Recommended: SVGO with the default preset plus `{ plugins: [{ name: 'preset-default', params: { overrides: { removeViewBox: false, cleanupNumericValues: { floatPrecision: 2 } } } }, 'mergePaths'] }`. `floatPrecision: 2` alone typically trims 20% off a traced file with no visible difference at 1× rendering. *(In SVGO v4, `removeViewBox` is already off by default; keeping the override is safe but not strictly required.)*
 
 ## Benchmark Data
 
@@ -166,7 +168,7 @@ Notes:
 For a web app that exposes "make this a logo SVG" as a one-click action:
 
 1. **Bundle `vtracer-wasm`** as the default path. 133 KB wasm + a Web Worker is invisible to users and handles 80% of cases. Expose three presets: *Logo (BW)* → potrace-wasm, *Logo (Color)* → vtracer `poster`, *Illustration* → vtracer `photo`.
-2. **Offer a "High-Quality (API)" toggle** that routes to Recraft's `/images/vectorize` for $0.01/call. This is the right upgrade path for gradient-heavy outputs and is ~20× cheaper than Vectorizer.AI per request (Recraft $0.01 vs Vectorizer.AI $0.20 per credit at the smallest plan).
+2. **Offer a "High-Quality (API)" toggle** that routes to Recraft's `/images/vectorize` (~$0.08/call for V4 Vector as of Feb 2026). This is the right upgrade path for gradient-heavy outputs and is still cheaper than Vectorizer.AI ($0.20/credit), though the advantage is now ~2.5× rather than the previously cited ~20×.
 3. **Always run SVGO server- or client-side** after any tracer. The default preset plus `floatPrecision: 2` typically halves file size with no visible change.
 4. **For "clean logo" prompts**, pre-process the raster before tracing: background-removal (rembg / BRIA RMBG, covered by sibling angle 13a/16a) → optional binarize → potrace/vtracer. Tracing a transparent-background raster avoids 40%+ of the "spurious checkerboard shell" artifacts you'd otherwise get from Imagen output.
 5. **For agentic MCP skills** (cross-reference category 19), expose a single `vectorize(image_path, mode: 'auto'|'bw'|'color'|'illustration'|'premium')` tool that internally dispatches to potrace/vtracer/Recraft. Models can then pick the right tool without memorizing `turdsize`.
@@ -213,5 +215,7 @@ These are not yet fast enough for interactive use (minutes per SVG on GPU) and r
 ## Top 3 Findings (for fleet synthesis)
 
 1. **vtracer is the correct open-source default for an AI-logo prompt enhancer — not potrace.** Potrace is superior only on pure-silhouette B/W; for any color asset produced by Imagen/DALL·E/Flux, vtracer's linear-time color-clustering pipeline produces cleaner node counts than both potrace (which can't do color at all) and Adobe Illustrator's Image Trace (which routinely emits 10× the nodes). It also has a production-ready WASM build (`vtracer-wasm`, 133 KB) that runs in a Web Worker in ~250 ms on a 1024² image, making client-side tracing practical in a browser prompt-to-asset.
-2. **Recraft's `/images/vectorize` endpoint is radically cheaper than Vectorizer.AI — $0.01 vs $0.20 per call — and is the right "premium" escape hatch for gradient-heavy illustrations** where classical tracers emit dozens of concentric shells instead of true `<linearGradient>`/`<radialGradient>` elements. A good pipeline offers vtracer as the default and routes to Recraft only when the raster contains gradients or soft shading.
+2. **Recraft's vectorize is radically cheaper than Vectorizer.AI and is the right "premium" escape hatch for gradient-heavy illustrations** where classical tracers emit dozens of concentric shells instead of true `<linearGradient>`/`<radialGradient>` elements. A good pipeline offers vtracer as the default and routes to Recraft only when the raster contains gradients or soft shading.
+
+> **Updated 2026-04-21:** The legacy "$0.01/call" pricing for Recraft V3 vectorize is stale. With Recraft V4 (released February 2026), vector generation is priced at **$0.08/image** (V4 Vector) and **$0.30/image** (V4 Pro Vector). The vectorize (raster→SVG) endpoint pricing follows the same credit structure. Vectorizer.AI remains at ~$0.20/credit. The Recraft advantage is smaller now (~2.5× cheaper vs the previously cited ~20×); the quality advantage for gradient-heavy images still holds.
 3. **The frontier is moving away from tracing entirely** toward DiffVG-based differentiable pipelines (LIVE, VectorFusion, SVGDreamer CVPR 2024, SVGFusion Dec 2024) that optimize SVG control points directly against a target image or CLIP/SDS loss, and toward parameter auto-tuners like `vtracer_autotune` (Oct 2025) that search the tracer hyperparameter space with SSIM feedback. Both trends suggest the prompt-to-asset should wrap its tracing layer behind a single `vectorize(mode=...)` tool so the underlying engine can be swapped without changing the agent-facing API.

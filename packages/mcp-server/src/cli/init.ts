@@ -411,11 +411,22 @@ function printNextSteps(d: Detected, assetsDir: string): void {
   lines.push("");
   lines.push("Free-tier upgrades (still $0, but need a one-time free token):");
   lines.push(
-    `  export GEMINI_API_KEY=...     # https://aistudio.google.com/apikey — best quality-to-$0 ratio (~1.5k images/day)`
+    `  export CLOUDFLARE_API_TOKEN=...   # https://dash.cloudflare.com — Workers AI, Flux-1-Schnell, 10k neurons/day free`
+  );
+  lines.push(`  export CLOUDFLARE_ACCOUNT_ID=...  # same dashboard, account sidebar`);
+  lines.push(
+    `  export HF_TOKEN=...               # https://huggingface.co/settings/tokens — SDXL / SD3 / Flux dev+schnell`
   );
   lines.push(
-    `  export HF_TOKEN=...           # https://huggingface.co/settings/tokens — SDXL / SD3 / Flux dev+schnell`
+    `  # Gemini / Imagen image API is NOT free since 2025-12. GEMINI_API_KEY is still free for`
   );
+  lines.push(
+    `  # text/multimodal; for image-gen you need billing enabled on the GCP project (Nano Banana`
+  );
+  lines.push(
+    `  # $0.039/img, Imagen 4 Fast $0.02/img). Free interactive path: https://aistudio.google.com`
+  );
+  lines.push(`  # → download the PNG → asset_ingest_external.`);
   lines.push("");
   if (d.kind === "flutter") {
     lines.push("Flutter launcher icons (parity with pub.dev/packages/flutter_launcher_icons):");

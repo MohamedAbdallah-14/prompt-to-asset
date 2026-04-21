@@ -10,9 +10,11 @@ angles_indexed:
   - 4e-vertex-sdk-integration
 primary_pain_point: "Gemini rendering a checker-pattern or white box instead of a real transparent PNG for a logo"
 research_value: high
-last_updated: 2026-04-19
+last_updated: 2026-04-21
 source_count: 70+
 ---
+
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
 
 # 04 — Gemini & Imagen Prompting: Category Index
 
@@ -72,6 +74,8 @@ The five files are largely consistent, but three tensions are worth naming:
 
 ## Gaps
 
+> **Updated 2026-04-21:** Two new gaps identified: (1) **Imagen 4 successor routing** — all Imagen 4.0 variants are deprecated (EOL June 30, 2026) and the five angles need updating with analysis of `gemini-2.5-flash-image` and `gemini-3.1-flash-image-preview` as replacement paths for the single-shot / batch-4 use cases Imagen 4 covered; (2) **SDK migration impact** — the `vertexai.generative_models` + `vertexai.vision_models` modules are removed June 24, 2026; any code referencing `import vertexai` for genAI must be migrated to `from google import genai`.
+
 - **Icon / favicon / OG-image-specific prompt recipes** are nowhere in the five files; category 11-favicon-web-assets and 09-app-icon-generation will need to provide them.
 - **Vector / SVG output**. Neither Imagen nor Gemini produces SVG directly; the category points at raster→vector post-processing but does not evaluate Recraft vs `potrace` vs `vtracer` trade-offs — that lives in 12-vector-svg-generation.
 - **Post-processing recommendations** (rembg, BRIA RMBG v2.0, Recraft's AI-tuned remover) are cited in 4c but not benchmarked head-to-head. Category 16-background-removal-vectorization must close this.
@@ -91,8 +95,8 @@ The plugin should behave as a router, a rewriter, and a post-processor. Concrete
    - Subject has genuine semi-transparency (glass, shadows, hair, smoke): emit a two-call difference-matting plan (white pass + black-edit pass + triangulation matting).
    - Caller demands native alpha and cannot post-process: **fall back to `gpt-image-1.5` or Recraft V3** ([4c](./4c-transparent-background-checker-problem.md)).
 2. **User intent: iterative edit / multi-image composition / character consistency across scenes** → Gemini 2.5 Flash Image (stateful, 3-image input, conversational re-typing of in-image text) ([4b](./4b-gemini-flash-image-nano-banana.md)).
-3. **User intent: single-shot high-fidelity photo / hero image / product shot with explicit 2K/2816×1536 resolution** → Imagen 4 Standard or Ultra; 4× candidates per call; up to $0.06/image on Ultra ([4a](./4a-imagen-official-prompt-guides.md), [4e](./4e-vertex-sdk-integration.md)).
-4. **User intent: draft / thumbnail / mood board (<$0.03/image)** → Imagen 4 Fast at $0.02/image ([4e](./4e-vertex-sdk-integration.md)).
+3. **User intent: single-shot high-fidelity photo / hero image / product shot with explicit 2K/2816×1536 resolution** → Imagen 4 Standard or Ultra; 4× candidates per call; up to $0.06/image on Ultra ([4a](./4a-imagen-official-prompt-guides.md), [4e](./4e-vertex-sdk-integration.md)). **Updated 2026-04-21:** All Imagen 4.0 variants deprecated — EOL June 30, 2026. Check the [Vertex AI model versions page](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions) for the current recommended successor. `gemini-2.5-flash-image` is the migration target though it lacks the fixed-resolution / batch-4 call shape.
+4. **User intent: draft / thumbnail / mood board (<$0.03/image)** → Imagen 4 Fast at $0.02/image ([4e](./4e-vertex-sdk-integration.md)). **Updated 2026-04-21:** `imagen-4.0-fast-generate-001` deprecated — EOL June 30, 2026. Evaluate `gemini-3.1-flash-image-preview` as a lower-cost alternative for new builds.
 5. **User intent: 4K master for brand hero** → Gemini 3 Pro Image preview (`gemini-3-pro-image-preview`) at $0.134 per 1K/2K or $0.24 per 4K ([4e](./4e-vertex-sdk-integration.md)), with the caveat that Nano Banana Pro's realism bias can erase intentionally surreal detail ([4d #5](./4d-quirks-and-artifacts.md)).
 6. **User intent: in-image text** → Gemini 2.5 Flash Image for strings ≥ one line (conversational "fix the 'y'" works); Imagen 4 for ≤25-character headlines with first-shot accuracy ([4a](./4a-imagen-official-prompt-guides.md), [4b](./4b-gemini-flash-image-nano-banana.md)).
 7. **User intent: minors, celebrities, identifiable historical figures, or EU/UK/CH/MENA region** → check `personGeneration` rules ([4a](./4a-imagen-official-prompt-guides.md)) and geolocation filter ([4d #11](./4d-quirks-and-artifacts.md)); fall back to illustrative / non-photographic style if the user is in a restricted region.

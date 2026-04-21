@@ -1,3 +1,5 @@
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Research Area 24 — Agentic Orchestration Patterns
 ## Index
 
@@ -59,7 +61,7 @@ This area covers orchestration patterns applicable to the prompt-to-asset MCP se
 
 **Key sources**: langchain-ai/langgraph (primary), microsoft/autogen v0.4 (actor model / SelectorGroupChat), crewAIInc/crewAI (hierarchical process), lastmile-ai/mcp-agent (evaluator-optimizer MCP-native loop).
 
-**Core finding**: LangGraph is the closest match to prompt-to-asset's needs: conditional edges implement the validate-or-retry branch deterministically, checkpointing enables resume-on-failure without image regeneration, and subgraphs support multi-asset fan-out. The JS port (langgraphjs) is needed for a TypeScript MCP server and lags in documented examples — verify subgraph support before committing. AutoGen v0.4's actor model is a good conceptual fit for multi-provider event-driven coordination but is migrating to Microsoft Agent Framework, making it a risky dependency. CrewAI's hierarchical manager has delegation bugs in production; do not rely on it for critical routing.
+**Core finding**: LangGraph is the closest match to prompt-to-asset's needs: conditional edges implement the validate-or-retry branch deterministically, checkpointing enables resume-on-failure without image regeneration, and subgraphs support multi-asset fan-out. As of April 2026, LangGraph is at **v1.1.8** (Python) / **v1.2.9** (TypeScript `@langchain/langgraph`), with full feature parity and 42k+ weekly npm downloads — the previous caveat about the JS port lagging is no longer accurate. **AutoGen v0.4 is in maintenance mode; do not start new projects on it.** Microsoft Agent Framework 1.0 (GA April 3, 2026) is the production successor. CrewAI v1.9.x hierarchical manager still has active delegation bugs as of March 2026 (GitHub issue #4783); do not rely on it for critical routing.
 
 **Implementation priority**: Medium-High — LangGraph is not strictly required (a hand-rolled state machine with `switch` and retry counter achieves the same for a simpler pipeline), but it becomes valuable once the pipeline exceeds 5 nodes or requires checkpointing and human-in-the-loop.
 
@@ -75,4 +77,16 @@ This area covers orchestration patterns applicable to the prompt-to-asset MCP se
 
 4. **State should contain paths, not pixels.** Across all patterns, generated image data should be written to disk immediately after generation. Pass file paths through agent state, not base64 blobs.
 
-5. **The OpenAI Agents SDK supersedes Swarm** and is the current recommended path for handoff-based routing. The JS version is available at openai.github.io/openai-agents-js but lags the Python version in examples.
+5. **The OpenAI Agents SDK supersedes Swarm** and is the current recommended path for handoff-based routing. April 2026 update added native sandbox execution and a model-native harness (Python-first; TypeScript planned). The Assistants API is being deprecated mid-2026 — do not build retry/fallback chains against it.
+
+> **Updated 2026-04-21:**
+
+6. **MCP transport: SSE is dead.** SSE transport stopped being accepted by Claude connectors on April 1, 2026. All MCP infrastructure must use **Streamable HTTP** (MCP spec 2025-11-25 is the latest stable; 2025-03-26 is not current). Streamable HTTP uses a single POST endpoint and works on serverless platforms.
+
+7. **Claude model references.** Current active Claude models (April 2026): **Haiku 4.5**, **Sonnet 4.6**, **Opus 4.7** (released April 16, 2026). Claude 4.0-series aliases retire June 15, 2026. Update any orchestration code that hard-codes `claude-3`, `claude-2`, or `claude-3.5-sonnet` model strings.
+
+8. **Claude Structured Output is GA.** No beta header needed. Use `output_config: { format: { type: "json_schema", schema: {...} } }`. The old `output_format` field and `anthropic-beta: structured-outputs-2025-11-13` header still work during a transition period only.
+
+9. **Gemini CLI has full hooks + native MCP.** As of v0.26.0, Gemini CLI has: a full hooks system (SessionStart, BeforeTool, AfterTool, BeforeModel, AfterModel, BeforeToolSelection, PreCompress — hooks are enabled by default), and native MCP server support via `mcpServers` in `settings.json`. Any docs that say Gemini CLI lacks hooks or MCP are outdated.
+
+10. **Claude Agent SDK is formally released.** Available since September 29, 2025 (renamed from Claude Code SDK; stable release that date). Both Python (`claude-agent-sdk`) and TypeScript (`@anthropic-ai/claude-agent-sdk`) are actively maintained. Supports subagents with isolated context windows, parallel task fan-out, and structured outputs — a first-class option for Claude-native multi-agent orchestration alongside LangGraph and the OpenAI Agents SDK.

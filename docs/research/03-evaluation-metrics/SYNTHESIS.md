@@ -39,6 +39,11 @@ tags:
   - brandpackscore
 ---
 
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
+> **Updated 2026-04-21 (audit):** Key changes since initial draft — (1) **VQAScore** has reached industry-standard status: Imagen 3/4 (Google DeepMind), ByteDance Seed, and NVIDIA all report GenAI-Bench as a primary eval. (2) **GenEval** saturation is now confirmed to be more severe than the 17.7 pp figure — Gemini 2.5 Flash Image achieves 96.7% under human raters vs. a much lower GenEval score. (3) **T2I-CoReBench** (ICLR 2026) is a new compositional+reasoning benchmark covering 12 dimensions; adds "reasoning" as a dimension no prior benchmark tested. (4) **Recraft V4** (2025–2026) supersedes V3 for native SVG generation and logo evaluation; it holds the HuggingFace T2I Arena #1 slot (ELO 1172). (5) **STRICT-Bench** is now accepted (EMNLP 2025); GPT-4o and Gemini 2.0 lead text-rendering accuracy by a large margin. (6) **FWD** (Fréchet Wavelet Distance, ICLR 2025) is an emerging distributional metric worth tracking; CMMD + FD-DINOv2 remain the recommendation. (7) **ConceptMix** gap confirmed: no 2025/2026 update with FLUX/SD3/Gemini models published as of April 2026.
+
+
 # Evaluation Metrics — Category Index
 
 Five angles, covering the full span from "is the image vaguely on-prompt?" (CLIPScore) to "does this logo survive Android adaptive masking at 16px?" (platform-compliance lints). This index stitches them into a single opinionated auto-QA pipeline for the prompt-to-asset plugin and flags where the 2026 literature has moved since earlier model-card evals.
@@ -48,13 +53,13 @@ Five angles, covering the full span from "is the image vaguely on-prompt?" (CLIP
 1. **CLIPScore is a bag-of-words metric in disguise.** The text encoder behaves near-linearly in word order on compositional prompts — `"moon over cow"` ≈ `"cow over moon"` — so absolute-score deltas below ~2 points on compositional prompts are noise, not signal (3a, citing Lin 2024 and Yuksekgonul 2023).
 2. **FID is not trustworthy below 10k samples and systematically penalizes modern diffusion.** Chong & Forsyth (2020) proved the estimator is generator-dependent biased at finite N; Stein et al. (NeurIPS 2023) showed Inception-v3 features misrank SOTA diffusion models that humans actually prefer. The community is moving to **FD-DINOv2** and **CMMD** as replacements (3b).
 3. **VQAScore is the current default pick for per-image alignment.** One VQA forward pass of `"Does this figure show <prompt>? yes/no"` beats CLIPScore, PickScore, and ImageReward by 2–3× on compositional prompts on GenAI-Bench, and is trivially explainable at the prompt-level (3a, citing Lin et al. ECCV 2024).
-4. **GenEval v1 saturated in 2025 and drifts up to 17.7 pp from human judgment.** Anyone optimizing a prompt-to-asset against GenEval alone in 2026 is chasing a broken oracle. GenEval 2 (Dec 2025, Soft-TIFA-based) fixes most of this and is the recommended successor (3d).
+4. **GenEval v1 saturated in 2025 and drifts up to 17.7 pp from human judgment** — and the problem is more severe in practice: Gemini 2.5 Flash Image achieves **96.7% under human raters** while scoring far lower on the original GenEval leaderboard. Anyone optimizing a prompt-to-asset against GenEval alone in 2026 is chasing a broken oracle. GenEval 2 (Dec 2025, Soft-TIFA-based) fixes most of this and is the recommended successor (3d). A newer benchmark, T2I-CoReBench (ICLR 2026), adds compositional *reasoning* evaluation across 12 dimensions — 28 SOTA models all score poorly on reasoning, which is a new and actionable gap (3d, updated 2026-04-21).
 5. **Compositional skill collapses with concept count.** ConceptMix shows even DALL·E 3 drops from 0.83 accuracy at k=1 concepts to 0.08 at k=7; every open model hits ~0 by k=6. This is the single strongest published argument for *why* prompt rewriting must exist — the enhancer must test its gains at k≥3 or it's not measuring what it claims (3d).
 6. **Pairwise is the only reliable VLM-judge mode.** MLLM-as-a-Judge (Chen et al. ICML 2024) shows GPT-4V is reasonably human-correlated in pairwise A/B mode and *unreliable* at absolute scoring or batch ranking. Our auto-QA must phrase rubric questions as "A vs B" or "does A satisfy X? yes/no" — never "rate 1–10" (3a, 3e).
 7. **Human-preference scores ≠ alignment scores.** PickScore / HPSv2 / HPSv3 / ImageReward measure overall "goodness" — dominated by aesthetics. They cannot be used as faithfulness gates (Lin 2024 beats them on compositional prompts by 2–3×). Use them for inference-time best-of-N ranking, not for the alignment decision (3a, 3c).
 8. **Best-of-N with HPSv3 or HPSv2.1 is the highest-ROI quality lever.** N=4–8 captures most of the gain with diminishing returns past N≈16; ensembling two rewards (HPSv2 + PickScore, or MPS-alignment + MPS-aesthetics) suppresses reward hacking (3c).
 9. **MPS is the only public metric that separates "did the rewrite improve *alignment*" from "did it improve aesthetics."** Its four conditioned heads (aesthetic / alignment / detail / overall) are exactly the decomposition a prompt-to-asset evaluation needs, and no scalar reward gives you this (3c).
-10. **Text rendering inside assets is the single most measurable failure and has purpose-built benchmarks.** OCRGenBench's OCRGenScore, MARIO-Eval, and STRICT-Bench operationalize OCR-roundtrip + character-drop + multi-scale legibility. Ideogram V3 is the industry reference point for in-image text; Recraft V3 for long strings (3e).
+10. **Text rendering inside assets is the single most measurable failure and has purpose-built benchmarks.** OCRGenBench's OCRGenScore, MARIO-Eval, and STRICT-Bench operationalize OCR-roundtrip + character-drop + multi-scale legibility. Ideogram V3 is the industry reference point for in-image text; **Recraft V4** (not V3 — superseded in 2025–2026) for long strings and native SVG. STRICT-Bench (now EMNLP 2025) shows GPT-4o and Gemini 2.0 lead text accuracy by a large margin over all other models (3e, updated 2026-04-21).
 11. **Alpha-channel evaluation has its own specialized metrics and SAD/MSE are actively misleading.** From the alphamatting.com benchmark, **Gradient error** and **Connectivity error** correlate ~0.75 with human judgment versus ~0.3 for SAD/MSE. For native-RGBA models, LayerBench's non-reference alpha-edge metric is the only published option (3e).
 12. **DINOv2 beats CLIP for style/brand consistency.** Self-supervised features encode palette, stroke, composition rather than semantic class. fruit-SALAD (2025, *Scientific Data*) and StarVector's DinoScore both show DINO > CLIP for style retrieval — the right primitive for "is this asset pack on-brand?" (3e).
 13. **Platform compliance for app icons is a lint problem, not a perception problem.** Apple HIG requires opaque 1024×1024 with 80% safe area; Android adaptive requires two 108dp layers with a 66dp safe zone plus a monochrome layer. No perceptual metric captures these — they require programmatic checks (3e).
@@ -104,7 +109,7 @@ The angles are layered rather than parallel: **3a** gives you the per-image sema
 3. **Alpha halo lacks a ground-truth dataset.** LayerBench's non-reference metric is the only option; no public human-labeled halo-quality set exists (3e).
 4. **Platform-mask survival has no academic benchmark.** Android adaptive-icon cropping is silently a failure mode; no published metric quantifies "would this survive circle/squircle/teardrop masks?" The mask-IoU composite in 3e §3d is implementable but unvalidated.
 5. **Small-size (16×16 / 32×32) legibility has HCI coverage but no CV benchmark.** Lin 2007, Hou 2022 give human rating evidence; no T2I benchmark tests favicon-scale legibility.
-6. **ConceptMix has no 2025 update with FLUX/SD3/Gemini 2.5.** Running ConceptMix on current SOTA is itself a publishable contribution (3d).
+6. **ConceptMix has no 2025/2026 update with FLUX/SD3/Gemini 2.5/Gemini 3** — confirmed gap as of April 2026. The DALL·E 3 baselines in the published leaderboard are now 2+ years old. Running ConceptMix on current SOTA is itself a publishable contribution (3d, confirmed 2026-04-21).
 7. **No VQAScore variant tuned for assets.** CLIP-FlanT5 was trained on natural-image VQA; a logo-tuned VQA head would likely shift the ceiling meaningfully (3a, 3e).
 
 ## Actionable Recommendations for the Plugin's Auto-QA Subsystem
@@ -167,7 +172,7 @@ These are proposed defaults. All are calibrated-by-sampling targets, not ground 
 
 The 3a/3e convergence is strong and specific:
 
-1. **Model choice**: **Gemini 2.5 Flash** for volume (cheap multimodal, best-in-class latency); **GPT-4o** for borderline cases and calibration runs. Claude 3.5 Sonnet as a third-opinion arbiter when Gemini and GPT-4o disagree.
+1. **Model choice**: **Gemini 2.5 Flash** for volume (cheap multimodal, best-in-class latency); **GPT-4o** for borderline cases and calibration runs. Claude 3.5 Sonnet as a third-opinion arbiter when Gemini and GPT-4o disagree. Note: per STRICT-Bench (EMNLP 2025), GPT-4o and Gemini 2.0 lead text-rendering accuracy by the largest margin of any models tested, validating them as the primary judges for wordmark-fidelity rubric questions.
 2. **Mode**: pairwise A/B only. Never absolute 1–10 scoring. Never batch ranking.
 3. **Rubric structure**: decompose into atomic yes/no questions, grouped by axis — mirroring VIEScore's three axes plus asset-specific constraints:
    - **Semantic consistency** (from the prompt): 3–5 atomic questions generated by DSG-style decomposition.
@@ -223,6 +228,7 @@ The 3a/3e convergence is strong and specific:
 ### Compositional benchmarks
 - Ghosh, Hajishirzi, Schmidt, *GenEval*, NeurIPS 2023 — [arXiv:2310.11513](https://arxiv.org/abs/2310.11513); [geneval repo](https://github.com/djghosh13/geneval)
 - Kamath et al., *GenEval 2*, Dec 2025 — [arXiv:2512.16853](https://arxiv.org/abs/2512.16853)
+- Li et al. (Kling AI Research), *T2I-CoReBench*, ICLR 2026 — [arXiv:2509.03516](https://arxiv.org/abs/2509.03516)
 - Huang et al., *T2I-CompBench++*, TPAMI 2025 — [arXiv:2307.06350](https://arxiv.org/abs/2307.06350); [repo](https://github.com/Karine-Huang/T2I-CompBench)
 - Hu et al., *ELLA / DPG-Bench*, CVPR 2024 — [arXiv:2403.05135](https://arxiv.org/abs/2403.05135); [DPG-Bench dir](https://github.com/TencentQQGYLab/ELLA/tree/main/dpg_bench)
 - Wu et al., *ConceptMix*, NeurIPS 2024 — [arXiv:2408.14339](https://arxiv.org/abs/2408.14339); [project](https://princetonvisualai.github.io/conceptmix/)

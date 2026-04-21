@@ -203,10 +203,11 @@ Concrete 2025-2026 numbers:
   becomes the default for “products that need text inside images”
   (Adobe, Canva, GoDaddy, HubSpot integrations on day one).
 - **2025 Dec**: gpt-image-1.5 ships 4× speedup + edit-locality fixes.
+- **2025 Oct**: Emu3.5 (BAAI) extends Emu3 with improved video and image generation capabilities.
 - **2025-2026**: Hybrid stacks (AR planner + diffusion decoder, e.g.
   Transfusion, GLM-Image) become the default *architecture family* in
   new labs. Pure-AR still dominates on text-heavy outputs; pure
-  diffusion still dominates on photoreal aesthetics.
+  diffusion still dominates on photoreal aesthetics. Qwen-Image-2.0 (Alibaba, Feb 2026, 7B) enters the unified generation+editing tier with native 2K and bilingual text rendering.
 
 ## Concrete Prompt Examples (Strength Areas)
 
@@ -281,6 +282,9 @@ diffusion as of 2026:
   - `baaivision/Emu3` — next-token multimodal (image, text, video).
 - **Open weights, hybrid/diffusion but token-friendly.**
   - `THUDM/CogView4-6B` — flow-matching DiT, strong Chinese text.
+  - `Qwen/Qwen-Image` — Alibaba 20B MMDiT (Aug 2025, arXiv:2508.02324); `Qwen-Image-2.0` (Feb 2026, 7B) adds native 2K and unified generation+editing.
+
+> **Updated 2026-04-21:** Qwen-Image and Qwen-Image-2.0 are now Apache-2.0 open-weights releases. They use an MMDiT backbone (not AR), but are listed here because they compete directly on the text-rendering + unified-editing task space this angle covers.
 - **Tokenizers to build on.** MAGVIT-v2 LFQ tokenizer (JAX), bitwise
   Infinity tokenizer, VQGAN / ViT-VQGAN (Parti-style).
 - **Benchmarks.** PartiPrompts (P2, 1600 prompts), GenEval, DPG-Bench,

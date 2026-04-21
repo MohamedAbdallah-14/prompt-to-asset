@@ -37,6 +37,8 @@ Reflection is implemented in LangGraph via conditional edges: a `quality_check` 
 - **lastmile-ai/mcp-agent** (github.com/lastmile-ai/mcp-agent) — implements `create_evaluator_optimizer_llm(...)` which is reflection over MCP tool calls
 - **lalanikarim/langgraph-mcp-pipeline** (github.com/lalanikarim/langgraph-mcp-pipeline) — LangGraph + MCP image generation pipeline with human-in-the-loop at the reflection step
 
+> **Updated 2026-04-21:** LangGraph is at **v1.1.8** (released April 17, 2026; v1.0 GA October 2025). The `stream(version="v2")` API now returns typed `StreamPart` objects with `type`, `ns`, and `data` keys. `invoke(version="v2")` returns a `GraphOutput` with `.value` and `.interrupts`. Both are opt-in and backwards-compatible. The v1.1.x line dropped Python 3.9 and added Python 3.14 compatibility. The TypeScript port (`@langchain/langgraph`) is at v1.2.9 with 42k+ weekly npm downloads — full feature parity with Python confirmed.
+
 ## Applicability to prompt-to-asset
 
 | Pattern | Where it fits |
@@ -57,6 +59,7 @@ The reflection node is particularly important: the validation stack (alpha prese
 ## References
 
 - [LangGraph overview — langchain.com](https://docs.langchain.com/oss/python/langgraph/overview)
+- [LangGraph 1.0 GA — LangChain Changelog](https://changelog.langchain.com/announcements/langgraph-1-0-is-now-generally-available)
 - [Advanced LangGraph: Conditional Edges — dev.to](https://dev.to/jamesli/advanced-langgraph-implementing-conditional-edges-and-tool-calling-agents-3pdn)
 - [ReWOO pattern — agent-patterns.readthedocs.io](https://agent-patterns.readthedocs.io/en/stable/patterns/rewoo.html)
 - [ReWOO — IBM](https://www.ibm.com/think/topics/rewoo)

@@ -18,6 +18,8 @@ sources:
 tags: [free-tier, anonymous, zero-cost, wasm, cpu, promptist, rembg, vtracer, satori, cloudflare, together, fal, replicate]
 ---
 
+> **Updated 2026-04-21:** Key free-tier lane status changes. (1) **Together AI FLUX.1 [schnell] free tier**: As of early 2026, Together AI offers 3 months of free access to the `FLUX.1-schnell-Free` endpoint (not "free forever" as originally stated). After the trial, paid rates apply. The four-lane burn-down rotor logic is still sound but the "never expires" characterization for Together is incorrect — treat it as a trial lane, not a permanent floor. (2) **Cloudflare Workers AI**: 10,000 neurons/day free tier confirmed still active; Flux Schnell costs ~4.8 neurons per 512² tile, giving ~50 free 1024² images/day (confirmed). (3) **Vercel AI SDK**: `experimental_generateImage` is now stable `generateImage` in AI SDK v6. (4) **Gemini/Imagen free API**: No programmatic free tier — AI Studio web UI only. This is correctly reflected by the banner already noted in sibling files.
+
 # Combination 05 — Zero-cost anonymous free tier
 
 ## Optimization criterion (restated)
@@ -135,7 +137,7 @@ composite real type in layer 5), 4-step distillation → sub-second latency.
 
 | Lane | Free quota | What expires | Our posture |
 |---|---|---|---|
-| **Together AI — FLUX.1 [schnell]** (22/20) | Free endpoint, rate-limited per IP + per key | Never — stated free-forever | Primary. Route 70% of traffic here. |
+| **Together AI — FLUX.1 [schnell]** (22/20) | `FLUX.1-schnell-Free` endpoint, rate-limited per IP + per key | **3-month free trial per account** (not free-forever — updated 2026-04-21); after trial, paid rates apply | Primary during trial window. Rotate to Cloudflare Workers AI as permanent floor. |
 | **fal.ai — `fal-ai/flux/schnell`** (22/20, 21/04) | ~$1 sign-up credit, $0.003/img ≈ 333 free imgs/account | Credit burns down | Secondary. Rotate across 3–5 accounts per our ToS review. |
 | **Cloudflare Workers AI — `@cf/black-forest-labs/flux-1-schnell`** | **10 000 Neurons/day free per account**, one Flux Schnell call ≈ 100–300 Neurons | Daily reset | Tertiary. Good for ~50 free imgs/day, and it runs *inside* our Worker so no extra hop. |
 | **Replicate — `black-forest-labs/flux-schnell`** | $1 trial credit per new account, ~333 imgs | Credit burns down | Last-resort; batch refills monthly via team account. |
@@ -169,6 +171,8 @@ works.
   `vtracer-wasm` is the only license-clean, mature, color-capable OSS tracer
   and it happens to be the fastest in the browser too. Ship SVGO after to
   prune ~30 % from the byte size.
+
+> **Updated 2026-04-21:** SVGO v4 behavior change: `removeViewBox` and `removeTitle` are now **disabled** by default in `preset-default`. Previously `removeViewBox: false` was needed as an override to preserve the viewBox; in v4 that override is a no-op since the plugin is already off. No config change needed to preserve viewBox — it is preserved by default now. To strip a viewBox intentionally, you must add `'removeViewBox'` explicitly to the plugins array.
 - **Typography composition:** **Never render brand text in the diffusion
   sampler at all** (SYNTHESIS.md §3). The rewriter emits a `text-free mark`
   prompt; the typography layer composites the user's chosen wordmark via

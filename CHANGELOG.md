@@ -11,6 +11,45 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-04-21
+
+Research-to-implementation alignment release. Full audit of all 34 research categories (361 files) against the codebase. Every finding from the research update log is now reflected in production code, data files, skills, and docs.
+
+### Added
+
+- **`recraft-v4` model in registry and routing.** Recraft V4 (Feb 2026) is now the primary vector/SVG model for non-brand tasks. HuggingFace T2I Arena #1 (ELO 1172). V3 remains the fallback for brand-style pipelines requiring `style_id` (V4 dropped style support). Pricing: $0.08/img vector, $0.30/img pro vector.
+- **`gpt-image-1-mini` model in registry.** Cheapest OpenAI image model ($0.008/img medium). Native RGBA. 1024x1024 max.
+- **SDXL `BREAK` token in tag-salad dialect.** `rewriter.ts` now emits `BREAK` between subject tokens and background tokens when using the `tag-salad` dialect, preventing color/attribute leakage on SDXL. Source: research 06a finding #6.
+- **Ideogram `magic_prompt: OFF` enforced in routing rules.** All logo/icon/illustration routing rules now force `magic_prompt: OFF` for Ideogram to prevent the #1 footgun (adding wooden desks and bokeh to clean logos). Source: research 07b finding #5.
+- **Research source citations** added to `brand.ts`, `pipeline/svgo.ts`, `pipeline/vectorize.ts` — previously uncited code now links to the research that shaped the decisions.
+- **Imagen 4 deprecation metadata.** `deprecated: "2026-06-30"` and `successor: "gemini-2.5-flash-image"` fields added to the imagen-4 registry entry.
+
+### Changed
+
+- **`gpt-image-1.5` promoted to primary** across all routing rules where gpt-image-1 was previously primary (transparent-mark, sticker, logo fallbacks, hero-photoreal fallbacks, illustration-no-brand). Research 05 confirms better text rendering (LM Arena #1, ELO 1264) at lower cost ($0.034/img medium vs $0.042).
+- **Ideogram transparency parameter fixed everywhere.** `style: "transparent"` (incorrect) replaced with the dedicated `/ideogram-v3/generate-transparent` endpoint + `rendering_speed: "TURBO"` parameter across CLAUDE.md, AGENTS.md, routing-table.json, all 12 skill files, and paste-targets.
+- **Recraft routing updated.** `recraft-v4` is now primary for `logo-text-free-vector`, `app-icon-mark`, `favicon`, `icon-pack`, and `splash-screen` rules. `recraft-v3` is kept as first fallback for brand-style pipelines.
+- **gpt-image-1.5 registry corrected.** Text ceiling updated to 60 chars. Max size corrected to 1536x1024. Cost hint corrected to actual per-quality-tier pricing. Strengths expanded to reflect LM Arena #1 status.
+- **model-registry.json** version bumped to 1.2.0; **routing-table.json** version bumped to 1.2.0.
+- **SVGO v4 compatibility note** added to `pipeline/svgo.ts` — SVGO v4.0.0 (Feb 2026) changed defaults so `removeViewBox: false` override is now a no-op.
+- **All 12 skill files updated** (both `.claude/skills/` and `.cursor/skills/` mirrors) with corrected Ideogram endpoint, Recraft V4 notes, rembg default-model warning, and magic_prompt enforcement.
+- **RESEARCH_MAP.md updated** to reflect recraft-v4, Ideogram endpoint fix, BREAK wiring, and magic_prompt enforcement.
+
+### Removed
+
+- **`T0_DCT_ENTROPY` failure code.** Was typed but never implemented in `validate.ts`. Removed from `FailureCode` union to eliminate dead code.
+
+### Fixed
+
+- **AGENTS.md / CLAUDE.md consistency.** AGENTS.md now matches CLAUDE.md on Ideogram transparency API surface, Recraft V4 availability, and gpt-image-1.5 as current flagship.
+- **Deprecated model routing.** `imagen-4` removed from hero-photoreal fallback chain (EOL June 30, 2026). `dall-e-3` already had `deprecated` field and `never` list entries.
+
+### Changed (docs only)
+
+- **Corrected stale free-tier claims.** Google removed Gemini/Imagen image-gen from the universal free API tier in December 2025. Previous doctor/capabilities output and docs claimed "~1,500 free images/day" for Nano Banana; in reality an unbilled GEMINI_API_KEY returns HTTP 429 with `limit: 0` on image endpoints. Updated `asset_doctor`, `asset_capabilities`, `data/model-registry.json` cost hints, README, CLAUDE.md, AGENTS.md, GEMINI.md, GETTING_STARTED.md, `.env.example`, and IDE rule files to reflect current state.
+- **Re-ranked free API routes.** Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day free) is now rank 1. HF Inference rank 2. Pollinations rank 3. Stable Horde rank 4. Google moved to paid_providers with honest pricing ($0.039/img Nano Banana, $0.02/img Imagen 4 Fast).
+- **Added AI Studio paste-only flow.** Users without billing enabled can still use Nano Banana / Nano Banana Pro via https://aistudio.google.com (free interactive UI) and `asset_ingest_external` to bring the PNG into the pipeline.
+
 ## [0.3.1] — 2026-04-21
 
 Patch release: structured validation failure codes (additive, non-breaking) and a full research-folder restructure.

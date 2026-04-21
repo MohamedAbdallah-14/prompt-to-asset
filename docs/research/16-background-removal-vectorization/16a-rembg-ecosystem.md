@@ -82,7 +82,11 @@ All models are ONNX files distributed from [the `v0.0.0` release](https://github
 | `birefnet-hrsod` | ~880 MB | BiRefNet | **High-res salient object** (large product stills) |
 | `birefnet-cod` | ~880 MB | BiRefNet | Camouflaged object detection (rare) |
 | `birefnet-massive` | ~880 MB | BiRefNet | Trained on DIS5K+more, most robust |
+| `birefnet-hr` | ~880 MB | BiRefNet (HR checkpoint) | **High-res 2048² training; best hair detail** |
+| `birefnet-dynamic` | ~880 MB | BiRefNet (dynamic) | **Dynamic-resolution 256–2304px training; robust on any res** |
 | `bria-rmbg` | ~175 MB | [briaai/RMBG-2.0](https://huggingface.co/briaai/RMBG-2.0) | **Commercial-grade quality, CC license caveat** |
+
+> **Updated 2026-04-21:** BiRefNet released two significant new checkpoints in early 2025: **BiRefNet_HR** (February 2025, trained at 2048×2048, best hair/fine-detail accuracy) and **BiRefNet_dynamic** (March 2025, dynamic resolution 256–2304 px, most robust across arbitrary resolutions). A third specialty variant, **BiRefNet_HR-matting**, was also released February 2025 specifically for general matting use at 2K resolution. Rembg issue [#720](https://github.com/danielgatis/rembg/issues/720) tracks integration of these checkpoints into rembg's catalog — verify current support before depending on them via `new_session("birefnet-hr")`. The BiRefNet September 2025 update also upgraded Swin Transformer attention to PyTorch's official SDPA, yielding lower memory cost and potential inference acceleration.
 
 **License note:** `bria-rmbg` weights are released by BRIA AI under a [non-commercial license unless you pay BRIA](https://huggingface.co/briaai/RMBG-2.0). rembg ships the loader, not the license. For any hosted generation backend, default to `isnet-general-use` (Apache-like DIS license) or `birefnet-general` (MIT) for clean legal posture.
 
@@ -369,8 +373,12 @@ For horizontal scaling, stand up one replica per model family (rembg keeps all s
 ### BRIA RMBG-2.0 direct
 
 - Model: [briaai/RMBG-2.0](https://huggingface.co/briaai/RMBG-2.0).
-- License: commercial-only beyond non-production use. Superb quality, SOTA-class, but not safe to ship to end-users without a BRIA agreement.
+- License: **CC BY-NC 4.0** — non-commercial only unless you purchase a commercial license from BRIA. Weights are on a gated Hugging Face repo; you must accept the license terms to download. Superb quality, SOTA-class, but not safe to ship to end-users without a BRIA agreement.
 - Usable via `rembg -m bria-rmbg` under the same legal constraint.
+
+### BEN2 (Background Erase Network 2)
+
+> **Updated 2026-04-21:** A notable new entrant since the original research. **BEN2** ([PramaLLC/BEN2](https://huggingface.co/PramaLLC/BEN2)) introduces a **Confidence Guided Matting (CGM)** pipeline: a base segmenter runs first, then a dedicated refiner network targets low-confidence boundary pixels — the exact failure zone of BiRefNet and BRIA on hair and fur. BEN2 claims to outperform BiRefNet-HR on the DIS5k + a 22K proprietary dataset, and is specifically noted for hair matting, 4K processing, and edge refinement. The base model is open source (Apache 2.0); the full API is commercial. Not yet integrated into rembg as of April 2026, but available via the web demo and fal.ai endpoint. Worth tracking as a BiRefNet-HR competitor for the 5% tail of hard hair/fur cases.
 
 ### InSPyReNet direct, DIS direct, BiRefNet direct
 
@@ -545,4 +553,7 @@ def finalize(rgba: Image.Image) -> Image.Image:
 - Qin et al., 2022, *Highly Accurate Dichotomous Image Segmentation (DIS / ISNet)* — <https://arxiv.org/abs/2203.03041>
 - Kim et al., 2022, *Revisiting Image Pyramid Structure for High Resolution Salient Object Detection (InSPyReNet)* — ACCV 2022 — <https://openaccess.thecvf.com/content/ACCV2022/papers/Kim_Revisiting_Image_Pyramid_Structure_for_High_Resolution_Salient_Object_Detection_ACCV_2022_paper.pdf>
 - Zheng et al., 2024, *BiRefNet: Bilateral Reference for High-Resolution Dichotomous Image Segmentation* — <https://arxiv.org/abs/2401.03407>
+- BiRefNet_HR + BiRefNet_dynamic (2025 checkpoints) — <https://github.com/ZhengPeng7/BiRefNet>
+- BEN2 (Background Erase Network 2, PramaLLC) — <https://huggingface.co/PramaLLC/BEN2>
+- rembg issue #720 (BiRefNet_HR integration request) — <https://github.com/danielgatis/rembg/issues/720>
 - Kirillov et al., 2023, *Segment Anything* — <https://arxiv.org/abs/2304.02643>

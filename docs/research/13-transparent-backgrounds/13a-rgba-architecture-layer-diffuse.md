@@ -20,9 +20,11 @@ models_without_native_alpha:
   - Gemini 2.5 Flash Image (Nano Banana)
   - Gemini 3 Pro Image / Flash Image (Nano Banana Pro / Nano Banana 2)
   - Midjourney v6 / v7
-  - Ideogram v2 / v3
+  - Ideogram v2 (no alpha output mode)
   - SDXL base, Flux.1 [dev]/[pro] base (no transparency LoRA applied)
   - DALL·E 3
+models_with_native_alpha_via_dedicated_endpoint:
+  - Ideogram 3.0 (`/ideogram-v3/generate-transparent` endpoint; supports FLASH / TURBO / BALANCED / QUALITY speed tiers)
 tags: [alpha-channel, rgba, layerdiffuse, latent-transparency, vae, premultiplied-alpha, difference-matting, model-architecture, diffusion-models]
 ---
 
@@ -36,7 +38,9 @@ The three findings that matter for the product:
 
 1. **Latent diffusion VAEs are RGB-only by construction.** Stable Diffusion 1.5/2, SDXL, Flux, and every Imagen/Gemini descendant encode 3-channel pixels into a 4-channel *latent* tensor (the 4 is a feature-space dimension, not RGBA). Appending an alpha channel to the input requires retraining the encoder, the U-Net / DiT, and the decoder — or bolting on a separate "latent transparency" module as LayerDiffuse does. This is why a model cannot simply be *told* to produce transparency: there is no plane in its output tensor that could carry it. [[4]](https://havenstudios.com/en/blog/adapting-stable-diffusion-to-create-rgba-imagery) [[5]](https://github.com/huggingface/diffusers/issues/6548)
 2. **LayerDiffuse (Zhang & Agrawala, SIGGRAPH 2024, arXiv:2402.17113) is the first published method that converts a pretrained latent diffusion model into a native RGBA generator without full retraining.** It does this by learning a *latent offset* — "latent transparency" — that encodes the alpha channel directly into the existing latent manifold with minimal disruption. In a user study, 97 % of participants preferred LayerDiffuse output to "generate-then-matte" pipelines, and the authors' blind comparison put the quality on par with Adobe Stock transparent assets. [[1]](https://arxiv.org/abs/2402.17113) [[2]](https://lllyasviel.github.io/pages/layerdiffuse/)
-3. **Only two families of production models emit real alpha in 2026: OpenAI's `gpt-image-1` lineage (first-class `background:"transparent"`) and open-source LayerDiffuse finetunes ported to SD 1.5, SDXL, and Flux.** Everyone else — Google, Midjourney, Ideogram, base Flux, base SDXL, DALL·E 3 — requires a post-process matting stage. Recraft V3's advertised transparent-style path has degraded since launch and is no longer reliable; its background-remove post-processor is the actual production path there. [[3]](https://developers.openai.com/api/docs/guides/image-generation?image-generation-model=gpt-image-1) [[14]](https://github.com/RedAIGC/Flux-version-LayerDiffuse) [[6]](https://recraft.canny.io/feature-requests/p/png-with-a-transparent-background)
+3. **Three families of production models emit real alpha in 2026: OpenAI's `gpt-image-1` lineage (`background:"transparent"` API parameter), Ideogram 3.0's dedicated `/ideogram-v3/generate-transparent` endpoint (supports FLASH/TURBO/BALANCED/QUALITY speed tiers), and open-source LayerDiffuse finetunes ported to SD 1.5, SDXL, and Flux.** Everyone else — Google, Midjourney, base Flux, base SDXL, DALL·E 3 — requires a post-process matting stage. Recraft V3's advertised transparent-style path has degraded since launch and is no longer reliable; its background-remove post-processor is the actual production path there. [[3]](https://developers.openai.com/api/docs/guides/image-generation?image-generation-model=gpt-image-1) [[14]](https://github.com/RedAIGC/Flux-version-LayerDiffuse) [[6]](https://recraft.canny.io/feature-requests/p/png-with-a-transparent-background)
+
+> **Updated 2026-04-21:** Ideogram 3.0 confirmed active via official API docs at `developer.ideogram.ai/api-reference/api-reference/generate-transparent-v3`. The endpoint produces real RGBA PNGs with no post-processing; speed tier is selectable (FLASH / TURBO / BALANCED / QUALITY). Route logo/typography/icon requests to Ideogram 3.0 as the second native-RGBA fallback after `gpt-image-1`.
 
 File path: `/Users/mohamedabdallah/Work/Projects/prompt-to-asset/docs/research/13-transparent-backgrounds/13a-rgba-architecture-layer-diffuse.md`
 
@@ -127,7 +131,7 @@ The project page shows FG-only, BG-only, FG+BG blended, and compositing-from-pro
 | SD 1.5, SD 2.x, SDXL | Reference `LayerDiffuse` | [layerdiffusion/LayerDiffuse](https://github.com/layerdiffusion/LayerDiffuse) | Reference implementation; models on Hugging Face |
 | SDXL | `sd-forge-layerdiffuse` (AUTOMATIC1111 Forge extension) | [diffus-me/sd-forge-layerdiffuse](https://github.com/diffus-me/sd-forge-layerdiffuse) | Uses `layer_xl_transparent_attn.safetensors` LoRA + `vae_transparent_encoder.safetensors` |
 | SD 1.5 / SDXL | `ComfyUI-layerdiffuse` (custom nodes) | [huchenlei/ComfyUI-layerdiffuse](https://github.com/huchenlei/ComfyUI-layerdiffuse) | Exposes `LayeredDiffusionDecodeRGBA`; widely used in production ComfyUI graphs |
-| Flux.1-dev / Flux.1-schnell | `LayerDiffuse-Flux` | [RedAIGC/Flux-version-LayerDiffuse](https://github.com/RedAIGC/Flux-version-LayerDiffuse) | Created 2024-12-11, 240+ ★, last update 2025-05-09; ships a custom `TransparentVAE.pth` + `layerlora.safetensors`; supports T2I and I2I |
+| Flux.1-dev / Flux.1-schnell | `LayerDiffuse-Flux` | [RedAIGC/Flux-version-LayerDiffuse](https://github.com/RedAIGC/Flux-version-LayerDiffuse) | Created 2024-12-11, 240+ ★, last update 2025-05-09; ships a custom `TransparentVAE.pth` + `layerlora.safetensors`; supports T2I and I2I. License: AFL-3.0 (Academic Free License 3.0), which permits commercial use — but the underlying Flux.1-dev base model is **non-commercial** (BFL Non-Commercial License v2). For commercial self-hosting, you need Flux.1-pro or a BFL commercial license. |
 | Flux + Forge | `FluxZayn` | [DrUmranAli/FluxZayn](https://github.com/DrUmranAli/FluxZayn) | WebUI Forge extension wrapping LayerDiffuse-Flux; PNG-metadata save, RGBA output |
 
 [[8]](https://github.com/huchenlei/ComfyUI-layerdiffuse) [[11]](https://github.com/diffus-me/sd-forge-layerdiffuse) [[12]](https://www.instasd.com/comfyui/custom-nodes/comfyui-layerdiffuse/layereddiffusiondecodergba) [[13]](https://comfy.icu/node/LayeredDiffusionDecodeRGBA) [[14]](https://github.com/RedAIGC/Flux-version-LayerDiffuse)
@@ -157,7 +161,8 @@ For the prompt-to-asset product, **LayerDiffuse (on SDXL or Flux) is the relevan
 | Gemini 2.5 Flash Image (Nano Banana) | **No** | Flat PNG; checkerboard failure mode on transparency prompts. | [Gemini 2.5 Flash Image docs](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-image), issue #567 [[20]](https://github.com/google-gemini/generative-ai-python/issues/567) |
 | Gemini 3 Pro / Flash Image (Nano Banana Pro / 2) | **No** | Same as above; no capability added in Nov 2025 launch. | [Julien De Luca Medium writeup](https://jidefr.medium.com/generating-transparent-background-images-with-nano-banana-pro-2-1866c88a33c5) (corroborating category 4c) |
 | Midjourney v6 / v7 | **No** | No `--transparent` flag; export-time background-remove in the web UI is post-process only. | MJ docs |
-| Ideogram v2 / v3 | **No** | No alpha output mode; users rely on external background removers. | Ideogram docs |
+| Ideogram v2 | **No** | No alpha output mode; users rely on external background removers. | Ideogram docs |
+| Ideogram 3.0 | **Yes (native, dedicated endpoint)** | `/ideogram-v3/generate-transparent` — outputs real RGBA PNG with clean alpha, no post-processing. Speed tiers: FLASH / TURBO / BALANCED / QUALITY. | [Ideogram API docs](https://developer.ideogram.ai/api-reference/api-reference/generate-transparent-v3) |
 | SDXL base, Flux.1-dev/pro base | **No** (without a transparency LoRA + VAE) | RGB-only VAE; any alpha appears after applying a LayerDiffuse / IC-Light-style LoRA, or post-hoc matting. | [[4]](https://havenstudios.com/en/blog/adapting-stable-diffusion-to-create-rgba-imagery) |
 | DALL·E 3 | **No** | RGB output only. Deprecated for asset work in favour of `gpt-image-1`. | OpenAI deprecation notes |
 
@@ -231,8 +236,11 @@ For the product, the practical implications are:
 
 ## 5. Takeaways for the Prompt-Enhancer
 
-- The user's "checker-pattern in Gemini" problem is solved architecturally in exactly one public way today — LayerDiffuse's latent-transparency trick — and commercially in exactly one product today — OpenAI's `gpt-image-1.*`. Everything else is post-hoc matting, which the LayerDiffuse user study shows is measurably inferior for anti-aliased edges, hair, glass, and soft shadows.
-- If the product wants to stay cloud-hosted and closed-source, the path of least resistance is **route transparency-requiring prompts to `gpt-image-1.5` with `background:"transparent"`**, and route everything else to the user's chosen aesthetic model (Gemini for photoreal, Imagen for text rendering, etc.).
+- The user's "checker-pattern in Gemini" problem is solved architecturally in exactly one public open-source way today — LayerDiffuse's latent-transparency trick — and commercially in two products as of April 2026: OpenAI's `gpt-image-1.*` (best for photographic content) and Ideogram 3.0's `/ideogram-v3/generate-transparent` endpoint (best for typography, logos, and flat design). Everything else is post-hoc matting, which the LayerDiffuse user study shows is measurably inferior for anti-aliased edges, hair, glass, and soft shadows.
+
+> **Updated 2026-04-21:** Ideogram 3.0 `generate-transparent-v3` is production-ready; it supports speed tiers (FLASH, TURBO, BALANCED, QUALITY) and outputs a clean RGBA PNG with no post-processing step. Route logo/icon/typography requests here before falling back to `gpt-image-1`.
+
+- If the product wants to stay cloud-hosted and closed-source, the path of least resistance is **route transparency-requiring prompts to `gpt-image-1.5` with `background:"transparent"` for photographic/illustration work, or to Ideogram 3.0 for logo/typography/flat-design work**, and route everything else to the user's chosen aesthetic model (Gemini for photoreal, Imagen for text rendering, etc.).
 - If the product opens a self-hosted / OSS track, **Flux.1-dev + LayerDiffuse-Flux** is the state of the art for native RGBA in April 2026. Quality exceeds SDXL-LayerDiffuse and matches `gpt-image-1` for design/asset work.
 - For every other model family, the prompt-to-asset should **never emit the literal words "transparent background"** into the prompt (triggers the checkerboard failure) and should instead emit a white- or black-background prompt with a downstream difference-matting plan — see category 4c, §3.
 

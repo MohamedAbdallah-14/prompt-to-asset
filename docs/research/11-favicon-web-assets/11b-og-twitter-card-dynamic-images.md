@@ -43,7 +43,9 @@ The Open Graph protocol ([ogp.me](https://ogp.me/)) defines `og:image` as one of
 Key rules:
 
 - **`og:image:secure_url`** is used when the main `og:image` is served over HTTP; modern best practice is to serve only HTTPS URLs and duplicate into `secure_url` for maximally compatible unfurlers.
-- **`og:image:type`** — supported MIME types are `image/jpeg`, `image/png`, `image/gif`, `image/webp`. SVG is **not** supported by any major social platform; always rasterize. ([share-preview 2026 guide](https://share-preview.com/blog/og-tags-complete-guide))
+- **`og:image:type`** — supported MIME types are `image/jpeg`, `image/png`, `image/gif`, `image/webp`. SVG is **not** supported by any major social platform; always rasterize. **AVIF is not safe** for OG images: as of late 2025 only Facebook accepts AVIF (and internally re-encodes it to JPEG); LinkedIn, Slack, X/Twitter, iMessage, and Discord do not support AVIF for unfurl images. WebP has broader support (Facebook, Discord, Slack, Bluesky confirmed; LinkedIn support is inconsistent — test before relying on it). **Safest choice: PNG for sharp-edged content (templates, logos), JPEG q≈82 for hero-dominated images.** ([darekkay.com OG format compatibility](https://darekkay.com/blog/open-graph-image-formats/); [joost.blog WebP/AVIF share images](https://joost.blog/use-avif-webp-share-images/))
+
+> **Updated 2026-04-21:** WebP gained broader unfurl support in 2024–2025 but remains inconsistent on LinkedIn (some crawlers skip non-JPEG/PNG images). AVIF is still not safe for OG. Stick to PNG/JPEG for maximum platform fidelity; WebP is fine for in-page hero/LCP images served via `<picture>` but keep the OG fallback as JPEG/PNG.
 - **`og:image:width` / `og:image:height`** — specifying these lets crawlers reserve layout before the image bytes arrive, eliminating first-render flicker on Facebook. Mismatching declared dimensions vs. actual pixels can cause cropping or rejection. ([zhead meta docs](https://zhead.dev/meta/og-image-width))
 - **`og:image:alt`** — accessibility string, used by screen readers on some platforms and by search engines for image indexing; support is **inconsistent** across platforms but cheap to include. ([swimburger writeup](https://swimburger.net/blog/web/dont-forget-to-provide-image-alt-meta-data-for-open-graph-and-twitter-cards-social-sharing))
 - **Multiple `og:image` tags** are allowed — when present, Facebook lets the user flip between them in the composer.
@@ -122,7 +124,7 @@ Notes:
 
 ### Astro — `astro-og-canvas` / `@astrojs/og`
 
-`astro-og-canvas` ([delucis/astro-og-canvas](https://github.com/delucis/astro-og-canvas), ~15K weekly downloads) is the de-facto Astro solution; it uses CanvasKit-WASM rather than Satori, which trades JSX ergonomics for simpler styling primitives and bulletproof font/emoji rendering.
+`astro-og-canvas` ([delucis/astro-og-canvas](https://github.com/delucis/astro-og-canvas), ~12K weekly downloads as of 2026-04) is the de-facto Astro solution; it uses CanvasKit-WASM rather than Satori, which trades JSX ergonomics for simpler styling primitives and bulletproof font/emoji rendering.
 
 ```ts
 // src/pages/og/[...slug].ts
@@ -320,7 +322,7 @@ Every major platform caches `og:*` metadata for **7–30 days** keyed on URL. Th
 | Platform | Debugger URL | Cache TTL | Rescrape Mechanism |
 |---|---|---|---|
 | Facebook / Instagram / Threads | [developers.facebook.com/tools/debug/sharing](https://developers.facebook.com/tools/debug/sharing) | ~30 days | "Scrape Again" button (requires FB login) |
-| X / Twitter | Card Validator (deprecated 2024) — now only "post the link in a test tweet and check the Share dialog" | 7 days | no manual rescrape; post in a private reply |
+| X / Twitter | Card Validator (official tool permanently retired; no replacement from X). Third-party alternatives: [socialrails.com/free-tools/x-tools/card-validator](https://socialrails.com/free-tools/x-tools/card-validator), [opentweet.io/tools/x-card-validator](https://opentweet.io/tools/x-card-validator), or simply post the link in a private test reply and inspect. | 7 days | no official rescrape; post in a private reply or use a third-party validator |
 | LinkedIn | [linkedin.com/post-inspector](https://www.linkedin.com/post-inspector/) | 7 days | Inspect URL; auto-rescrapes |
 | Slack | No public debugger | ~1 hour per workspace | `/remind me to unfurl` workaround, or append `?_=1` to URL |
 | Discord | No public debugger | ~24 hours | append `?v=N` query param |
@@ -329,6 +331,7 @@ Every major platform caches `og:*` metadata for **7–30 days** keyed on URL. Th
 ### Third-Party Tools
 
 - **[opengraph.xyz](https://www.opengraph.xyz/)** — renders previews for FB, X, LinkedIn, Slack, Discord, iMessage side-by-side without requiring login; includes an AI OG image generator for quick placeholders.
+- **[socialrails.com/free-tools/x-tools/card-validator](https://socialrails.com/free-tools/x-tools/card-validator)** and **[opentweet.io/tools/x-card-validator](https://opentweet.io/tools/x-card-validator)** — third-party X/Twitter card validators that fill the gap left by the retired official Card Validator.
 - **[opengraphviewer.com](https://opengraphviewer.com/)** — similar multi-platform preview, no-login.
 - **[metatags.io](https://metatags.io/)** — live-edit meta tags and preview; good for prototyping tag copy.
 - **[share-preview.com](https://share-preview.com/)** — browser extension + web tool, shows cropped previews per platform.
@@ -356,7 +359,7 @@ Every major platform caches `og:*` metadata for **7–30 days** keyed on URL. Th
 Before any launch, for a representative URL:
 
 - [ ] `curl -I` returns 200 and `content-type: image/png`.
-- [ ] Image is exactly 1200×630, ≤5 MB, PNG or JPEG (not WebP for max compat, not SVG ever).
+- [ ] Image is exactly 1200×630, ≤5 MB, PNG or JPEG (WebP has partial-but-inconsistent support on LinkedIn; AVIF is unsafe for OG; SVG is never supported — stick with PNG/JPEG for maximum compatibility).
 - [ ] All 5 `og:*` + 4 `twitter:*` tags present with absolute HTTPS URLs.
 - [ ] `og:image:alt` and `twitter:image:alt` set to a human-readable description.
 - [ ] Rendered by opengraph.xyz with no warnings.

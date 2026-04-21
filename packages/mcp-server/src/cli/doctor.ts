@@ -5,13 +5,17 @@
 // yet. Useful first command during onboarding.
 //
 // We bucket providers into three groups so the output is self-explanatory:
-//   1. Free-tier / zero-key — Pollinations (zero signup), Stable Horde
-//      (anonymous queue), Hugging Face Inference (free token), free tier of
-//      Google AI Studio (Gemini 3 Flash Image / Nano Banana).
-//   2. Paid direct APIs — OpenAI, Ideogram, Recraft, BFL, Stability, Leonardo,
-//      fal.ai. Provide a real key, generate directly.
-//   3. Paste-only — Midjourney, Adobe Firefly, Krea. No programmatic API;
-//      asset_enhance_prompt + asset_ingest_external handles the round trip.
+//   1. Free-tier / zero-key — Cloudflare Workers AI (Flux-1-Schnell on 10k
+//      neurons/day), Hugging Face Inference (free token), Pollinations (zero
+//      signup), Stable Horde (anonymous queue). Google removed Gemini/Imagen
+//      image-gen from the free API tier in Dec 2025; AI Studio web UI is still
+//      free for interactive use (paste-only).
+//   2. Paid direct APIs — OpenAI, Google (Gemini/Imagen image-gen — now paid
+//      only), Ideogram, Recraft, BFL, Stability, Leonardo, fal.ai. Provide a
+//      real key, generate directly.
+//   3. Paste-only — Midjourney, Adobe Firefly, Krea, Google AI Studio web UI.
+//      No programmatic API (or no free API); asset_enhance_prompt +
+//      asset_ingest_external handles the round trip.
 
 import {
   providerAvailability,
@@ -141,13 +145,17 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
   // Free routes ranked by quality, cost, and friction. Best-first so a user
   // scanning the output picks the top live row and moves on. See
   // docs/research/23-combinations/05-free-tier.md for the justification.
+  // NOTE 2026-04-21: Google removed Gemini/Imagen image-gen from its free API
+  // tier in Dec 2025 — an unbilled GEMINI_API_KEY returns HTTP 429 with
+  // limit:0 on image endpoints. Cloudflare is now rank 1; Google is listed
+  // only under paste-only (AI Studio web UI remains free).
   lines.push("Free-tier / zero-key routes  (recommended starting point — $0, ranked best → worst)");
   const rankedFree: Array<{ key: string; rank: number; live: boolean; note: string }> = [
     {
-      key: "google",
+      key: "cloudflare",
       rank: 1,
-      live: avail["google"] ?? false,
-      note: "Google AI Studio free tier — Gemini 3 Flash Image (Nano Banana), ~1,500 images/day. GEMINI_API_KEY — no credit card."
+      live: avail["cloudflare"] ?? false,
+      note: "Cloudflare Workers AI — Flux-1-Schnell + SDXL, 10k neurons/day free. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
     },
     {
       key: "huggingface",
@@ -156,20 +164,14 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
       note: "HF Inference — hosted SD/SDXL/Flux-schnell on a free read token. HF_TOKEN, no credit card."
     },
     {
-      key: "cloudflare",
-      rank: 3,
-      live: avail["cloudflare"] ?? false,
-      note: "Cloudflare Workers AI — 10k neurons/day free. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
-    },
-    {
       key: "pollinations",
-      rank: 4,
+      rank: 3,
       live: avail["pollinations"] ?? false,
-      note: "Pollinations — zero signup, rate-limited (~1 req/15s anonymous)."
+      note: "Pollinations — zero signup, rate-limited (~1 req/15s anonymous). Silently swaps models per request."
     },
     {
       key: "stable-horde",
-      rank: 5,
+      rank: 4,
       live: avail["stable-horde"] ?? false,
       note: "Stable Horde — community GPUs, queue can be long. Anonymous or free API key."
     }
@@ -195,6 +197,9 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
   for (const name of PASTE_ONLY_PROVIDERS) {
     lines.push(`  ${name.padEnd(14)} paste  ${pasteHint(name)}`);
   }
+  lines.push(
+    `  ${"google-aistudio".padEnd(14)} paste  https://aistudio.google.com — free interactive UI for Gemini/Imagen image-gen (API free tier was removed 2025-12). Download the PNG, then call asset_ingest_external.`
+  );
   lines.push("");
 
   lines.push("Pipeline extension URLs");
@@ -231,13 +236,17 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
   // or many.
   lines.push("What to try next");
   if (!anyPaid && !anyFree) {
-    lines.push("  1. You are offline from every free route. Simplest path:");
-    lines.push(
-      "       export GEMINI_API_KEY=$(read from https://aistudio.google.com/apikey) — free, no credit card."
-    );
-    lines.push("  2. Or use inline_svg for logos/favicons/icons — zero network, no key.");
+    lines.push("  1. Use inline_svg for logos/favicons/icons — zero network, no key.");
     lines.push(
       '       Ask your MCP host: "generate an app icon for an app called X, inline_svg mode."'
+    );
+    lines.push("  2. For a free programmatic route, set up Cloudflare Workers AI:");
+    lines.push("       https://dash.cloudflare.com → Workers AI → create an API token;");
+    lines.push(
+      "       export CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=...  # Flux-1-Schnell, 10k neurons/day, no credit card."
+    );
+    lines.push(
+      "  3. For paste-only free: generate in https://aistudio.google.com and call asset_ingest_external on the downloaded PNG."
     );
   } else if (!anyPaid) {
     lines.push("  Fully operational on free tier. One concrete next step:");
@@ -247,9 +256,9 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
     lines.push(
       "    p2a pick                       # interactive model picker — asks asset type + constraints"
     );
-    if (!avail["google"]) {
+    if (!avail["cloudflare"]) {
       lines.push(
-        "    export GEMINI_API_KEY=...      # unlocks Nano Banana (~1.5k free images/day)"
+        "    export CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=...  # unlocks Flux-1-Schnell (10k neurons/day free)"
       );
     }
   } else {
@@ -268,7 +277,7 @@ function paidHint(name: string): string {
     case "openai":
       return "gpt-image-1 / gpt-image-1.5 / dall-e-3 — best transparent PNG + text rendering";
     case "google":
-      return "Imagen 4 / Gemini 3 Flash Image — free tier available (see above)";
+      return "Gemini 3 Flash Image (Nano Banana) / Imagen 4 — billing required; no API free tier as of 2025-12. Nano Banana $0.039/img, Imagen 4 Fast $0.02/img. AI Studio web UI (https://aistudio.google.com) is free but paste-only.";
     case "ideogram":
       return "Ideogram 3 / 3 Turbo — best-in-class wordmark rendering";
     case "recraft":

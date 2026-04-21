@@ -75,6 +75,8 @@ The rest of this document catalogues the model family, walks through the text-pr
 - **Training data:** SA-V for video + SA-1B for images.
 - **Why it matters for us:** with Hiera-L we get ~50 ms/image masking quality that previously required ViT-H. The Tiny checkpoint (~39 M) is a legitimate server-side default now.
 
+> **Updated 2026-04-21:** **SAM 2.1** was released on September 29–30, 2024 — improved checkpoints (Tiny/Small/Base+/Large variants), training code released publicly for the first time, and web demo front-end/back-end code released. SAM 2.1 improves on visually similar objects, small objects, and occlusion handling. The Hugging Face models are at `facebook/sam2.1-hiera-{tiny,small,base-plus,large}`. December 2024 updates added full model compilation for a major VOS speedup and a new `SAM2VideoPredictor` for per-object independent inference. **Use SAM 2.1 checkpoints rather than the original SAM 2 for any new pipeline.** The PyPI package `sam2` tracks these releases.
+
 ### MobileSAM (Zhang et al., 2023)
 
 - **Paper:** [arXiv:2306.14289](https://arxiv.org/abs/2306.14289) (June 2023)
@@ -104,7 +106,9 @@ The rest of this document catalogues the model family, walks through the text-pr
 - **HQ-SAM** ([arXiv:2306.01567](https://arxiv.org/abs/2306.01567)) — adds a learnable high-quality output token; materially better on thin structures (insect legs, text, hair). Drop-in for SAM weights.
 - **SAM-HQ / SlimSAM / RepViT-SAM** — further distillation variants.
 - **Segment Anything in High Quality / PerSAM / Matcher** — one-shot personalization variants (give one example → segment that concept).
-- **SAM 3 / SAM 3D** — Meta has teased successors; as of April 2026 SAM 2 remains the published SOTA.
+- **SAM 3 / SAM 3D** — Meta has teased successors; as of April 2026 SAM 2.1 remains the published production SOTA.
+
+> **Updated 2026-04-21:** The practical default as of April 2026 is **SAM 2.1** (September 2024), not the original SAM 2. New deployments should pin `sam2>=1.0` from PyPI and use the `sam2.1-hiera-*` HuggingFace checkpoints. The table below reflects SAM 2.1 performance numbers which are slightly better than the original SAM 2 release, particularly on small and occluded objects.
 
 ### Practical picks
 
@@ -324,6 +328,7 @@ Primary papers:
 
 - Kirillov, A., et al. "Segment Anything." ICCV 2023. [arXiv:2304.02643](https://arxiv.org/abs/2304.02643)
 - Ravi, N., et al. "SAM 2: Segment Anything in Images and Videos." 2024. [arXiv:2408.00714](https://arxiv.org/abs/2408.00714)
+- Meta FAIR. "SAM 2.1" — improved checkpoints released September 29–30, 2024. HuggingFace: `facebook/sam2.1-hiera-{tiny,small,base-plus,large}`. Training code and web demo code also released. [facebookresearch/sam2](https://github.com/facebookresearch/sam2)
 - Zhang, C., et al. "Faster Segment Anything: Towards Lightweight SAM for Mobile Applications" (MobileSAM). [arXiv:2306.14289](https://arxiv.org/abs/2306.14289)
 - Xiong, Y., et al. "EfficientSAM: Leveraged Masked Image Pretraining for Efficient Segment Anything." CVPR 2024. [arXiv:2312.00863](https://arxiv.org/abs/2312.00863)
 - Zhao, X., et al. "Fast Segment Anything" (FastSAM). [arXiv:2306.12156](https://arxiv.org/abs/2306.12156)

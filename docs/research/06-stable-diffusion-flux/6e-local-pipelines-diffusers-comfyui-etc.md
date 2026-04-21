@@ -38,6 +38,8 @@ primary_sources:
 
 ## Executive Summary
 
+> **Updated 2026-04-21:** Several runtime status changes since this was drafted: (1) **AUTOMATIC1111 (A1111)** has been in maintenance-only mode since v1.10.1 (last release July 2024) — no new features, no Flux.2 support, 44+ unmerged PRs. Still functional for SD 1.5/SDXL workflows but not receiving active development. Most practitioners have migrated to ComfyUI or Forge. (2) **Fooocus** is in limited long-term support (LTS / bug-fixes only) — SDXL architecture only, no Flux or SD3.5. Developer recommends Forge or ComfyUI for newer models. (3) **ComfyUI** added native Flux.2 [dev] support at launch (Nov 2025) with FP8 optimizations (−40% VRAM, +40% throughput on RTX), and Flux.2 [klein] support (Jan 2026) via `FluxKVCache` nodes. ComfyUI now natively supports: SD1.x/2.x, SDXL, SD3/3.5, Flux (all variants), Flux.2 (all variants), Pixart, HunyuanDiT, Lumina 2.0, HiDream, Qwen Image. ComfyUI-Manager is now under Comfy-Org with a new V2 release supporting model downloads and automatic dependency resolution. (4) **diffusers** supports SD3.5 via `StableDiffusion3Pipeline` and Flux.2 [dev] — `AutoPipelineForText2Image` auto-selects the correct pipeline.
+
 There are six dominant local inference surfaces for Stable Diffusion and Flux in 2025–2026, and they occupy three clearly different strategic niches:
 
 1. **Low-level, programmatic (Diffusers).** The `diffusers` Python library (`StableDiffusionXLPipeline`, `FluxPipeline`, `AutoPipelineForText2Image`) is the canonical low-level API. It is the only option when you need: (a) tight control over the forward pass (custom samplers, attention processors, classifier-free guidance rewriting), (b) `torch.compile` / TensorRT for sub-second SDXL latency, (c) multi-GPU `accelerate` launches, or (d) direct integration inside a Python service with no HTTP indirection.<sup>[1][3][5]</sup>
@@ -61,9 +63,9 @@ The rest of this document gives the API surface of each runtime, concrete batch 
 | **ComfyUI** | Node-graph JSON | HTTP `/prompt` + WS `/ws` | First-class (native + GGUF via `ComfyUI-GGUF`) | Yes, via Comfy-Manager ecosystem | Complex asset pipelines, custom nodes, ControlNet+LoRA stacks | Non-technical users; graphs can become unmaintainable |
 | **SwarmUI** | HTTP/WS JSON (`/API/<route>`) | HTTP + WS | Yes (uses ComfyUI backend under the hood) | Inherits from backend | Distributed / multi-GPU / multi-box orchestration | Lightweight single-user workflows |
 | **InvokeAI** | HTTP JSON (`/api/v1/...`) + WebSocket | HTTP + WS | Yes (since Invoke 5) | Yes (first-party) | Reproducible team workflows, combinatorial batches, Unified Canvas inpainting | Cutting-edge nodes the Invoke team hasn't wrapped yet |
-| **A1111 webui** | HTTP JSON (`/sdapi/v1/...`) | HTTP + Gradio | Limited (SD 1.5 / SDXL focused) | Yes via extension | SD 1.5 / SDXL nostalgia, large ecosystem of extensions | Flux; high-throughput APIs (Gradio bottleneck) |
+| **A1111 webui** | HTTP JSON (`/sdapi/v1/...`) | HTTP + Gradio | Limited (SD 1.5 / SDXL focused) | Yes via extension | SD 1.5 / SDXL legacy workflows; large extension ecosystem | Flux; high-throughput APIs (Gradio bottleneck); **maintenance-only since v1.10.1 (Jul 2024), no active development** |
 | **Forge** | Same as A1111 (`/sdapi/v1/...`) | HTTP + Gradio | **Yes** — native Flux + BNB NF4 + GGUF | Yes (+ `sd-forge-fluxtools-v2` for Flux CN) | Running Flux on 8–12 GB VRAM with an A1111-style API | Research-grade node-level control |
-| **Fooocus** | Gradio UI only (native) | HTTP via third-party `Fooocus-API` | SDXL-only natively | Via prompt style presets rather than explicit CN | One-click "looks good" asset generation for non-technical users | Any programmatic integration without the FastAPI wrapper |
+| **Fooocus** | Gradio UI only (native) | HTTP via third-party `Fooocus-API` | SDXL-only (no Flux, no SD3.5); **LTS/bug-fixes only** | Via prompt style presets rather than explicit CN | One-click "looks good" SDXL generation for non-technical users | Any programmatic integration without the FastAPI wrapper; newer models |
 
 Notes on the matrix:
 - **ControlNet / IP-Adapter**: ComfyUI has the widest coverage of new adapters (Flux ControlNet, Flux Fill, Flux Redux, IP-Adapter-Plus, InstantID) typically within days of release, because custom nodes are independently authored and don't need to wait for a UI team.<sup>[9][12][22]</sup>
@@ -86,6 +88,8 @@ pipe = AutoPipelineForText2Image.from_pretrained(
 ```
 
 `AutoPipelineForText2Image.from_pretrained` reads the checkpoint's `model_index.json` and returns the correct concrete pipeline class (`FluxPipeline`, `StableDiffusionXLPipeline`, `StableDiffusion3Pipeline`, etc.), so downstream code stays model-agnostic.<sup>[1]</sup>
+
+> **Updated 2026-04-21:** **SD 3.5** (Medium and Large) is fully supported in diffusers via `StableDiffusion3Pipeline` — same pipeline class as SD3, with architecture differences handled internally. SD3.5 ControlNets (Blur, Canny, Depth) are available via `StableDiffusion3ControlNetPipeline`. **Flux.2 [dev]** support landed in diffusers at launch. The `AutoPipelineForText2Image` route handles all of these automatically. Note: SD3.5 model weights are gated on HuggingFace and require accepting the Stability AI Community License before use.
 
 Canonical batch call (SDXL):
 
@@ -341,6 +345,8 @@ SwarmUI fans the 64-image request across available backends, then returns a sing
 | NF4 (BNB) | ~8–9 GB | ~92% | Forge native |
 
 Source: InsiderLLM Flux local guide, GenAI Content FLUX.2-dev-GGUF guide, and ComfyUI-GGUF model cards.<sup>[25][12]</sup> SDXL is ~8 GB FP16 / 6 GB FP8; SD 1.5 is ~4 GB FP16. For every runtime, the **T5-XXL encoder for Flux** (4.9 GB FP8) is billed separately from the DiT weights — low-VRAM setups must count both.
+
+> **Updated 2026-04-21:** **Flux.2 [dev] (32B)** requires approximately 80 GB VRAM at BF16; NVIDIA's FP8 optimizations (released with Flux.2 in Nov 2025) reduce this by ~40%, to roughly 48 GB — still requiring A100/H100-class hardware for local inference. **Flux.2 [klein] 4B** requires ~13 GB VRAM (RTX 3090/4070 class), and **Flux.2 [klein] 9B** requires ~29 GB VRAM (RTX 4090 class). Klein models are step-distilled to 4 steps and generate images in under 1 second on modern consumer hardware, making them the practical local inference choice for Flux.2-quality output. **SD 3.5 Large** (8B params) requires ~16 GB VRAM at FP16 for inference; SD 3.5 Medium (2.6B) fits in ~10 GB VRAM, making it a viable consumer-GPU alternative to SDXL with better prompt adherence.
 
 ### Docker / cloud
 

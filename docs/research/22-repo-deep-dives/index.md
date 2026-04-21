@@ -4,6 +4,8 @@ date: 2026-04-21
 role: index
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 22 — Repo Deep Dives
 
 Twenty file-level teardowns of the OSS repos that define (or fail to define) the prompt-to-asset stack: two prompt rewriters, five logo/icon MCPs + the Nutlope UI reference, four platform-spec fan-out libraries, two icon/brand-mark catalogues, matting + vectorizing primitives, the ComfyUI native-RGBA pair, the Vercel MCP skeleton trio, and the Vercel AI SDK v5 image surface. Each file enumerates metrics, license, architecture, gaps, and a USE/FORK/INSPIRE/SKIP decision. The synthesis (`SYNTHESIS.md`) aggregates 15 load-bearing insights, 10 cross-cutting patterns, 10 gaps, and 15 recommendations anchored to section citations.
@@ -31,7 +33,7 @@ Twenty file-level teardowns of the OSS repos that define (or fail to define) the
 | 17 | [17-comfyui-layerdiffuse.md](./17-comfyui-layerdiffuse.md) | huchenlei/ComfyUI-layerdiffuse | Primary self-hosted RGBA | Apache-2.0 code + OpenRAIL-M weights, 9-node minimum SDXL workflow; no Flux. |
 | 18 | [18-comfyui-easy-use.md](./18-comfyui-easy-use.md) | yolain/ComfyUI-Easy-Use | 3-node transparent-SDXL skeleton | GPL-3.0 — call over HTTP/WS, never vendor; adopt minimal workflow JSON. |
 | 19 | [19-vercel-mcp-stack.md](./19-vercel-mcp-stack.md) | vercel/mcp-handler + mcp-for-next.js + run-llama/mcp-nextjs | OAuth-complete skeleton | Apache-2.0 + MIT + MIT; fork `mcp-nextjs`, bump SDK, swap to `withMcpAuth`. |
-| 20 | [20-vercel-ai-sdk-image.md](./20-vercel-ai-sdk-image.md) | vercel/ai v5 `generateImage` | Typed image foundation | Apache-2.0; `ImageModelV2` + `ImageProvider` port over OpenAI/Google/fal/Replicate/Together/Luma/Fireworks. |
+| 20 | [20-vercel-ai-sdk-image.md](./20-vercel-ai-sdk-image.md) | vercel/ai v6 `generateImage` (stable, Dec 2025) | Typed image foundation | Apache-2.0; `generateImage` promoted to stable in v6; `ImageModelV2` + `ImageProvider` port over OpenAI/Google/fal/Replicate/Together/Luma/Fireworks. |
 
 ## Also in this folder
 

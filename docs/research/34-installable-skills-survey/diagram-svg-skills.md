@@ -3,6 +3,8 @@
 **Date:** 2026-04-20
 **Scope:** Installable skills for Claude Code, Cursor, Codex — diagram generation, SVG authoring, chart rendering, visual diff/review
 
+> **Updated 2026-04-21:** Cross-IDE SKILL.md portability confirmed through 2026: Claude Code (`~/.claude/skills/`), Cursor (`.cursor/rules/`), Windsurf (`.windsurf/rules/`), Gemini CLI (`~/.gemini/`), Cline (native SKILL.md support added 2026), Codex CLI, Antigravity. The `npx skills add` CLI and `/plugin marketplace add` remain the two standard install patterns. MCP spec 2025-11-25 is Latest Stable — Streamable HTTP transport is required for new remote MCP servers; SSE deprecated, backward compat until 30 June 2026. Remote MCP (e.g. Kroki API fallback in mermaid-skill) should target Streamable HTTP endpoints. Smithery registry: 7,000+ servers.
+
 ---
 
 ## Research Notes on Star Counts

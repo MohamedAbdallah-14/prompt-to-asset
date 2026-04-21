@@ -1,3 +1,11 @@
+> **📅 Research snapshot as of 2026-04-20.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
+> **Updated 2026-04-21:** Three material corrections applied across angle files:
+> 1. **MCP spec version**: Current stable spec is `2025-11-25`, not `2025-03-26`. Streamable HTTP transport and progress notification wire format are unchanged between the two.
+> 2. **SEP-1686 Tasks**: Tasks shipped as **experimental** in the `2025-11-25` spec. Claims that it was "not yet in the stable spec" are now wrong. It is safe to adopt with awareness that lifecycle semantics (retry, expiry) are still being finalized.
+> 3. **gpt-image-1 streaming**: OpenAI now supports native image streaming via `stream: true` + `partial_images` (0–3) on the Images API. The prior claim "no streaming; full image only" was stale. This opens a real partial-preview path without ComfyUI.
+> 4. **Claude Code transport**: Claude Code supports Streamable HTTP for remote MCP servers as of 2026. SSE transport is deprecated. Progress notifications are receivable over HTTP transport (with a caveat about a known bug #29688).
+
 # Research 32: Streaming & Real-Time UX for Agent Workflows
 
 **Date**: 2026-04-20  
@@ -35,11 +43,11 @@
 
 7. **Live SVG preview in IDE** — requires VS Code extension with webview or an external browser tab. The IDE's native code block display does not render SVG visually.
 
-### What does not exist yet (provider gap)
+### Partial pixel previews — what is available
 
-8. **Pixel-level intermediate frames** — only ComfyUI (local) delivers per-diffusion-step frames via WebSocket. All cloud providers (`gpt-image-1`, Ideogram, Recraft, Flux via fal.ai) return the final image only. Progress from these providers is queue position metadata, not visual data.
+8. **Pixel-level intermediate frames** — ~~only ComfyUI (local) delivers per-diffusion-step frames~~ **(updated 2026-04-21)**. As of April 2026: `gpt-image-1`, `gpt-image-1-mini`, and `gpt-image-1.5` support native image streaming via the OpenAI Images API (`stream: true`, `partial_images: 0–3`). The API emits progressive base64-encoded partial images during generation. ComfyUI (local) still delivers per-step frames via WebSocket. Ideogram, Recraft, and Flux via fal.ai still return the final image only; fal.ai progress events remain queue position metadata, not pixel data.
 
-9. **MCP async Tasks spec** — SEP-1686 call-now/fetch-later pattern is implemented by some platforms (WorkOS, AWS Bedrock) but not in the stable MCP spec as of April 2026. Monitor https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1391.
+9. **MCP async Tasks spec** — SEP-1686 Tasks shipped as **experimental** in the `2025-11-25` MCP spec. No longer a platform-specific extension — it is an official (experimental) primitive. SDK implementations (Python, Kotlin) are being tracked. Safe to adopt; lifecycle semantics (retry, expiry) are still being finalized. See https://modelcontextprotocol.io/community/seps/1686-tasks.
 
 ## Recommended Implementation Order
 
@@ -58,11 +66,18 @@ Phase 3 (future, multi-user deployment):
   - Replace EventEmitter progressBus with Redis pub-sub
   - Add BullMQ for concurrent api mode requests
   - Build companion browser preview panel
+
+Phase 3b (gpt-image-1 partial preview — now feasible):
+  - Pass stream:true + partial_images:2 on gpt-image-1 calls
+  - Pipe each partial frame to /events/:jobId SSE endpoint
+  - Render in companion browser pane as image builds up
 ```
 
 ## Critical Transport Caveat
 
-Claude Code uses stdio transport by default. `notifications/progress` is **silently discarded** over stdio. The progress infrastructure is only visible in:
+> **Updated 2026-04-21:** Claude Code now supports Streamable HTTP transport for remote MCP servers. SSE transport is deprecated in favour of HTTP. The statement below about stdio remains true for local stdio-connected servers, but is no longer a universal constraint.
+
+Claude Code uses stdio transport by default for local servers. `notifications/progress` is **silently discarded** over stdio. For HTTP-transport MCP servers, progress notifications are receivable by Claude Code. The progress infrastructure is also visible in:
 - Cursor (supports Streamable HTTP MCP)
 - Any HTTP-transport MCP host
 - A custom web UI subscribed to the sidecar SSE endpoint

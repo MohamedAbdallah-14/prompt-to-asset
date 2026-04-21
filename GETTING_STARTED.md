@@ -22,27 +22,29 @@ inside your AI coding assistant. `prompt-to-asset` does the rest:
 
 That's the headline. Three execution modes ship, and every single one can finish on $0:
 
-| Mode                   | Key? | How it works                                                                                                                                                                                                                                                                         |
-| ---------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `inline_svg`           | ❌   | Your AI assistant writes the `<svg>` directly in its reply, then `asset_save_inline_svg` writes the bundle to disk.                                                                                                                                                                  |
-| `external_prompt_only` | ❌   | The server gives you the enhanced prompt + a list of web UIs to paste into (Pollinations, HF Inference, Stable Horde, Google AI Studio "Nano Banana", Ideogram, Midjourney, Recraft, fal.ai, BFL Playground…). Save the result, call `asset_ingest_external` to finish the pipeline. |
-| `api` (free)           | ❌   | Zero-signup HTTP via Pollinations, anonymous Stable Horde queue, or HF free tier via `HF_TOKEN`. Routes to the same pipeline as paid `api`. Rate limits apply.                                                                                                                       |
-| `api` (paid)           | ✅   | Full server-driven pipeline with no rate limits — set any of `OPENAI_API_KEY`, `IDEOGRAM_API_KEY`, `RECRAFT_API_KEY`, `BFL_API_KEY`, `GEMINI_API_KEY`, `STABILITY_API_KEY`, `LEONARDO_API_KEY`, `FAL_API_KEY`.                                                                       |
+| Mode                   | Key? | How it works                                                                                                                                                                                                                                                                                                                                                       |
+| ---------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `inline_svg`           | ❌   | Your AI assistant writes the `<svg>` directly in its reply, then `asset_save_inline_svg` writes the bundle to disk.                                                                                                                                                                                                                                                |
+| `external_prompt_only` | ❌   | The server gives you the enhanced prompt + a list of web UIs to paste into (Cloudflare Workers AI, HF Inference, Pollinations, Stable Horde, Google AI Studio "Nano Banana" — free interactive UI only, no free API since 2025-12 — Ideogram, Midjourney, Recraft, fal.ai, BFL Playground…). Save the result, call `asset_ingest_external` to finish the pipeline. |
+| `api` (free)           | ❌   | Zero-signup HTTP via Pollinations, anonymous Stable Horde queue, or HF free tier via `HF_TOKEN`. Routes to the same pipeline as paid `api`. Rate limits apply.                                                                                                                                                                                                     |
+| `api` (paid)           | ✅   | Full server-driven pipeline with no rate limits — set any of `OPENAI_API_KEY`, `IDEOGRAM_API_KEY`, `RECRAFT_API_KEY`, `BFL_API_KEY`, `GEMINI_API_KEY`, `STABILITY_API_KEY`, `LEONARDO_API_KEY`, `FAL_API_KEY`.                                                                                                                                                     |
 
 ### Ranked zero-cost options
 
 Run `p2a doctor` to see which are live in your shell right now. Rough recommendation order:
 
 1. **inline_svg** — best for logos / favicons / icon packs. Instant, deterministic, zero network.
-2. **Google AI Studio** — set `GEMINI_API_KEY` from https://aistudio.google.com/apikey (free, no credit card). Routes to Gemini 3 Flash Image ("Nano Banana") — ~1,500 images/day free. Best quality-to-$0 ratio.
-3. **Cloudflare Workers AI** — set `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (both free). 10,000 neurons/day covers roughly 900 Flux Schnell images or 5,000 SDXL Lightning runs. Hosts Flux.2 dev/klein, SDXL, DreamShaper, Leonardo Phoenix, Lucid Origin.
+2. **Cloudflare Workers AI** — set `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (both free from https://dash.cloudflare.com → Workers AI). 10,000 neurons/day covers roughly 900 Flux-1-Schnell images or 5,000 SDXL-Lightning runs. Hosts Flux.2 dev/klein, Flux-1 Schnell, SDXL, DreamShaper, Leonardo Phoenix, Lucid Origin. Best free programmatic route for images.
+3. **HF Inference** — set `HF_TOKEN` from https://huggingface.co/settings/tokens (free read token). SDXL / SD3 / Flux dev+schnell hosted.
 4. **Pollinations.ai** — literal zero-signup: `curl -o out.png "https://image.pollinations.ai/prompt/<urlencoded>?model=flux&nologo=true"`. Rate limit ~1 req/15s anonymous; RGB only.
-5. **HF Inference** — set `HF_TOKEN` from https://huggingface.co/settings/tokens (free read token). SDXL / SD3 / Flux dev+schnell hosted.
-6. **Stable Horde** — anonymous kudos bucket works; queue-based, minutes to hours in the free lane. `HORDE_API_KEY` for priority.
+5. **Stable Horde** — anonymous kudos bucket works; queue-based, minutes to hours in the free lane. `HORDE_API_KEY` for priority.
+6. **Google AI Studio (paste-only)** — the web UI at https://aistudio.google.com is still free for interactive Nano Banana / Imagen generation. The API is no longer free (see note below). Generate in the UI, download the PNG, call `asset_ingest_external` to bring it into the pipeline.
 7. **Ideogram free weekly tier** — your existing `IDEOGRAM_API_KEY` works against ~10 credits/week (~40 images) without a paid sub. Watermark on free-tier output.
 8. **Leonardo free daily** — `LEONARDO_API_KEY` against 150 fast tokens/day; Phoenix, Lucid Origin, Kontext. Leonardo's ToS claims rights to generated output — read it.
-9. **Replicate trial** — `REPLICATE_API_TOKEN` gives a one-time signup credit, then metered. Useful as a unified fallback since Replicate hosts Flux 1.1 Pro, SDXL, SD3, Recraft V3, and Ideogram V3 behind one key.
+9. **Replicate trial** — `REPLICATE_API_TOKEN` gives a one-time signup credit, then metered. Useful as a unified fallback since Replicate hosts Flux 1.1 Pro, SDXL, SD3, Recraft V3/V4, and Ideogram V3 behind one key.
 10. **external_prompt_only** — paste the enhanced prompt into ChatGPT / Midjourney / your own account. Works with whatever sub you already pay for.
+
+**Why Google dropped off the free-API list.** In December 2025 Google removed all image-generation models from the universal Gemini free API tier. `gemini-3.1-flash-image-preview` (Nano Banana 2), `gemini-3-pro-image-preview` (Nano Banana Pro), `gemini-2.5-flash-image`, and all `imagen-4.0-*` variants now require a billing-enabled GCP project. An unbilled `GEMINI_API_KEY` returns HTTP 429 with `limit: 0` on image endpoints — that's a daily quota of zero, not a rate limit. The key still works on the free tier for text / multimodal / embeddings; only image-gen is gated. Paid pricing is Nano Banana $0.039/img, Imagen 4 Fast $0.02/img, Nano Banana Pro $0.067 (1K) / $0.101 (2K) / $0.151 (4K) — route via `GEMINI_API_KEY` after enabling billing, or use the free AI Studio web UI plus `asset_ingest_external` for a paste-only path.
 
 Other free routes that exist but aren't wired as first-class providers (cite them in `p2a doctor` or use manually):
 
@@ -165,21 +167,21 @@ See [`docs/install.md`](./docs/install.md) for per-IDE registration details.
 
 Every provider key is optional. Setting a key enables `api` mode for that provider; routing falls back to available providers automatically. The plugin does **not** require any key to be useful.
 
-| Variable                                         | Provider                             | Enables api mode for                                                        | Free tier?                 |
-| ------------------------------------------------ | ------------------------------------ | --------------------------------------------------------------------------- | -------------------------- |
-| `OPENAI_API_KEY`                                 | OpenAI `gpt-image-1` / `1.5`         | Transparent PNGs, text ≤ 3 words                                            | Paid                       |
-| `IDEOGRAM_API_KEY`                               | Ideogram 3 / 3 Turbo                 | 1–3 word wordmarks, transparent style                                       | Paid                       |
-| `RECRAFT_API_KEY`                                | Recraft V3                           | Native SVG, vector illustrations                                            | Paid                       |
-| `BFL_API_KEY`                                    | Black Forest Labs (Flux Pro/Flux.2)  | Photoreal hero art, multi-ref brand lock                                    | Paid                       |
-| `GEMINI_API_KEY`                                 | Google Imagen 4 / Gemini Flash Image | Photoreal, multimodal edits (up to 3 refs)                                  | **Free** (~1.5k/day)       |
-| `STABILITY_API_KEY`                              | Stability AI (SD 1.5/SDXL/SD3)       | Open-weight hosted + native `negative_prompt`                               | Paid                       |
-| `LEONARDO_API_KEY`                               | Leonardo Phoenix / Diffusion XL      | SDXL-derivative with presets                                                | Paid                       |
-| `FAL_API_KEY`                                    | fal.ai aggregator                    | Alt path for Flux / SDXL                                                    | Paid                       |
-| `HF_TOKEN`                                       | Hugging Face Inference API           | SDXL / SD3 / Flux dev+schnell hosted                                        | **Free** (read token)      |
-| `POLLINATIONS_TOKEN`                             | Pollinations.ai (optional)           | Higher rate limits (zero-key still works anon)                              | **Free**                   |
-| `HORDE_API_KEY`                                  | Stable Horde (optional)              | Priority in the community GPU queue (anon works)                            | **Free**                   |
-| `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Workers AI                | Flux.2/Schnell, SDXL, SDXL-Lightning, DreamShaper, Leonardo Phoenix + Lucid | **Free** (10k neurons/day) |
-| `REPLICATE_API_TOKEN`                            | Replicate                            | Flux 1.1 Pro, SDXL, SD3, Recraft V3, Ideogram V3                            | **Trial** (then paid)      |
+| Variable                                         | Provider                             | Enables api mode for                                                        | Free tier?                                                         |
+| ------------------------------------------------ | ------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `OPENAI_API_KEY`                                 | OpenAI `gpt-image-1` / `1.5`         | Transparent PNGs, text ≤ 3 words                                            | Paid                                                               |
+| `IDEOGRAM_API_KEY`                               | Ideogram 3 / 3 Turbo                 | 1–3 word wordmarks, transparent style                                       | Paid                                                               |
+| `RECRAFT_API_KEY`                                | Recraft V3/V4                        | Native SVG, vector illustrations (V4 primary; V3 for brand-style pipelines) | Paid                                                               |
+| `BFL_API_KEY`                                    | Black Forest Labs (Flux Pro/Flux.2)  | Photoreal hero art, multi-ref brand lock                                    | Paid                                                               |
+| `GEMINI_API_KEY`                                 | Google Imagen 4 / Gemini Flash Image | Photoreal, multimodal edits (up to 3 refs)                                  | Paid (text/multimodal free; image-gen needs billing since 2025-12) |
+| `STABILITY_API_KEY`                              | Stability AI (SD 1.5/SDXL/SD3)       | Open-weight hosted + native `negative_prompt`                               | Paid                                                               |
+| `LEONARDO_API_KEY`                               | Leonardo Phoenix / Diffusion XL      | SDXL-derivative with presets                                                | Paid                                                               |
+| `FAL_API_KEY`                                    | fal.ai aggregator                    | Alt path for Flux / SDXL                                                    | Paid                                                               |
+| `HF_TOKEN`                                       | Hugging Face Inference API           | SDXL / SD3 / Flux dev+schnell hosted                                        | **Free** (read token)                                              |
+| `POLLINATIONS_TOKEN`                             | Pollinations.ai (optional)           | Higher rate limits (zero-key still works anon)                              | **Free**                                                           |
+| `HORDE_API_KEY`                                  | Stable Horde (optional)              | Priority in the community GPU queue (anon works)                            | **Free**                                                           |
+| `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Workers AI                | Flux.2/Schnell, SDXL, SDXL-Lightning, DreamShaper, Leonardo Phoenix + Lucid | **Free** (10k neurons/day)                                         |
+| `REPLICATE_API_TOKEN`                            | Replicate                            | Flux 1.1 Pro, SDXL, SD3, Recraft V3/V4, Ideogram V3                         | **Trial** (then paid)                                              |
 
 See [`.env.example`](./.env.example) for the full list, including pipeline extension URLs.
 

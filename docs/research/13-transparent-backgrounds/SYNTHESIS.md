@@ -16,12 +16,13 @@ angles_indexed:
   - 13d-matting-models-birefnet-rmbg-u2net.md
   - 13e-end-to-end-transparent-pipelines.md
 native_rgba_models:
-  - gpt-image-1 / gpt-image-1-mini / gpt-image-1.5  (OpenAI, `background:"transparent"`)
-  - Recraft v3 (native for vector/icon styles; degraded via prompt alone)
-  - Ideogram 3.0 (dedicated `generate-transparent-v3` endpoint)
+  - gpt-image-1 / gpt-image-1-mini / gpt-image-1.5  (OpenAI, `background:"transparent"`; quality must be "medium" or "high")
+  - Ideogram 3.0 (dedicated `/ideogram-v3/generate-transparent` endpoint; speed tiers: FLASH/TURBO/BALANCED/QUALITY)
   - Adobe Firefly (UI/API transparent-PNG toggle)
   - LayerDiffuse on SD 1.5 / SDXL (OSS, arXiv:2402.17113)
-  - LayerDiffuse-Flux (OSS, RedAIGC, Dec 2024)
+  - LayerDiffuse-Flux (OSS, RedAIGC, AFL-3.0; NOTE: base Flux.1-dev is BFL Non-Commercial — commercial hosting needs BFL license)
+native_rgba_post_hoc_only:
+  - Recraft v3 (in-generation transparent-style flag unreliable as of 2025; use the Remove Background post-processor instead)
 no_alpha_models:
   - Gemini 2.5 Flash Image ("Nano Banana")
   - Gemini 3 Pro / Flash Image ("Nano Banana Pro / 2")
@@ -41,12 +42,14 @@ safe_rewrite_skeleton: >
   "isolated on a pure solid #FFFFFF white seamless studio background,
   edges crisp, no floor, no gradient, no vignette"
 default_matter_stack:
-  - BiRefNet (MIT, best quality, SOTA on DIS5K)
+  - BiRefNet (MIT, best quality, SOTA on DIS5K; use session="birefnet-general" or "birefnet-matting" for hair/glass)
   - BRIA RMBG 2.0 (quality peer, BUT CC-BY-NC-4.0 — commercial license required)
-  - rembg (wrapper, Apache-2.0, defaults to U²-Net / BiRefNet)
+  - rembg (wrapper, Apache-2.0; default model is U²-Net — must explicitly specify birefnet-general)
   - InSPyReNet via `transparent-background` (MIT, nicest CLI)
   - Difference matting via edit endpoint (for semi-transparency)
 ---
+
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
 
 # 13 · Transparent Backgrounds — Category Index
 
@@ -87,13 +90,18 @@ internalize.
    card explicitly reads: *"Transparent background: Not supported"*
    ([13a §3, 13c §1](./13a-rgba-architecture-layer-diffuse.md)).
 
-4. **Only two commercial model families emit real RGBA in April 2026.**
+4. **Three commercial model families emit real RGBA in April 2026.**
    OpenAI's `gpt-image-1` lineage (`background:"transparent"` is a first-
-   class API parameter, not a prompt hint) and Ideogram 3.0's dedicated
-   `generate-transparent-v3` endpoint. Recraft v3 advertises it but has
-   degraded since launch; its reliable path is the *post-hoc* "Remove
-   Background" tool ([13a §3 matrix](./13a-rgba-architecture-layer-diffuse.md);
-   [Recraft Canny thread](https://recraft.canny.io/feature-requests/p/png-with-a-transparent-background)).
+   class API parameter, not a prompt hint); Ideogram 3.0's dedicated
+   `/ideogram-v3/generate-transparent` endpoint (supports FLASH/TURBO/
+   BALANCED/QUALITY speed tiers, clean RGBA PNG, no post-processing); and
+   Recraft v3 — but only via the post-hoc "Remove Background" tool, as the
+   in-generation transparent-style flag has degraded since launch.
+   ([13a §3 matrix](./13a-rgba-architecture-layer-diffuse.md);
+   [Recraft Canny thread](https://recraft.canny.io/feature-requests/p/png-with-a-transparent-background);
+   [Ideogram API docs](https://developer.ideogram.ai/api-reference/api-reference/generate-transparent-v3)).
+
+> **Updated 2026-04-21:** Ideogram 3.0 `generate-transparent-v3` is confirmed active and production-ready. Route logo/icon/typography transparent requests here as a primary native-RGBA option alongside `gpt-image-1`.
 
 5. **LayerDiffuse is the only OSS architectural fix.** Zhang & Agrawala's
    SIGGRAPH 2024 paper ([arXiv:2402.17113](https://arxiv.org/abs/2402.17113))
@@ -240,12 +248,11 @@ model's edit endpoint.
 
 **Recraft v3's "native transparent" claim.** Recraft markets transparent
 output, but community feedback since launch ([Canny thread](https://recraft.canny.io/feature-requests/p/png-with-a-transparent-background))
-reports checkered/white backgrounds when the transparent-style flag is
-set alone. 13a classifies it as "degraded"; 13c lists it as native; 13e
-uses it as a primary fallback. Resolution: Recraft *is* reliable **only
-on vector/icon styles** (`vector_illustration`, `icon`); on photo-real
-styles it falls back to the post-hoc Remove-BG tool and should be
-treated as a post-matte path.
+reports that the in-generation transparent-style flag no longer produces
+reliable transparent backgrounds even on vector/icon styles as of 2025–2026.
+13c previously listed it as native; 13e previously used it as a primary fallback.
+
+> **Updated 2026-04-21 — Resolution:** Recraft's reliable transparency path in 2026 is the **post-hoc Remove Background API/tool**, not the in-generation transparent-style flag. The API does offer true SVG output (`response_format: "svg"`), which is intrinsically transparent; for PNG output with alpha, route through the Remove Background step regardless of style. All files in this category now classify Recraft V3 under `alpha_native_restricted` / post-hoc, not native in-generation.
 
 **LayerDiffuse vs difference matting on semi-transparency.** 13a cites
 the 97 % LayerDiffuse user-study preference as evidence that native
@@ -261,7 +268,10 @@ generation calls.
 them side-by-side. `gpt-image-1` wins on photographic content; Ideogram
 3.0 wins on typography and flat design. Neither universally dominates.
 Resolution: route by asset kind (photo/illustration → OpenAI, logo/
-typography/icon → Ideogram or Recraft vector).
+typography/icon → Ideogram 3.0). Recraft vector SVG is still a reliable
+path for simple marks when you want a true vector format. For RGBA PNG
+from Recraft, use their Remove Background post-processor, not the
+transparent-style flag.
 
 **BiRefNet vs BRIA RMBG 2.0 on hair.** 13d reports them as
 "indistinguishable to the eye on most images", with RMBG 2.0
@@ -279,10 +289,9 @@ Things no angle fully resolved; research directions for v2:
 - **No public benchmark for the "checker hallucination" rate per model
   per prompt.** 13c gives hand-measured ratios ("Nano Banana ~30 %")
   but there is no held-out test set the community can re-run.
-- **LayerDiffuse-Flux commercial licensing status is unclear.** The
-  `layerlora.safetensors` and `TransparentVAE.pth` weights inherit
-  Flux's Black Forest Labs license stack; this needs a legal read
-  before we ship it as a hosted backend.
+- **LayerDiffuse-Flux commercial licensing status — partially resolved.** The `layerlora.safetensors` and `TransparentVAE.pth` weights from `RedAIGC/Flux-version-LayerDiffuse` carry an AFL-3.0 license (Academic Free License 3.0, which permits commercial use). However, the underlying base model `Flux.1-dev` is non-commercial (BFL Non-Commercial License v2). Commercial self-hosting requires switching the base to `Flux.1-pro` under a BFL commercial license, or using BFL's hosted API. See `bfl.ai/licensing` for current BFL commercial terms.
+
+> **Updated 2026-04-21:** AFL-3.0 on the LoRA weights does not save you if the base model is non-commercial. Do not ship a hosted LayerDiffuse-Flux service without a BFL commercial agreement covering the base model.
 - **No benchmarks for LayerDiffuse vs difference-matting on
   *identical* prompts.** The LayerDiffuse user study compared against
   "generate-then-matte" with U²-Net; modern difference matting via
@@ -313,16 +322,19 @@ Things no angle fully resolved; research directions for v2:
 Maintain this capability table as the **first** gate in the pipeline:
 
 ```yaml
-alpha_native_protocol:          # pass the flag, prompt stays clean
+alpha_native_protocol:          # pass the flag/endpoint, prompt stays clean
   - gpt-image-1
   - gpt-image-1-mini
   - gpt-image-1.5                 # set `background:"transparent"`
   - ideogram-3.0                  # call `/ideogram-v3/generate-transparent`
-alpha_native_restricted:        # reliable only for specific styles
-  - recraft-v3                    # `style: vector_illustration | icon`
-alpha_via_oss_self_host:        # needs LayerDiffuse stack
+                                   # (speed tiers: FLASH / TURBO / BALANCED / QUALITY)
+alpha_native_restricted:        # reliable only via post-hoc tool, not in-generation
+  - recraft-v3                    # use the "Remove Background" post-processor;
+                                   # the in-generation transparent-style flag is unreliable
+alpha_via_oss_self_host:        # needs LayerDiffuse stack (non-commercial base)
   - stable-diffusion-xl + layer_xl_transparent_attn.safetensors
   - flux.1-dev + TransparentVAE.pth + layerlora.safetensors
+    # NOTE: flux.1-dev is BFL Non-Commercial; for commercial use, need BFL commercial license
 alpha_requires_post_matte:      # generate-on-white + matter
   - gemini-2.5-flash-image        # Nano Banana
   - gemini-3-pro-image            # Nano Banana Pro / 2
@@ -333,10 +345,14 @@ alpha_requires_post_matte:      # generate-on-white + matter
   - flux.1-dev / flux.1-pro (base)
 ```
 
+> **Updated 2026-04-21:** `ideogram-3.0` moved from `alpha_native_protocol` sub-note to confirmed primary entry. `recraft-v3` reclassified to `alpha_native_restricted` (in-generation transparent flag unreliable; post-hoc Remove Background tool is the reliable path). Flux.1-dev commercial licensing caveat added.
+
 Routing order: if the user has no model preference and transparency is
-required, default to **`gpt-image-1.5` → Recraft v3 (vector styles) →
-Ideogram 3.0 → post-matte fallback**. For self-hosted workloads, route
-to **LayerDiffuse-Flux** ([RedAIGC/Flux-version-LayerDiffuse](https://github.com/RedAIGC/Flux-version-LayerDiffuse)).
+required, default to **`gpt-image-1.5` (photographic/illustration) or
+`ideogram-3.0` (logo/typography/flat design) → Recraft v3 Remove Background
+(vector styles via post-hoc tool) → post-matte fallback**. For self-hosted
+workloads, route to **LayerDiffuse-Flux** ([RedAIGC/Flux-version-LayerDiffuse](https://github.com/RedAIGC/Flux-version-LayerDiffuse))
+only when you have a BFL commercial license for the base model.
 
 Key source: [13a §3 Model Capability Matrix](./13a-rgba-architecture-layer-diffuse.md),
 [13c §Plugin Implications](./13c-checkerboard-pixel-drawing-failure.md).
@@ -384,8 +400,9 @@ Model-choice ladder within the matting step:
 3. **InSPyReNet** (via `transparent-background`) — CLI/ergonomics tier.
 4. **U²-Net / `u2netp`** — CPU/mobile/offline fallback, Apache-2.0.
 5. **BRIA RMBG 2.0** — **only** if a Bria commercial license is in place.
-6. **Photoroom API** ($0.02/image) or **remove.bg API** ($0.20/image
-   HD) — managed tier.
+6. **Photoroom API** ($0.02/image basic, $0.10/image plus) or **remove.bg API** (credit-based, ~$0.05/image standard; HD varies — check `remove.bg/pricing`) — managed tier.
+
+> **Updated 2026-04-21:** remove.bg pricing moved to a credit model (1 credit ≈ $0.01; standard removal costs ~5 credits = ~$0.05/image at list price). The old "$0.20/image HD" figure is stale. Photoroom pricing confirmed at $0.02 basic / $0.10 plus as of 2026.
 
 Key source: [13d §Benchmark Table, §Speed vs Quality Pareto](./13d-matting-models-birefnet-rmbg-u2net.md),
 [13e §Python Pipeline](./13e-end-to-end-transparent-pipelines.md).
@@ -412,7 +429,7 @@ Edit-endpoint preference (pin-registration quality):
 **Nano Banana / Gemini 2.5-3 Flash Image edit ≈ `gpt-image-1` edit ≈
 Flux.1 Fill** ≫ fixed-seed SDXL ≫ Midjourney (unusable).
 
-Cost: 2× generation per asset (~$0.08–$0.50 at Dec 2025 prices).
+Cost: 2× generation per asset (~$0.08–$0.50 at April 2026 prices for Gemini/Nano Banana 2 and gpt-image-1 HQ respectively).
 Worth it for hero assets; overkill for thumbnails.
 
 Key source: [13b §Two-Color (Difference) Matting — Full Recipe](./13b-difference-matting-and-chroma-keying.md),

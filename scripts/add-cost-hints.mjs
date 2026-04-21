@@ -25,10 +25,13 @@ const HINTS = {
   "gpt-image-1": "$0.04/img (low quality) — up to $0.19 (high)",
   "gpt-image-1.5": "$0.04–0.19/img (parity with 1.0)",
   "dall-e-3": "$0.04/img (1024²) — deprecated 2026-05-12",
-  "imagen-3": "$0.03/img (Vertex AI)",
-  "imagen-4": "$0.04/img (Vertex AI)",
-  "gemini-3-flash-image": "free tier ~1,500/day; then $0.039/img",
-  "gemini-3-pro-image": "free tier limited; then ~$0.12/img",
+  "imagen-3": "$0.03/img (Vertex AI). No free API tier as of 2025-12.",
+  "imagen-4":
+    "$0.04/img paid; Imagen 4 Fast $0.02/img. No free API tier as of 2025-12; AI Studio web UI free for interactive use.",
+  "gemini-3-flash-image":
+    "No free API tier as of 2025-12; $0.039/img (Nano Banana). AI Studio web UI is free for interactive use.",
+  "gemini-3-pro-image":
+    "No free API tier as of 2025-12; Nano Banana 2 $0.067/img (1K), $0.101 (2K), $0.151 (4K). AI Studio web UI free for interactive use.",
   "sd-1.5": "$0.01/img (Stability Core)",
   sdxl: "$0.04/img (Stability Core)",
   "sd3-large": "$0.065/img (Stability SD3)",

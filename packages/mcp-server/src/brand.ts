@@ -5,6 +5,10 @@ import type { BrandBundle } from "./types.js";
 
 /**
  * Parse brand sources into a canonical BrandBundle.
+ *
+ * Source: docs/research/15-style-consistency-brand/15d-machine-readable-brand-bundle.md
+ * Source: docs/research/15-style-consistency-brand/15c-brand-color-palette-enforcement.md
+ *
  * Supported:
  *   - `brand.json` (native format)
  *   - DTCG tokens (`$value` / `$type` structure)

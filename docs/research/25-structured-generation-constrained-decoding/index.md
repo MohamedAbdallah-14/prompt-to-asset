@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 25 — Structured Generation Constrained Decoding
 
 Outlines / Instructor / Pydantic-TS validation, SVG grammar/schema enforcement, AssetSpec schema design, runtime validation patterns, MCP tool design, tool-schema best practices.

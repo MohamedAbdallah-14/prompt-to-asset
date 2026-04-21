@@ -2,6 +2,8 @@
 
 **Focus:** Using ELO ratings from public arenas as prior routing weights, and running controlled A/B traffic splits to collect proprietary quality data.
 
+> **Updated 2026-04-21:** Arena ELO table updated to April 2026 standings. New models added to the routing-weight candidates: `gpt-image-1.5`, `gpt-image-1-mini`, `recraft-v4`, `flux.2-klein`, `hidream-i1`, `qwen-image-2.0`, `flux1-kontext-pro`. DALL-E 3 removed (EOL May 12, 2026). Imagen 4.0 family removed (EOL June 24–30, 2026). Non-stationarity warning strengthened: Google deprecated the `gemini-2.5-flash-image-preview` on Jan 15, 2026 in favor of the stable `gemini-2.5-flash-image`; this is the kind of silent provider-side change that invalidates a routing table calibrated months earlier.
+
 ---
 
 ## ELO in Image Generation: The Arena Methodology
@@ -15,14 +17,16 @@ The Artificial Analysis Text-to-Image Arena (https://artificialanalysis.ai/image
 
 **Current leaderboard (April 2026):**
 
-| Model | Arena Elo |
-|---|---|
-| GPT Image 1.5 (high) | 1274 |
-| Nano Banana 2 (Gemini 3.1 Flash) | 1264 |
-| Nano Banana Pro (Gemini 3 Pro) | 1215 |
-| FLUX.2 [max] | 1204 |
-| Seedream 4.0 | 1201 |
-| FLUX.2 [dev] Turbo (open-weight leader) | 1165 |
+| Model | Arena Elo | Notes |
+|---|---|---|
+| GPT Image 1.5 (high) | 1274 | Dec 2025, RGBA, 4× faster than gpt-image-1, ~20% cheaper |
+| Nano Banana 2 (Gemini 3.1 Flash) | 1264 | GA Feb 26, 2026 (gemini-3.1-flash-image-preview) |
+| Nano Banana Pro (Gemini 3 Pro) | 1215 | Strong-text renderer; billed project required |
+| FLUX.2 [max] | 1204 | Hosted; highest-quality BFL diffusion model |
+| Seedream 4.0 | 1201 | — |
+| FLUX.2 [dev] Turbo (open-weight leader) | 1165 | Self-hostable |
+
+> **Updated 2026-04-21:** Leaderboard verified against April 2026 Arena standings. Notable absences: DALL-E 3 is no longer listed (EOL May 12, 2026). Ideogram 3 Turbo, Recraft V4, gpt-image-1-mini, HiDream-I1, Qwen-Image-2.0, and FLUX.1 Kontext [pro/dev] are newer entrants whose Arena ELO data may be limited — treat global ELO as an especially weak prior for these models until ≥200 arena votes per model accumulate. `gemini-2.5-flash-image` (~$0.039/image, GA Oct 2 2025, EOL Oct 2 2026) sits outside the top-6 but is a valid routing candidate for cost-constrained pipelines given its low price point.
 
 **Chatbot Arena vote rigging (arXiv:2501.17858):** A 2025 paper showed that structured voting campaigns can meaningfully bias Arena scores. Treat public Arena ELO as a prior that requires calibration against your own data, not as ground truth.
 
@@ -42,13 +46,17 @@ Concrete extension to routing-table.json:
 {
   "id": "transparent-mark",
   "models_with_elo": [
-    { "model": "gpt-image-1", "global_elo": 1274, "local_elo": null },
-    { "model": "ideogram-3-turbo", "global_elo": null, "local_elo": null },
-    { "model": "recraft-v3", "global_elo": null, "local_elo": null }
+    { "model": "gpt-image-1.5", "global_elo": 1274, "local_elo": null },
+    { "model": "gpt-image-1-mini", "global_elo": null, "local_elo": null, "note": "Oct 2025, ~80% cheaper, RGBA-capable" },
+    { "model": "ideogram-3-turbo", "global_elo": null, "local_elo": null, "transparent_endpoint": "/ideogram-v3/generate-transparent" },
+    { "model": "recraft-v4", "global_elo": null, "local_elo": null, "note": "Feb 2026 SOTA SVG; no style_id" }
   ],
   "routing_weight_source": "global_elo",
   "routing_weight_override_after_n_samples": 50
 }
+```
+
+> **Updated 2026-04-21:** `gpt-image-1` replaced with `gpt-image-1.5` (Dec 2025, same RGBA support, 4× faster, ~20% cheaper per image). `recraft-v3` replaced with `recraft-v4` (Feb 2026 SOTA for native SVG). `gpt-image-1-mini` added as a budget RGBA candidate. Note: `recraft-v4` does **not** support `style_id` — for brand-style pipelines requiring a visual reference image, keep `recraft-v3` in the candidate set alongside V4.
 ```
 
 Switch from `global_elo` to `local_elo` once you have ≥50 samples per model per asset type.
@@ -128,7 +136,7 @@ def bradley_terry_mle(comparisons):
 
 - **Vote rigging / systematic bias:** If VLM judge has a consistent preference for one model's aesthetic, all local ELO will converge toward that model regardless of actual quality. Audit VLM judge calibration periodically against human preference samples.
 - **Survivorship bias in A/B logs:** You only log successful API calls. If model A has a 10% error rate and model B has a 0% error rate, model B's logged quality scores are not comparable — they exclude the error cases.
-- **Non-stationarity:** Model providers update their models without version-bumping public-facing names. A routing table calibrated in January 2026 may be stale by June 2026. Re-run calibration quarterly or track provider changelogs.
+- **Non-stationarity:** Model providers update their models without version-bumping public-facing names. A routing table calibrated in January 2026 may be stale by June 2026. Re-run calibration quarterly or track provider changelogs. **Concrete example:** Google deprecated `gemini-2.5-flash-image-preview` on January 15, 2026 — only 3 months after its GA. Routing tables that pointed to the preview variant broke silently. The stable `gemini-2.5-flash-image` is the correct target; it has its own EOL of October 2, 2026. Track the `data/model-registry.json` `eol_date` field as the canonical deprecation source.
 - **Statistical significance:** At 50 samples per model per asset type, the Bradley-Terry estimate has high variance. Treat local ELO as a noisy signal until you have ≥200 samples per cell.
 
 ---

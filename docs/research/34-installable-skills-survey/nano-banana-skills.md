@@ -1,3 +1,5 @@
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # Nano Banana Installable Skills Survey
 
 **Date:** 2026-04-20  
@@ -573,6 +575,8 @@ Description: "Generate, edit, and restore images using Google Gemini — from an
 ## Cross-Repo Synthesis
 
 ### Model Status as of April 2026
+
+> **Updated 2026-04-21:** Status confirmed current. `gemini-3-pro-image-preview` remains dead as of April 21, 2026 — no reinstatement announced. `gemini-3.1-flash-image-preview` (Nano Banana 2) is active. Gemini image API free tier was removed December 2025; all programmatic generation requires a billed project. For zero-key generation, use Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day free), HF Inference (free HF_TOKEN), or Pollinations. The `kingbootoshi/nano-banana-2-skill` skill remains the most-copied Gemini image skill despite the free-tier removal; its star count reflects historical adoption, not current zero-key viability.
 
 **Critical finding:** `gemini-3-pro-image-preview` (Nano Banana Pro) was shut down by Google on March 9, 2026. Five of the six primary repos are broken or partially broken as of the survey date:
 

@@ -230,7 +230,9 @@ Favicons are blocking requests on the *critical path* in Chrome, Firefox, and Sa
 
 ## WCAG / A11Y Checklist
 
-WCAG 2.2 (the operative version as of Oct 2023) and EN 301 549 v3.2.1 (EU public-sector requirement, normatively referencing WCAG 2.1 AA but commonly audited against 2.2) govern image accessibility. The relevant success criteria:
+WCAG 2.2 (operative since Oct 2023, approved as ISO/IEC international standard in 2025) and EN 301 549 v3.2.1 (EU public-sector requirement, currently normatively referencing WCAG 2.1 AA but commonly audited against 2.2) govern image accessibility.
+
+> **Updated 2026-04-21:** EN 301 549 **v4.1.1** is expected in 2026 and will normatively incorporate WCAG 2.2 (in support of the European Accessibility Act, EU 2019/882). Until v4.1.1 is published, v3.2.1 (WCAG 2.1 AA) remains the legal baseline for EU public-sector web content, but auditors routinely apply WCAG 2.2 AA in practice. Treat WCAG 2.2 AA as your target ceiling to be compliant with both current and forthcoming EN 301 549. The relevant success criteria:
 
 - **1.1.1 Non-text Content (Level A)** — every non-text element needs a programmatically determinable text alternative.
 - **1.4.5 Images of Text (Level AA)** — avoid baking text into raster images unless (a) essential (logos/wordmarks) or (b) user-customizable.
@@ -278,13 +280,16 @@ Two distinct SEO surfaces consume generated assets: **favicons** (the little ico
 
 ### 1. Favicons that Google and Bing will actually use
 
-Google's favicon documentation (`developers.google.com/search/docs/appearance/favicon-in-search`) requires:
+Google's favicon documentation (`developers.google.com/search/docs/appearance/favicon-in-search`) requires (last updated 2026-02-04):
 
-- A multiple-of-48-pixel square raster (48, 96, 144, 192 …) or an SVG.
+> **Updated 2026-04-21:** Google updated its favicon guidelines in late 2024. The hard minimum is now **8×8 px** (any square, at least 8 px per side), but Google recommends **≥48×48 px** and ideally a multiple of 48 (48, 96, 144, 192 …). SVG favicons have no specific size constraint. Google now accepts `rel="icon"` as the primary signal; `rel="shortcut icon"` and `rel="apple-touch-icon"` are also honoured as fallbacks. The "multiple of 48px" requirement that appeared in older documentation has been softened to a strong recommendation; an 8×8px favicon satisfies the minimum but will render poorly.
+
+- **Minimum**: 8×8 px square raster, or SVG (no size constraint).
+- **Recommended**: ≥48×48 px; ideally a multiple of 48 (48, 96, 144, 192 …) for crisp rendering across surfaces.
 - The file must be crawlable (not blocked by robots.txt).
-- `rel` attribute value of `icon`, `shortcut icon`, or `apple-touch-icon`.
+- `rel` attribute value of `icon`, `shortcut icon`, or `apple-touch-icon` are all accepted.
 - Content-Type header matching the format (`image/png`, `image/svg+xml`, `image/x-icon`).
-- A recognizable square logo — Google may ignore favicons that are "inappropriate" or "replaced with a default globe icon."
+- A recognizable square logo — Google may ignore favicons that are "inappropriate" or replaced with a default globe icon.
 
 **Bing** (from the Microsoft Q&A + Bing Webmaster FAQ):
 
@@ -294,12 +299,15 @@ Google's favicon documentation (`developers.google.com/search/docs/appearance/fa
 
 **Minimum generator-emitted HTML**:
 
+> **Updated 2026-04-21:** Use `sizes="32x32"` (not `sizes="any"`) on the `.ico` link. The `sizes="any"` value causes Chrome to download **both** the ICO and SVG, preferring the ICO — the bug was documented by Evil Martians and the fix (pinning to `32x32`) has been the recommendation since mid-2023. The `msapplication-TileImage`/`msapplication-TileColor` meta tags are IE11 / Windows 8 legacy (IE11 EOL June 2022) and are no longer read by Chromium Edge in PWA contexts — the web app manifest `theme_color` takes over. They are retained here only as a reference for legacy-mode output.
+
 ```html
-<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" type="image/svg+xml" href="/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<!-- Legacy only (IE11 / Win8 pinned-site): -->
 <meta name="msapplication-TileColor" content="#ffffff">
 <meta name="msapplication-TileImage" content="/icon-144.png">
 <meta name="theme-color" content="#ffffff">

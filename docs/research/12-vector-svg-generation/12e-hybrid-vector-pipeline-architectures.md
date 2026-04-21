@@ -26,7 +26,9 @@ word_count_target: 2000-3500
 No single generator wins at every class of vector asset. The production-grade answer in 2025-2026 is a **router** that inspects the asset request (type, complexity, text content, brand strictness, output format) and dispatches to one of several pipelines:
 
 1. **LLM-authored SVG** (Claude, GPT-5, Gemini) — best for simple geometric logos, flat icons, and app-icon glyphs where the shape can be described in <30 paths. Near-zero marginal cost; fully text-editable; survives arbitrary resize.
-2. **Native vector diffusion / commercial vector model** (Recraft V3/V4 SVG, SVGFusion, IconShop) — best for illustrative spots, stickers, and mid-complexity vector art that exceeds what an LLM can "draw" in code but still needs clean editable paths.
+2. **Native vector diffusion / commercial vector model** (Recraft V4 SVG / V4 Pro SVG, SVGFusion, IconShop) — best for illustrative spots, stickers, and mid-complexity vector art that exceeds what an LLM can "draw" in code but still needs clean editable paths.
+
+> **Updated 2026-04-21:** Recraft **V4** (including V4 Vector and V4 Pro Vector) was released in **February 2026** and is the current production model. Recraft V3 (released October 2024) is still accessible via API but V4 is now the recommended default. Pricing changed substantially: V4 Vector is **$0.08/image**, V4 Pro Vector is **$0.30/image** (vs the previously documented ~$0.01/call for V3 vectorize). Figma's native **Vectorize** tool launched **February 2026** (Full-seat users on Pro/Org/Enterprise plans with AI enabled) — it is an AI raster-to-vector converter integrated directly on the Figma canvas, directly competitive with the vtracer/Recraft workflow for designer-in-Figma contexts.
 3. **AI raster → vectorizer** (Flux / SDXL / Nano Banana → vtracer / potrace / vectorizer.ai) — best when the source model has the right aesthetic (e.g. flat 2D illustration, isometric, line art) but the target format is SVG. Path count is the quality signal.
 4. **Raster-only (skip SVG entirely)** — the correct decision for photoreal heroes, OG images, splash screens, any asset bound for PNG/JPEG anyway.
 5. **Human-in-the-loop fallback** — route failed auto-vectorizations to `vectorizer.ai` (paid credits) or Recraft's "vectorize" endpoint; keep a queue for designer touch-up only when quality gates fail twice.
@@ -174,6 +176,8 @@ Best for: spot illustrations, sticker packs, mid-complexity brand art.
 - Recraft also exposes a **/vectorize** endpoint — this is a clean "fallback to a paid SOTA vectorizer" when self-hosted vtracer produces junk. vectorizer.ai is the other market-standard option; both are safe commercial escape hatches.
 - For a fully open-source stack, the substitute for Recraft is either **SVGFusion** (arXiv:2412.10437 — VP-VAE + VS-DiT, text-conditioned in vector latent space, avoids slow SDS) or **IconShop** (kingnobro/IconShop, autoregressive transformer over SVG command sequences — strong for monochrome icons). Both need GPUs and are heavier to operate than Recraft's API.
 
+> **Updated 2026-04-21:** As of April 2026, SVGFusion's code and model weights are **not yet publicly released** — the project page (ximinng.github.io/SVGFusionProject/) lists them as "coming soon." The SVGX-SFT-1M training dataset is available on HuggingFace, but the model itself is not yet runnable without the released weights. Treat SVGFusion as a research reference rather than a production OSS option until the code drops.
+
 ### Blueprint 3 — "Flux raster + vtracer" (brand-tunable, fully open)
 
 Best for: illustrative styles that must match a LoRA/IP-Adapter aesthetic; any scenario where the team already controls a Flux/SDXL pipeline.
@@ -263,7 +267,9 @@ Three layers of savings, compounding.
    - **Recraft / SVG models**: call with the same seed + minimal prompt delta; Recraft and most diffusion providers respect seeds.
    - **Flux raster**: cache VAE latents of the base image; reuse for color/variant passes. ComfyUI/Diffusers workflows report 30-40% speedups from VAE-latent caching, and ~43% from text-embedding caching when prompts repeat.
 4. **Asset-level dedup.** Hash the rendered PNG (perceptual hash, pHash) across all generated assets. Two distinct prompts often converge on visually identical logos; serve the existing artifact and record the new prompt as an alias.
-5. **Tiered model routing.** Default to the cheapest model that satisfies the asset class. LLM-SVG (Pipeline A) is ~$0.003/request at current Claude 4 / GPT-5 rates; Recraft V4 SVG is ~$0.04/image; Flux.1-schnell on Replicate is ~$0.003/image but adds vtracer/SVGO infra. Price and quality are not monotonic — only escalate when quality gates fail.
+5. **Tiered model routing.** Default to the cheapest model that satisfies the asset class. LLM-SVG (Pipeline A) is ~$0.003/request at current Claude 4 / GPT-5 rates; Recraft V4 Vector is ~$0.08/image (V4 Pro Vector ~$0.30); Flux.1-schnell on Replicate is ~$0.003/image but adds vtracer/SVGO infra. Price and quality are not monotonic — only escalate when quality gates fail.
+
+> **Updated 2026-04-21:** The "$0.04/image" figure cited for Recraft V4 SVG was the V4 *raster* price. Recraft V4 Vector (native SVG output) is $0.08/image; V4 Pro Vector is $0.30/image. Adjust cost models accordingly — Pipeline B is now ~$0.08–$0.30 per asset, not ~$0.04.
 
 Sample cache key:
 
@@ -285,7 +291,9 @@ Normalizing the user prompt (lower-case, whitespace-collapse, strip emoji) is wh
 ## Commercial Case Studies (public info only)
 
 - **Canva Magic Studio / Magic Layers**: public product pages and Alibaba's side-by-side analysis describe a proprietary "Design Model" that **ingests raster** (PNG/JPG), then separates typography / graphics / layout into editable layers. The internal output is vector-like editable components, but upstream generation leans raster; vectorization is a post-hoc analysis step. Implication: Canva routes raster-first, then lifts structure — opposite of Recraft's vector-first stance.
-- **Figma Vectorize tool** (shipped mid-2025): raster → vector directly on canvas. Figma's plugin-model architecture forces outputs to play with variables, components, and auto-layout, so any AI that generates inside Figma is implicitly producing vector. The Vectorize tool itself is an AI raster-to-vector converter — analogous to vtracer with ML post-processing.
+- **Figma Vectorize tool** (launched **February 2026**, not mid-2025 as previously noted): raster → vector directly on canvas, one-click conversion of placed raster images to editable vectors. Available to Full-seat users on Professional, Organization, and Enterprise plans with AI enabled; also available in Figma Slides and Buzz. Uses AI credits. Figma's plugin-model architecture forces outputs to play with variables, components, and auto-layout, so any AI that generates inside Figma is implicitly producing vector. The Vectorize tool is an AI raster-to-vector converter — analogous to vtracer with ML post-processing, now integrated into the core canvas workflow.
+
+> **Updated 2026-04-21:** Previous "mid-2025" launch date was incorrect. Figma Vectorize launched February 2026 per Figma's official blog post ("For the Love of Craft: Vectorize Images in Figma Design and Draw").
 - **Gamma**: image options are configurable per deck (`imageOptions.source`: `aiGenerated`, `webFreeToUseCommercially`, `noImages`). Public docs do not describe a dedicated vector pipeline; presentations export as PDF/PPTX/PNG, so Gamma's routing is effectively "raster for illustrations, native shapes for diagrams".
 
 The common thread: **every commercial tool operates a router, not a model**. The open-source blueprint should mirror this.
@@ -308,8 +316,10 @@ The common thread: **every commercial tool operates a router, not a model**. The
 
 ## References
 
-- Recraft V4 SVG / V4 Pro SVG — Replicate: https://replicate.com/recraft-ai/recraft-v4-svg ; https://replicate.com/recraft-ai/recraft-v4-pro-svg
+- Recraft V4 Vector / V4 Pro Vector — Replicate: https://replicate.com/recraft-ai/recraft-v4-svg ; https://replicate.com/recraft-ai/recraft-v4-pro-svg — released **February 2026**; $0.08/image (Vector) / $0.30/image (Pro Vector).
+- Recraft V4 release blog: https://www.recraft.ai/blog/introducing-recraft-v4-design-taste-meets-image-generation
 - Recraft API docs & vectorize endpoint: https://www.recraft.ai/docs/api-reference/getting-started ; https://recraft.ai/docs/using-recraft/image-editing/format-conversions-and-scaling/vectorizing
+- Figma Vectorize launch (Feb 2026): https://www.figma.com/blog/introducing-vectorize/
 - VectorFusion (CVPR 2023): https://vectorfusion.github.io/
 - SVGFusion (arXiv:2412.10437): https://arxiv.org/html/2412.10437v1
 - SVGDreamer: https://github.com/ximinng/SVGDreamer
@@ -323,6 +333,6 @@ The common thread: **every commercial tool operates a router, not a model**. The
 - Prompt caching economics (2026 guide): https://tokenmix.ai/blog/prompt-caching-guide
 - Prompt hashing / duplicate detection: https://dev.to/gauravdagde/prompt-hashing-for-duplicate-detection-cutting-llm-waste-with-sha-256-5hfm
 - Z-Image / diffusion caching (VAE latents, text embeddings): https://zimage.net/blog/z-image-caching-strategies-eliminate-redundant-computations
-- Figma Vectorize tool: https://www.yet-another-changelog.ai/changelog/figma-ai-vectorize-tool
+- Figma Vectorize tool (launched Feb 2026): https://www.figma.com/blog/introducing-vectorize/ ; https://www.yet-another-changelog.ai/changelog/figma-ai-vectorize-tool
 - Canva Magic Layers / Magic Studio analysis: https://techmitra.in/what-is-canva-magic-layers/ ; https://www.alibaba.com/product-insights/canva-magic-studio-vs-figma-ai-for-rapid-prototyping-is-ai-generation-speeding-up-ui-design-or-creating-unusable-mockups.html
 - Gamma API: https://developers.gamma.app/get-started ; https://developers.gamma.app/guides/generate-api-parameters-explained

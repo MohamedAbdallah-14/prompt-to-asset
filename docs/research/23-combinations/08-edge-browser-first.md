@@ -6,6 +6,8 @@ optimization_criterion: "Edge/browser-first — WASM + edge + WebMCP"
 date: 2026-04-19
 ---
 
+> **Updated 2026-04-21:** (1) `gpt-image-1.5` is the current primary OpenAI image model; `gpt-image-1` is "previous." `gpt-image-1.5` supports native streaming: `stream: true` + `partial_images: 0–3`. (2) DALL-E 3 API shuts down May 12, 2026 — remove any DALL-E 3 router slots. (3) Recraft V4 (Feb 2026) is SOTA for native SVG; V3 stays only for existing `style_id` portability. V4 pricing: $0.04 raster / $0.08 vector. (4) Ideogram transparency uses the `/ideogram-v3/generate-transparent` dedicated POST endpoint — `style:"transparent"` does not exist as a parameter. (5) MCP spec 2025-11-25 is Latest Stable as of April 2026. (6) Flux `negative_prompt` raises TypeError on ALL Flux variants — use affirmative positive-prompt framing.
+
 # Combination #8 — Edge / browser-first (WASM + edge + WebMCP)
 
 ## Criterion
@@ -110,10 +112,14 @@ uses a small pure-JS `estimate_foreground_ml` port (or we ship
 byte-identical output to the native Rust binary. Loaded into a dedicated
 **Web Worker** with lazy import. End-to-end 150–400 ms on a 1024² logo,
 ≤2–3 s on 4096². Presets (`logo`, `icon`, `illustration`) are curated on
-top of the raw `Config` flags. **SVGO** runs in a sibling Worker
-(`svgo/dist/svgo.browser.js`, ~100 KB) with the conservative
-`preset-default` — `viewBox` preserved, float precision 2, metadata
+top of the raw `Config` flags. **SVGO v4** runs in a sibling Worker
+(`svgo/dist/svgo.browser.js`, ~100 KB) with `preset-default` — `viewBox`
+is preserved by default in v4 (both `removeViewBox` and `removeTitle` are
+now **disabled** in `preset-default`; the old `removeViewBox: false` override
+is a no-op and should be removed from configs), float precision 2, metadata
 stripped.
+
+> **Updated 2026-04-21:** SVGO v4 changed `preset-default`: `removeViewBox` and `removeTitle` are off by default. Remove any `removeViewBox: false` overrides — they are inert in v4. To intentionally strip the viewBox add `'removeViewBox'` explicitly to the plugins array.
 
 **In-browser bitmap codecs:** **`@jsquash/png` + `@jsquash/resize`**
 (18/a) — WASM fork of Squoosh, lanczos3 resampling, works in browsers
@@ -234,8 +240,8 @@ generation API, orchestrated through the **Vercel AI SDK v5** (22/20)
 | Capability | Primary hosted | Fallback | Runtime |
 |---|---|---|---|
 | Logo with text | Ideogram v3 (fal / OpenRouter) | gpt-image-1.5 | Edge route, streams response |
-| Transparent mark | gpt-image-1.5 `background:"transparent"` | Ideogram v3 `style:"transparent"` | Edge route |
-| Native SVG | Recraft v3 (fal) | LLM-authored SVG (Claude) on edge | Edge route |
+| Transparent mark | gpt-image-1.5 `background:"transparent"` (supports `stream:true` + `partial_images:0–3`) | Ideogram v3 `/ideogram-v3/generate-transparent` endpoint (NOT `style:"transparent"`) | Edge route |
+| Native SVG | Recraft V4 Vector (Feb 2026, $0.08/img, SOTA) | Recraft V3 only if existing `style_id` portability needed; then LLM-authored SVG (Claude) | Edge route |
 | Fast draft | **Workers AI Flux schnell** | fal Flux schnell | Worker |
 | Photoreal hero | gpt-image-1.5 / FLUX.2 pro (Together) | Flux Pro (fal) | Edge route |
 | Character consistency | FLUX.2 pro with 8 refs (Together) | Seedream 4.5 | Edge route |

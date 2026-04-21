@@ -1,3 +1,5 @@
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # Research → implementation map
 
 Every research category in [`docs/research/`](./research/) is listed below
@@ -35,7 +37,7 @@ points so the linkage survives refactors.
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1a CFG / negative-prompt   | `data/model-registry.json` encodes `negative_prompt_support` per model (`ignored`, `native`, `error`, `supported`, `--no flag`). `src/rewriter.ts` emits `negative_prompt` only for SD family; **drops it on Flux** (documented in the registry as `"error"`). |
 | 1c LLM prompt expansion    | `src/rewriter.ts` does LLM-style prompt expansion deterministically (no LLM call). Pads Imagen/Gemini prompts to ≥30 words so their invisible rewriter does not fire.                                                                                          |
-| 1d Prompt-weighting syntax | Not wired. Tag-salad mode emits flat tags; token-weighting (`(word:1.2)`) deferred until a caller requests it.                                                                                                                                                 |
+| 1d Prompt-weighting syntax | Partially wired. Tag-salad mode emits flat tags with `BREAK` separator (subject before BREAK, background after — prevents color leakage on SDXL); token-weighting (`(word:1.2)`) deferred until a caller requests it.                                          |
 
 ## 02 — Image Generation Models
 
@@ -75,11 +77,11 @@ points so the linkage survives refactors.
 
 ## 07 — Midjourney / Ideogram / Recraft
 
-| Angle                          | Implementation                                                                                                                                                                                                                                |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 7a Midjourney v6/v7            | `src/rewriter.ts` dialect `"prose+flags"` branch emits `--ar`, `--v 7`, `--style raw`, optional `--sref`. `data/paste-targets.json` routes MJ to web + Discord (no API).                                                                      |
-| 7b Ideogram wordmark rendering | Router `logo-with-text-1-3-words` primary = `ideogram-3-turbo`. `data/model-registry.json` records `text_ceiling_chars: 60` and `"style: transparent"` availability. `src/rewriter.ts` `"prose+quoted"` dialect keeps the wordmark in quotes. |
-| 7c Recraft V3 native SVG       | `data/model-registry.json` `recraft-v3` is the only model with `native_svg: true`. Router `logo-text-free-vector` primary. `src/providers/recraft.ts` requests `output_format: "svg"`.                                                        |
+| Angle                          | Implementation                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 7a Midjourney v6/v7            | `src/rewriter.ts` dialect `"prose+flags"` branch emits `--ar`, `--v 7`, `--style raw`, optional `--sref`. `data/paste-targets.json` routes MJ to web + Discord (no API).                                                                                                                                                                                          |
+| 7b Ideogram wordmark rendering | Router `logo-with-text-1-3-words` primary = `ideogram-3-turbo` with `magic_prompt: OFF`. `data/model-registry.json` records `text_ceiling_chars: 60`. Transparency via dedicated `/ideogram-v3/generate-transparent` endpoint with `rendering_speed` param (not `style: "transparent"`). `src/rewriter.ts` `"prose+quoted"` dialect keeps the wordmark in quotes. |
+| 7c Recraft V3/V4 native SVG    | `data/model-registry.json` `recraft-v3` and `recraft-v4` both have `native_svg: true`. Router `logo-text-free-vector` primary = `recraft-v4` (higher quality); V3 fallback for brand-style pipelines requiring `style_id` (V4 dropped style support). `src/providers/recraft.ts` requests `output_format: "svg"`.                                                 |
 
 ## 08 — Logo Generation
 

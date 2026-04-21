@@ -48,20 +48,36 @@ tags: [vercel-ai-sdk, generateImage, providers, openai, google, fal, replicate, 
 ## Repo metrics
 
 - **License:** Apache-2.0 on core `ai` and every first-party `@ai-sdk/*` provider.
-- **Version:** `ai@5.0.0` shipped **2025-07-31**; latest stable **`ai@5.0.167`** (2026-04-05). Nine months of weekly patch releases, no `5.1` or `6.0` on the horizon. `zod@^4.1.8` is a hard peer requirement.
+- **Version:** `ai@5.0.0` shipped **2025-07-31**; `ai@5.0.167` was the last 5.x stable (2026-04-05). **`ai@6.0`** shipped **December 22, 2025**, making this the current major version as of April 2026. Latest patch as of April 2026: **`ai@6.0.162`**. `zod@^4.1.8` remains a hard peer requirement.
+
+> **Updated 2026-04-21:** AI SDK **v6** (`ai@6.0`, latest `6.0.162` as of
+> April 2026) was released on December 22, 2025. The single most important
+> change for this research: **`experimental_generateImage` has been promoted
+> to stable and renamed to `generateImage`** — the `experimental_` prefix is
+> gone. All call sites that import `experimental_generateImage` must update to
+> `generateImage`. Run `npx @ai-sdk/codemod v6` to migrate automatically.
+> Additional v6 capabilities: `ToolLoopAgent`, human-in-the-loop `needsApproval`
+> tool approval, image-to-image editing via `generateImage` with reference
+> images, native MCP support, and DevTools. The `ImageModelV2` contract,
+> `providerOptions` namespace, and `providerMetadata.images[]` guarantee from
+> v5 carry forward unchanged. All internal doc references from
+> `experimental_generateImage` should now read `generateImage`. Pin `ai@^6.0.0`,
+> every `@ai-sdk/*@latest-6.x`, and `zod@^4.1.8` in the lockfile.
 - **Footprint:** `ai` core ~600 KB unpacked; each provider package 50–150 KB. Pure TypeScript, no native deps. Runs in Node ≥ 18, Edge, Deno, Bun, browser-with-proxy.
 - **Popularity:** ~2M weekly npm downloads, ~20k stars, Vercel-team-maintained.
 - **Image-relevant packages (Apr 2026):** `@ai-sdk/openai`, `@ai-sdk/google`, `@ai-sdk/google-vertex`, `@ai-sdk/replicate@2.0.27`, `@ai-sdk/fal`, `@ai-sdk/luma`, `@ai-sdk/fireworks`, `@ai-sdk/togetherai`, `@ai-sdk/openai-compatible`, `@ai-sdk/gateway`. Community `@openrouter/ai-sdk-provider` rides alongside.
 
 ## `generateImage` — the surface as of v5.0.167
 
-`generateImage` is still formally **experimental** nine months into v5 — the label reflects provider API churn, not wrapper instability. Idiomatic import:
+`generateImage` was formally **experimental** through all of v5, but was **promoted to stable in AI SDK v6 (December 22, 2025)**. Idiomatic import for v6+:
 
 ```ts
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage } from 'ai';
 ```
 
-Signature stable since `ai@5.0.30`. PR #5977 (`providerMetadata.images[]` on `ImageModelV2`) and PR #6180 (settings moved from model constructor into call-level `maxImagesPerCall`/`providerOptions`) are the only material interface changes in v5.
+(The old `experimental_generateImage` import continues to work in v5, but is removed in v6. Use `npx @ai-sdk/codemod v6` to migrate.)
+
+Signature stable since `ai@5.0.30`. PR #5977 (`providerMetadata.images[]` on `ImageModelV2`) and PR #6180 (settings moved from model constructor into call-level `maxImagesPerCall`/`providerOptions`) were the material interface changes in v5, and are carried forward unchanged into v6.
 
 ### Call signature
 
@@ -325,7 +341,7 @@ export interface ImageProvider {
 
 ## Decision
 
-**Adopt Vercel AI SDK v5 `experimental_generateImage` as the typed foundation for every image call.** It is the only OSS SDK that has shipped typed polyglot image support in 2026, the only one that cleanly solves uniform-vs-provider-specific tension (`providerOptions` namespace), and the only one with a credible BYOK / Gateway pass-through story. v5.0.x cadence is healthy; `ImageModelV2` has been stable since PR #6180.
+**Adopt Vercel AI SDK v6 `generateImage` (stable) as the typed foundation for every image call.** It is the only OSS SDK that has shipped typed polyglot image support in 2026, the only one that cleanly solves uniform-vs-provider-specific tension (`providerOptions` namespace), and the only one with a credible BYOK / Gateway pass-through story. `ImageModelV2` has been stable since PR #6180 and carries forward into v6 unchanged.
 
 Wrap it behind the `ImageProvider` interface above so four adjacent implementations are first-class peers, not special cases:
 

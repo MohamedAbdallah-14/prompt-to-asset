@@ -29,18 +29,20 @@ Output format: `Feedback: <rationale pinpointing what is good and bad> [RESULT] 
 
 This two-part output (rationale + score) is the key design choice — the rationale is what feeds back into prompt repair, not just the number. Prometheus-Vision achieves Pearson r=0.786 with human evaluators on LLaVA-Bench.
 
-The model requires: instruction, image, response-under-evaluation, reference answer, and score rubric as inputs. At inference you can use GPT-4V/GPT-4o as the judge with the same rubric format (no fine-tuning needed); Prometheus-Vision is an open-source alternative if API cost matters.
+The model requires: instruction, image, response-under-evaluation, reference answer, and score rubric as inputs. At inference you can use **GPT-4o** as the judge with the same rubric format (no fine-tuning needed) — `gpt-4-vision-preview` was deprecated in 2024 and is no longer callable; use `gpt-4o` or `gpt-4o-mini` instead. Prometheus-Vision is an open-source alternative if API cost matters. The Prometheus-Vision repo was last updated March 2025; the rubric format and training methodology are unchanged.
 
-## MJ-Bench: Four Evaluation Dimensions for Text-to-Image
+## MJ-Bench: Evaluation Dimensions for Text-to-Image
 
-MJ-Bench defines four assessment axes for image generation judges:
+> **Updated 2026-04-21:** MJ-Bench was accepted at NeurIPS 2025. The final published version expands the original four evaluation dimensions to **six**:
 
 1. **Alignment** — does the image match the text prompt?
 2. **Safety** — is the content appropriate?
 3. **Image Quality** — perceptual quality, sharpness, coherence.
 4. **Bias** — representation and demographic fairness.
+5. **Composition** — spatial arrangement and structural coherence.
+6. **Visualization** — rendering quality of specific visual elements.
 
-Key finding: closed-source VLMs (GPT-4o best overall) outperform open-source on safety and bias. Smaller CLIP-based scorers outperform VLMs on alignment and image quality. **Likert-scale natural language feedback is more accurate and stable than numeric-only scales for VLM judges.**
+Key finding: closed-source VLMs (GPT-4o best overall) outperform open-source on safety and bias. Smaller CLIP-based scorers outperform VLMs on alignment and image quality. **Likert-scale natural language feedback is more accurate and stable than numeric-only scales for VLM judges.** The leaderboard is updated continuously at https://mj-bench.github.io/.
 
 ## Vision-Guided Iterative Refinement: Two-Critic Design
 
@@ -55,15 +57,18 @@ The Tier-0 results should be passed as structured context to the VLM critic prom
 
 ## Judge Model Selection
 
+> **Updated 2026-04-21:** Claude 3.5 Sonnet was deprecated Aug 2025 (retired Jan 5, 2026). The current recommended Anthropic VLM judge is **Claude Sonnet 4.6** (released Feb 2026; 3.75 MP image support, 98.5% vision accuracy on internal benchmarks) or Claude Opus 4.7 for highest fidelity. Open-source alternatives that now perform within 5–10% of proprietary models include Qwen2.5-VL-72B and InternVL3-78B — viable for self-hosted or cost-sensitive deployments.
+
 Based on MJ-Bench findings:
 
 | Task | Recommended judge |
 |---|---|
 | Alignment (does image match brief?) | GPT-4o or CLIP scoring model |
 | Image quality (sharpness, composition) | CLIP scoring model or IQA model |
-| Style fidelity, complexity, palette | GPT-4o / Claude 3.5 Sonnet (with image) |
+| Style fidelity, complexity, palette | GPT-4o / Claude Sonnet 4.6 (with image) |
 | Text legibility in mark | Deterministic OCR + Levenshtein, not VLM |
 | Alpha / safe-zone | Deterministic pixel check, not VLM |
+| Open-source budget option | Qwen2.5-VL-72B or InternVL3-78B |
 
 ## Rubric Design Principles
 
@@ -76,12 +81,14 @@ From the Prometheus-Vision training data methodology:
 
 ## Caveats
 
-- GPT-4V and GPT-4o can hallucinate structural properties (e.g., claim alpha is present when it is not). Never trust a VLM for pixel-level checks. Tier-0 deterministic checks are non-negotiable.
+- GPT-4o (and its predecessors) can hallucinate structural properties (e.g., claim alpha is present when it is not). Never trust a VLM for pixel-level checks. Tier-0 deterministic checks are non-negotiable. Note: `gpt-4-vision-preview` is deprecated — use `gpt-4o` or `gpt-4o-mini`.
 - Prometheus-Vision requires a reference answer. For novel logos there is no ground-truth image; the reference must be a textual description of the target properties.
 - Likert scales are subject to positional bias: VLMs tend to rate mid-scale (3) when uncertain. Include few-shot examples with 1s and 5s in the judge prompt to calibrate.
 
 ## References
 
-- Kim et al. (2024). [Prometheus-Vision: Vision-Language Model as a Judge for Fine-Grained Evaluation](https://arxiv.org/abs/2401.06591). ACL 2024.
-- Chen et al. (2024). [MJ-Bench: Is Your Multimodal Reward Model Really a Good Judge for Text-to-Image Generation?](https://arxiv.org/abs/2407.04842). NeurIPS 2025.
+- Kim et al. (2024). [Prometheus-Vision: Vision-Language Model as a Judge for Fine-Grained Evaluation](https://arxiv.org/abs/2401.06591). ACL 2024 Findings. Repo updated March 2025.
+- Chen et al. (2024/2025). [MJ-Bench: Is Your Multimodal Reward Model Really a Good Judge for Text-to-Image Generation?](https://arxiv.org/abs/2407.04842). NeurIPS 2025 (expanded to 6 dimensions in final version).
 - Vision-Guided Iterative Refinement for Frontend Code. [arXiv:2604.05839](https://arxiv.org/html/2604.05839v1).
+- Qwen2.5-VL-72B (Jan 2025). [Hugging Face](https://huggingface.co/Qwen/Qwen2.5-VL-72B-Instruct) — open-source VLM judge within 5–10% of GPT-4o on visual benchmarks.
+- InternVL3-78B (Apr 2025). [InternVL blog](https://internvl.github.io/blog/2025-04-11-InternVL-3.0/) — new SOTA open-source MLLM; 72.2 MMMU.

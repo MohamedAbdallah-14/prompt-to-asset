@@ -4,6 +4,8 @@
 
 MCP (Model Context Protocol) spec version 2025-11-25 defines three server primitives: Resources, Prompts, and Tools.
 
+> **Updated 2026-04-21:** The 2025-11-25 spec remains the current stable release as of April 2026. On March 20, 2026, Anthropic transferred full governance of MCP to the **Agentic AI Foundation (AAIF)**, a new entity formed under the Linux Foundation. Supporting members include Google, Microsoft, AWS, Cloudflare, Bloomberg, and Intuit. The 2026 MCP roadmap has four priority areas: (1) **Transport evolution** — Streamable HTTP transport replacing SSE-based transport for stateless, load-balanced deployments; (2) **Tasks primitive** (SEP-1686) — now experimental/shipped, enables async "call-now, fetch-later"; servers return a task handle, clients poll for completion. Known lifecycle gaps being addressed: retry semantics on transient failure and expiry policy for completed results. (3) **Governance maturation** — formal contributor ladder under AAIF. (4) **Enterprise readiness** — audit trails, SSO-integrated auth, gateway patterns. The ecosystem has grown to 10,000+ public MCP servers. None of these changes break existing Resources/Prompts/Tools implementations.
+
 **Resources** are the mechanism for exposing persistent data. Spec definition: "structured data sources that the AI can read." Each resource has a URI, optional MIME type, and returns either text or base64-encoded binary content.
 
 Key resource capabilities:
@@ -49,7 +51,9 @@ MCP Prompts are templated workflows — dynamic, context-aware starting points. 
 
 Example: a `brand_context_prompt` that reads `brand://projects/foo`, fills in the palette, fonts, and past asset paths, and returns a pre-built system prompt the host can inject. This is effectively a server-side context window optimization: the server knows what's relevant, pre-packs it, and the LLM doesn't have to figure it out.
 
-**Caveat:** Not all MCP hosts support Prompts yet. Claude Desktop does; Claude Code CLI does. Third-party integrations vary.
+**Caveat:** Not all MCP hosts support Prompts yet. Claude Desktop does; Claude Code CLI does. Third-party integrations vary. As of April 2026, the MCP ecosystem has grown to 10,000+ public servers under AAIF governance, but Prompts adoption still lags behind Tools in third-party clients. The Tasks primitive (async polling) is now available in experimental form and is the correct primitive for long-running generation requests — not Resources.
+
+> **Updated 2026-04-21:** The **Tasks primitive** (SEP-1686) is the more relevant new primitive for asset generation than Resources: it allows a client to kick off a generation (e.g., `asset_generate_logo` via api mode), receive a task handle, and poll for completion asynchronously. This is architecturally superior to the current synchronous blocking pattern for multi-step pipelines (matte → vectorize → validate). Watch the AAIF roadmap for lifecycle semantics stabilization before adopting in production.
 
 ---
 

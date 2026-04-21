@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 10 — Ui Illustrations Graphics
 
 In-product illustrations, hero art, icon packs, and 3D/claymorph/glassmorph/brutalist registers. Consistency is the dominant challenge; LoRA / IP-Adapter / `--sref` / Recraft `style_id` are the primitives.

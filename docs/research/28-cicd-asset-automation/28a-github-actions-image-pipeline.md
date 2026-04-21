@@ -24,12 +24,14 @@ a production pattern using:
 
 ## Docker / runner environment for sharp + Node
 
+> **Updated 2026-04-21:** `ubuntu-latest` is now **Ubuntu 24.04** exclusively — the migration from 22.04 completed in October 2024 (GitHub Changelog 2024-09-25). The "22.04 / 24.04" description below is stale; pin to `ubuntu-24.04` for reproducibility, or accept that `ubuntu-latest` == 24.04 today. Sharp reached `0.34.x` (latest `0.34.5` as of Feb 2026) — the `^0.33.5` project pin should be bumped. Node.js 20 hits EOL on **April 30, 2026** — any CI job using `node-version: 20` should be updated to `node-version: 22` (LTS, supported until Apr 2027) or `node-version: 24` (current LTS as of Apr 2026). Python current stable is **3.13** (3.13.13 released Apr 2026); `python:3.12-slim` still works but is no longer the newest stable.
+
 The project uses sharp (`^0.33.5`) as an optional dependency. Sharp links against libvips,
-which is present on `ubuntu-latest` runners (22.04 / 24.04) but absent on `macos-latest`.
-If you need a custom image, `nxcd/docker-nodejs-sharp-image` is the most referenced base,
-though it pins an old Node (Carbon/8) — build a fresh one from `node:20-slim` and
-`apt-get install -y libvips-dev`. For rembg (Python background removal), add a
-`python:3.12-slim`-based layer or use a multi-stage build.
+which is present on `ubuntu-latest` runners (Ubuntu 24.04 as of Oct 2024) but absent on
+`macos-latest`. If you need a custom image, `nxcd/docker-nodejs-sharp-image` is the most
+referenced base, though it pins an old Node (Carbon/8) — build a fresh one from
+`node:22-slim` (or `node:24-slim`) and `apt-get install -y libvips-dev`. For rembg
+(Python background removal), add a `python:3.13-slim`-based layer or use a multi-stage build.
 
 Sharp's own CI (`lovell/sharp` GitHub Actions) uses `ubuntu-latest` with stock Node setup
 via `actions/setup-node` — that is sufficient for the project's build without a custom image.
@@ -69,8 +71,11 @@ Then `if: steps.filter.outputs.brand == 'true'` gates the generation job.
 
 ## Caveats
 
-- `ubuntu-latest` image version changes silently — pin to `ubuntu-24.04` for reproducibility.
+- `ubuntu-latest` is Ubuntu 24.04 as of October 2024. Pin to `ubuntu-24.04` for full
+  reproducibility (the label will eventually move to Ubuntu 26.04 once it is GA).
 - Artifact downloads in fork PRs require `pull_request_target` with careful trust scoping.
 - ImageMagick is not in the project's dependency graph; sharp + satori cover the same surface.
   Stick to what's already declared in `packages/mcp-server/package.json` rather than adding
   a new system dep.
+- **Node.js 20 EOL is April 30, 2026.** Workflows that pin `node-version: 20` should migrate
+  to `node-version: 22` or `node-version: 24` before that date.

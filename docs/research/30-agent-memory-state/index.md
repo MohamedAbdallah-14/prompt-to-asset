@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 30 — Agent Memory State
 
 Agent memory architectures (Letta, Zep, mem0), session vs long-term memory, MCP resources as persistent state, user-preference learning, asset-set coherence tracking.

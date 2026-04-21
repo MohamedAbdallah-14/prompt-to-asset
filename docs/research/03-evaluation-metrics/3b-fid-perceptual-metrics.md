@@ -118,6 +118,8 @@ A prompt-to-asset pipeline typically wants to answer three distinct questions; m
 - **Use LPIPS only with a genuine reference image.** Using LPIPS against an arbitrary "representative" real image is a common misuse.
 - **Document the exact encoder checkpoint** (DINOv2-ViT-L/14, CLIP ViT-L/14 OpenAI vs OpenCLIP, Inception-v3 TF-slim vs PyTorch port). These choices change the numbers materially.
 
+> **Updated 2026-04-21:** An additional emerging alternative worth tracking is **Fréchet Wavelet Distance (FWD)**, published at ICLR 2025 ([OpenReview](https://openreview.net/forum?id=QinkNNKZ3b)). FWD applies Fréchet distance over Wavelet Packet Transform coefficients rather than network activations, making it domain-agnostic (no ImageNet or CLIP pre-training dependency) and sensitive to both spatial and textural frequency content. It is an early-stage proposal — CMMD + FD-DINOv2 remain the recommended defaults — but FWD is the one to watch if the community seeks a completely pre-training-free distributional metric.
+
 ## Primary Citations
 
 1. Heusel, M., Ramsauer, H., Unterthiner, T., Nessler, B., & Hochreiter, S. (2017). *GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium* (introduces FID). NeurIPS. https://arxiv.org/abs/1706.08500

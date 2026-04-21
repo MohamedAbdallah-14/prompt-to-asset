@@ -109,6 +109,8 @@ Operationally VQAScore is attractive because:
 - Works with any VQA model (LLaVA, CLIP-FlanT5, BLIP-2, GPT-4V) — you pick the cost/quality trade-off.
 - The accompanying **GenAI-Bench** (1,600 designer-authored compositional prompts + ~80k human ratings over DALL-E 3, SD, Midjourney v6, Pika, Gen2) is now the de-facto benchmark for compositional T2I alignment ([arXiv:2406.13743](https://arxiv.org/abs/2406.13743); [project page](https://linzhiqiu.github.io/papers/genai_bench/)).
 
+> **Updated 2026-04-21:** VQAScore has become the de-facto industry evaluation standard for compositional T2I alignment. As of 2025, GenAI-Bench has been adopted by **Google DeepMind (Imagen 3 & Imagen 4)**, **ByteDance Seed**, **NVIDIA**, and others as a primary benchmark. The `t2v_metrics` repo now extends VQAScore to video with support for 20+ video-language models. A localized variant, **L-VQAScore** ([github.com/intelligolabs/L-VQAScore](https://github.com/intelligolabs/L-VQAScore)), combines visual localization with VQA probing for compositional attribute evaluation and improves correlation with human judgment on challenging fashion/attribute-binding scenarios. A VQQA agentic framework using Gemini-3-Pro shows further gains (+4.76%) on T2V-CompBench, confirming continued active iteration on this approach.
+
 ---
 
 ## 3. LLM-as-judge / MLLM-as-a-judge (rubric-based, explainable, slow)

@@ -1,3 +1,5 @@
+> **📅 Research snapshot as of 2026-04-21 (updated from 2026-04-20).** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Research 28 — CI/CD and GitHub Actions for AI Asset Generation Pipelines
 
 Research date: 2026-04-20
@@ -24,6 +26,15 @@ Project: prompt-to-asset (MCP server monorepo, npm package `prompt-to-asset`)
 - The existing Vitest setup (`vitest.config.ts`) can host MCP in-memory SDK tests with no
   config changes — just add test files matching `packages/mcp-server/src/**/*.test.ts`.
 
+> **Updated 2026-04-21 — version hygiene:**
+> - `actions/setup-node` latest major is **v6** (not v4). All workflow examples in this research set have been updated.
+> - `ubuntu-latest` has been Ubuntu 24.04 since October 2024 — the "22.04 / 24.04" description in 28a was stale.
+> - **Node.js 20 EOL is April 30, 2026.** All CI workflows pinning `node-version: 20` should migrate to Node 22 (LTS, supported until Apr 2027) or Node 24 (current LTS as of Apr 2026). Node 20 will no longer receive security patches from May 2026.
+> - **Python current stable is 3.13** (3.13.13 released Apr 2026). Docker base images using `python:3.12-slim` still work but are no longer the newest stable.
+> - **Sharp** is at `0.34.x` (0.34.5 as of Feb 2026); the project's `^0.33.5` pin should be reviewed.
+> - Cloudflare Workers AI free tier remains **10,000 neurons/day** — the claim in CLAUDE.md is still accurate.
+> - npm OIDC trusted publishing is GA (July 2025), requires npm CLI ≥ 11.5.1 and Node ≥ 22.14.0. The project's `engines.node: ">=20.11.0"` field is now misleading with Node 20 EOL.
+
 ### What needs decisions before implementation
 
 1. **Secrets tier**: use GitHub Secrets + environment approval gates (simple) or Infisical
@@ -35,8 +46,10 @@ Project: prompt-to-asset (MCP server monorepo, npm package `prompt-to-asset`)
    for a single-package project with disciplined conventional commits. Currently `version`
    is `0.1.0` in both root and mcp-server `package.json` — changesets setup is straightforward.
 
-3. **npm OIDC trusted publishing**: requires Node 22+ in the publish job (the package
-   engine spec allows 20+, so bump only the CI job's Node version). The `publishConfig.provenance: true`
+3. **npm OIDC trusted publishing**: GA as of July 2025. Requires npm CLI ≥ 11.5.1 and
+   Node ≥ 22.14.0 in the publish job. With Node 20 EOL on Apr 30, 2026, this is now a
+   hard requirement — bump the CI job's `node-version` to 22 or 24 and update
+   `engines.node` in `package.json` away from `>=20.11.0`. The `publishConfig.provenance: true`
    field is already set — this is half of what's needed.
 
 4. **MCP Registry server.json**: not present in the repo yet. Needs to be created and kept

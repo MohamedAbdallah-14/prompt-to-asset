@@ -62,11 +62,13 @@ Guidance interleaves control flow (Python conditionals, loops) with generation c
 
 Both Anthropic Claude and OpenAI provide server-side constrained generation without requiring logit access:
 
-**Claude** (public beta, Nov 2025): Set the `structured-outputs-2025-11-13` beta header and pass a JSON schema via `output_config.format`. Uses constrained sampling with compiled grammar artifacts. First-request overhead: 100–300ms for grammar compilation. Compiled grammars are cached 24 hours. Supported schema subset: basic types, enums, `anyOf`, `$ref`, `additionalProperties: false`. **Not supported**: recursive schemas, `minimum`/`maximum`, `minLength`/`maxLength`, complex array constraints.
+> **Updated 2026-04-21:** Claude structured outputs moved from public beta to **generally available** at some point after the Nov 2025 launch. The `structured-outputs-2025-11-13` beta header is no longer required (though it still works for backward compatibility). The parameter path has also shifted: `output_format` is now `output_config.format`. GA models as of April 2026 include Claude Opus 4.7, Opus 4.6, Sonnet 4.6, Sonnet 4.5, Opus 4.5, and Haiku 4.5. Additionally, the Python and TypeScript SDKs now automatically transform schemas with unsupported constraints — e.g., `minimum`/`maximum`/`minLength`/`maxLength` are stripped from the sent schema and their values moved into field descriptions, then validated client-side against your original schema. This means the stated "not supported" list is less of a hard blocker than originally described; the SDK handles the conversion transparently.
+
+**Claude** (GA, post-Nov 2025): Pass a JSON schema via `output_config.format` — no beta header needed. Uses constrained sampling with compiled grammar artifacts. First-request overhead: 100–300ms for grammar compilation. Compiled grammars are cached 24 hours. Supported natively in schema: basic types, enums, `anyOf`, `$ref`, `additionalProperties: false`. Constraints like `minimum`/`maximum`, `minLength`/`maxLength` are silently removed from the grammar spec by the SDK and re-applied as post-hoc client validation — do not rely on them being enforced at the token level.
 
 **OpenAI**: Pass `response_format: { type: "json_schema", json_schema: { strict: true, schema: ... } }`. The schema is compiled to a CFG; `additionalProperties: false` is required when `strict: true`.
 
-**For prompt-to-asset**: These are the practical options since the server calls Claude for `inline_svg` SVG authoring and `asset_enhance_prompt`. Claude's native structured output enforces `AssetSpec` JSON shape without any additional infrastructure. The schema subset limitations matter — avoid `minimum`/`maximum` for numeric constraints (path count); enforce those in application-layer validation instead.
+**For prompt-to-asset**: These are the practical options since the server calls Claude for `inline_svg` SVG authoring and `asset_enhance_prompt`. Claude's native structured output enforces `AssetSpec` JSON shape without any additional infrastructure. For numeric constraints (path count ≤ 40), still enforce in application-layer validation — the SDK will describe the constraint in the field description but token-level enforcement is not guaranteed.
 
 ---
 
@@ -77,5 +79,5 @@ Both Anthropic Claude and OpenAI provide server-side constrained generation with
 | Outlines | Yes | Self-hosted, CFG/regex | No |
 | LM-Format-Enforcer | Yes | vLLM deployments, JSON | No |
 | Guidance | Yes | Interleaved control flow | No |
-| Claude native SO | No | AssetSpec JSON, tool schemas | Yes (Claude only) |
+| Claude native SO | No | AssetSpec JSON, tool schemas | Yes (Claude only) — GA as of 2026, no beta header |
 | OpenAI native SO | No | AssetSpec JSON, provider prompts | Yes (OpenAI only) |

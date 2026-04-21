@@ -3,8 +3,14 @@ category: 04-gemini-imagen-prompting
 angle: 4e
 title: "Programmatic Imagen 3/4 + Gemini 2.5 Flash Image via Vertex AI & google-genai SDK"
 status: research-notes
-last_updated: 2026-04-19
+last_updated: 2026-04-21
 ---
+
+> **Updated 2026-04-21:** Critical changes since original compilation:
+> 1. **Imagen 4.0 family deprecated.** All three GA variants (`imagen-4.0-generate-001`, `imagen-4.0-fast-generate-001`, `imagen-4.0-ultra-generate-001`) are deprecated and will be discontinued **June 30, 2026**. Google recommends migrating to `gemini-2.5-flash-image`.
+> 2. **Legacy SDK removed.** The `vertexai.generative_models` / `vertexai.vision_models` / `vertexai.language_models` modules in `google-cloud-aiplatform` were deprecated June 24, 2025 and will be removed June 24, 2026. The `google-generativeai` package is also deprecated. The code examples in this file already use the correct `google-genai` SDK (`from google import genai`) — that SDK is the only supported path going forward.
+> 3. **Free API tier for image-gen removed.** Programmatic image generation via the Gemini Developer API requires a billed project. Unbilled API keys return HTTP 429 with `free_tier_requests limit: 0` on all image models. The AI Studio web UI (`https://aistudio.google.com`) remains free for interactive use.
+> 4. **Pricing confirmed accurate:** Imagen 4 Fast $0.02/img, Standard $0.04/img, Ultra $0.06/img; Gemini 2.5 Flash Image ~$0.039/img (token-based). Gemini 2.5 Flash Image discontinuation: **Oct 2, 2026**.
 
 # 4e — Programmatic Imagen / Gemini Image Generation via Vertex AI & google-genai SDK
 
@@ -25,20 +31,22 @@ The SDK transparently switches between them via the `GOOGLE_GENAI_USE_VERTEXAI` 
 
 ## Model landscape (as of April 2026)
 
-| Model ID | Surface | Tier | Max res | Max imgs/req | Rate limit (RPM) | Price / img |
-|---|---|---|---|---|---|---|
-| `imagen-4.0-ultra-generate-001` | `generate_images` | Ultra | 2048×2048 (2K) | 1 | 30 | $0.06 |
-| `imagen-4.0-generate-001` | `generate_images` | Standard | 2816×1536 | 4 | 75 | $0.04 |
-| `imagen-4.0-fast-generate-001` | `generate_images` | Fast | 1408×768 | 4 | 150 | $0.02 |
-| `imagen-3.0-generate-002` | `generate_images` | Standard | ~1536×1536 | 4 | — | $0.04 |
-| `imagen-3.0-fast-generate-001` | `generate_images` | Fast | ~1024×1024 | 4 | — | $0.02 |
-| `imagen-3.0-capability-001` | `edit_image` | Edit/custom | — | — | — | $0.04 |
-| `imagen-4.0-upscale-preview` | `upscale_image` | x2 / x4 | up to 4K | — | — | $0.06 |
-| `gemini-2.5-flash-image` | `generate_content` | Multimodal | up to 2048×2048 | 10 | — | $30 per 1M output tokens (= 1290 tok / image ≈ $0.039) |
-| `gemini-3-pro-image-preview` | `generate_content` | Flagship image | up to 4K | — | — | $120 per 1M output tokens ($0.134 @ 1K/2K, $0.24 @ 4K) |
-| `gemini-3.1-flash-image-preview` | `generate_content` | Cheapest image | up to 4K | — | — | $60 per 1M output tokens ($0.045 @ 512, $0.067 @ 1K, $0.101 @ 2K, $0.15 @ 4K) |
+> **Updated 2026-04-21:** Imagen 4.0 variants are deprecated — EOL June 30, 2026. Migrate to `gemini-2.5-flash-image`. The `google-cloud-aiplatform` Vertex AI SDK modules for GenAI are being removed June 24, 2026 — all new code should use `google-genai`.
 
-Key dates: Imagen 4.0 GA **Aug 14, 2025**, discontinuation **Jun 30, 2026** — lock a versioned alias in code, not `imagen-4.0-generate` (which floats). Gemini 2.5 Flash Image GA **Oct 2, 2025**, discontinuation **Oct 2, 2026**.
+| Model ID | Surface | Tier | Max res | Max imgs/req | Rate limit (RPM) | Price / img | Status |
+|---|---|---|---|---|---|---|---|
+| `imagen-4.0-ultra-generate-001` | `generate_images` | Ultra | 2048×2048 (2K) | 1 | 30 | $0.06 | **Deprecated — EOL Jun 30, 2026** |
+| `imagen-4.0-generate-001` | `generate_images` | Standard | 2816×1536 | 4 | 75 | $0.04 | **Deprecated — EOL Jun 30, 2026** |
+| `imagen-4.0-fast-generate-001` | `generate_images` | Fast | 1408×768 | 4 | 150 | $0.02 | **Deprecated — EOL Jun 30, 2026** |
+| `imagen-3.0-generate-002` | `generate_images` | Standard | ~1536×1536 | 4 | — | $0.04 | Check deprecations page |
+| `imagen-3.0-fast-generate-001` | `generate_images` | Fast | ~1024×1024 | 4 | — | $0.02 | Check deprecations page |
+| `imagen-3.0-capability-001` | `edit_image` | Edit/custom | — | — | — | $0.04 | Check deprecations page |
+| `imagen-4.0-upscale-preview` | `upscale_image` | x2 / x4 | up to 4K | — | — | $0.06 | Check deprecations page |
+| `gemini-2.5-flash-image` | `generate_content` | Multimodal | up to 2048×2048 | 10 | — | $30 per 1M output tokens (= 1290 tok / image ≈ $0.039) | GA — EOL Oct 2, 2026 |
+| `gemini-3-pro-image-preview` | `generate_content` | Flagship image | up to 4K | — | — | $120 per 1M output tokens ($0.134 @ 1K/2K, $0.24 @ 4K) | Preview |
+| `gemini-3.1-flash-image-preview` | `generate_content` | Cheapest image | up to 4K | — | — | $60 per 1M output tokens ($0.045 @ 512, $0.067 @ 1K, $0.101 @ 2K, $0.15 @ 4K) | Preview — successor to 2.5 Flash Image |
+
+Key dates: Imagen 4.0 GA **Aug 14, 2025**, discontinuation **Jun 30, 2026** — lock a versioned alias in code, not `imagen-4.0-generate` (which floats). Gemini 2.5 Flash Image GA **Oct 2, 2025**, discontinuation **Oct 2, 2026**. For new integrations targeting beyond Oct 2026, evaluate `gemini-3.1-flash-image-preview` as the successor.
 
 ---
 
@@ -72,6 +80,8 @@ For `POST https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT}/locat
 }
 ```
 
+> **Note (2026-04-21):** `negativePrompt` is **not supported** on any Imagen 4.x variant — it is silently ignored or causes a validation error. It was supported on `imagen-3.0-generate-001` only; removed in `imagen-3.0-generate-002` and all Imagen 4.x. The REST example above targets a generic Imagen endpoint for documentation purposes; remove `negativePrompt` when targeting Imagen 4 models. Fold exclusion intent into the positive prompt instead (see 4a and SYNTHESIS.md).
+
 Parameter reference (most from Vertex AI's `VisionGenerativeModelParams`):
 
 | Param | Type | Values / range | Notes |
@@ -79,7 +89,7 @@ Parameter reference (most from Vertex AI's `VisionGenerativeModelParams`):
 | `sampleCount` | int | 1–4 (Ultra: 1) | = `number_of_images` in SDKs. |
 | `aspectRatio` | string | `1:1` (default), `3:4`, `4:3`, `9:16`, `16:9` | Imagen 4. Gemini 2.5 Flash Image supports a wider set: `1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9`. |
 | `seed` | int | any int32 | **Vertex only.** Must set `addWatermark=false` to use; SynthID watermark pipeline breaks determinism. |
-| `negativePrompt` | string | free text | **Vertex only.** Not supported on Imagen 4 Ultra. Describe what you want **excluded**. |
+| `negativePrompt` | string | free text | **Vertex only.** Supported on `imagen-3.0-generate-001` only; **not supported on any Imagen 4.x variant** (silently ignored or validation error). Do not use with Imagen 4. Describe what you want **excluded** as positive descriptors instead. |
 | `language` | string | `auto`, `en`, `es`, `pt`, `ko`, `ja`, `hi`, `zh`/`zh-CN`, `zh-TW` | Hint for the prompt tokenizer. |
 | `personGeneration` | string | `allow_all`, `allow_adult` (default on Imagen 3), `dont_allow` | Imagen 4 defaults to `allow_all`; EU regions may force `allow_adult`. |
 | `safetySetting` | string | `block_low_and_above`, `block_medium_and_above` (default), `block_only_high` | Legacy names `block_most/some/few` still accepted. |
@@ -139,7 +149,7 @@ The google-genai SDKs normalize the REST names to language-idiomatic fields. Map
 
 **Two auth modes, selected at client construction:**
 
-1. **Gemini Developer API (API key)** — simplest. Get a key at `https://aistudio.google.com/app/apikey`, set `GEMINI_API_KEY` or `GOOGLE_API_KEY`. Works for `generate_content` on Gemini models and `generate_images` on Imagen 3/4 (Developer API subset). **Does not support** `seed`, `negative_prompt`, `add_watermark`, `enhance_prompt`, `labels`, GCS output, VPC-SC, CMEK, or `upscale_image`.
+1. **Gemini Developer API (API key)** — simplest. Get a key at `https://aistudio.google.com/app/apikey`, set `GEMINI_API_KEY` or `GOOGLE_API_KEY`. Works for `generate_content` on Gemini models and `generate_images` on Imagen 3/4 (Developer API subset). **Does not support** `seed`, `negative_prompt`, `add_watermark`, `enhance_prompt`, `labels`, GCS output, VPC-SC, CMEK, or `upscale_image`. **Updated 2026-04-21:** Image generation via the Gemini Developer API **requires billing** — free/unbilled keys return HTTP 429 with `free_tier_requests limit: 0` on all image endpoints (`generate_images`, `generate_content` with `response_modalities=["IMAGE"]`). Enable billing at `https://console.cloud.google.com/billing` before calling any image model. The AI Studio web UI remains free for interactive (non-programmatic) use.
 
 2. **Vertex AI (ADC / service account)** — full feature set. Two sub-modes:
    - **Application Default Credentials** locally: `gcloud auth application-default login`. SDK auto-discovers.
@@ -164,6 +174,8 @@ export GOOGLE_GENAI_USE_VERTEXAI=True
 ---
 
 ## Code example 1 — Imagen 4 on Vertex AI (Python)
+
+> **Note (2026-04-21):** `imagen-4.0-generate-001` is deprecated — EOL June 30, 2026. For new integrations, use `gemini-2.5-flash-image` (see Code example 2) or check the [model versions page](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions) for the current recommended GA model. Also note: `negative_prompt` is ignored by Imagen 4 — the example below includes it for REST surface documentation but should be removed in production calls to Imagen 4 models.
 
 Canonical pattern: ADC auth + the full advanced-parameter set.
 
@@ -252,6 +264,8 @@ Flash Image also does **conversational editing** — pass both a prior image (as
 
 ## Code example 3 — Imagen 4 on Vertex AI (JavaScript / TypeScript)
 
+> **Note (2026-04-21):** `imagen-4.0-fast-generate-001` is deprecated — EOL June 30, 2026.
+
 ```ts
 import { GoogleGenAI } from "@google/genai";
 import { writeFile } from "node:fs/promises";
@@ -325,6 +339,8 @@ With `storageUri` set the response returns GCS URIs instead of base64 bytes — 
 
 ## Code example 5 — Imagen 4 on Vertex AI (Go)
 
+> **Note (2026-04-21):** `imagen-4.0-generate-001` is deprecated — EOL June 30, 2026.
+
 ```go
 package main
 
@@ -395,13 +411,15 @@ For a custom product skill, `anton-proto/mcp-imagen` is the cleanest reference i
 
 ## Practical notes for building our own skill / site
 
-1. **Pick one SDK abstraction** (google-genai Python or JS) and let it pick the backend. Don't write separate Vertex vs Gemini-API code paths; drive it from env vars.
-2. **Lock versioned model IDs** (`imagen-4.0-generate-001`, not `imagen-4.0-generate`). The unversioned alias moves without warning; versioned IDs have a published discontinuation date (Jun 30, 2026 for Imagen 4.0).
+> **Updated 2026-04-21:** Points 1–10 below have been updated to reflect: (a) Imagen 4.0 family EOL June 30, 2026; (b) programmatic image-gen requires billing; (c) legacy SDK modules deprecated.
+
+1. **Pick one SDK abstraction** (google-genai Python or JS) and let it pick the backend. Don't write separate Vertex vs Gemini-API code paths; drive it from env vars. **Do not use `google-cloud-aiplatform`'s `vertexai.generative_models` or `vertexai.vision_models`** — those modules are deprecated (removed June 24, 2026). Use `google-genai` (`from google import genai`) exclusively.
+2. **Lock versioned model IDs** (`imagen-4.0-generate-001`, not `imagen-4.0-generate`). The unversioned alias moves without warning; versioned IDs have a published discontinuation date (**Jun 30, 2026 for all Imagen 4.0**). For new projects, start with `gemini-2.5-flash-image` (EOL Oct 2, 2026) or check the [model versions page](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions) for the current recommended model.
 3. **Ultra is single-image**. Don't expose a "batch size" knob on the Ultra tier — API will reject `sampleCount > 1`.
 4. **Seed ↔ watermark interaction**: if reproducibility matters, surface a "reproducible" toggle that sets `seed` + `addWatermark=false` together. Otherwise seed is silently ignored.
 5. **For Gemini 2.5 Flash Image, aspect ratio goes via `ImageConfig`**, not through a standalone parameter on `generate_content`. It supports more ratios (`21:9`, `4:5`, `5:4`, `3:2`, `2:3`) than Imagen 4.
 6. **Output storage**: prefer `storageUri` (GCS) over inline base64 for anything ≥2K — the inline payload cap plus JSON encoding overhead makes large responses slow. Use signed URLs from GCS for the website.
-7. **Cost budgeting**: Imagen Fast ≈ $0.02/img undercuts Gemini 2.5 Flash Image's ~$0.039/img by ~50%; but Flash Image gives you iterative editing in one call and more aspect ratios. Gemini 3 Pro Image ($0.134 @ 1–2K) is the quality ceiling but ~3×–7× more expensive than Imagen 4 Standard/Ultra.
+7. **Cost budgeting**: Imagen Fast ≈ $0.02/img undercuts Gemini 2.5 Flash Image's ~$0.039/img by ~50%; but Flash Image gives you iterative editing in one call and more aspect ratios. Gemini 3 Pro Image ($0.134 @ 1–2K) is the quality ceiling but ~3×–7× more expensive than Imagen 4 Standard/Ultra. **All image-gen endpoints require billing** — free/unbilled Developer API keys return HTTP 429 on all image models.
 8. **Regions**: default to `global` for Gemini 2.5 Flash Image; Imagen 4 is broadly available in US/EU regions. EU/UK users may need `europe-west4` with `personGeneration=allow_adult` to satisfy data residency.
 9. **RAI filtering** silently drops images. Always request `include_rai_reason=True` during development and plumb the reason into the response so the product can tell users "blocked: person-faces" instead of "empty response".
 10. **Batch prediction** is supported on Gemini 2.5 Flash Image and some Imagen variants via Vertex AI — use Flex/Batch tier for ~50% discount on non-interactive workflows (image dataset generation, bulk thumbnailing).

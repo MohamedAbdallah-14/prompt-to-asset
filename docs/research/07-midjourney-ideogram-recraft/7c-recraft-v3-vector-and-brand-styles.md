@@ -51,7 +51,9 @@ Recraft is a London‑based design‑first generative platform built by a team f
 
 ### V3 vs V2 vs V4 model family
 
-As of early 2026 the public API exposes eight model IDs ([endpoints docs](https://www.recraft.ai/docs/api-reference/endpoints)):
+> **Updated 2026-04-21:** Recraft V4 launched in **February 2026** as a "ground-up rebuild" focused on design taste and prompt accuracy. V4 still does **not** support `style` or `style_id` parameters — the official docs state *"Styles are not yet supported for V4 models."* This architectural limitation persists as of April 2026. V3 remains the correct default for any brand-consistent pipeline requiring `style_id`.
+
+As of April 2026 the public API exposes eight model IDs ([endpoints docs](https://www.recraft.ai/docs/api-reference/endpoints)):
 
 | Model ID | Format | Notes |
 |---|---|---|
@@ -59,7 +61,7 @@ As of early 2026 the public API exposes eight model IDs ([endpoints docs](https:
 | `recraftv2_vector` | SVG | Legacy vector ($0.044/img) |
 | `recraftv3` | raster | **October 2024 SOTA launch**, HF #1 |
 | `recraftv3_vector` | SVG | **Native vector model** |
-| `recraftv4` | raster | 2025 successor (default); **no `style`/`style_id` support** |
+| `recraftv4` | raster | **February 2026** successor (default); **no `style`/`style_id` support** |
 | `recraftv4_vector` | SVG | V4 vector |
 | `recraftv4_pro` | raster | Premium tier, $0.25/img |
 | `recraftv4_pro_vector` | SVG | Premium vector, $0.30/img |
@@ -312,7 +314,7 @@ From [docs.recraft.ai/api-reference/pricing](https://www.recraft.ai/docs/api-ref
 
 ## Limitations
 
-1. **V4 has no styles.** If you build a brand-style pipeline you are currently pinned to V3/V2. This is the biggest architectural constraint: your pipeline should default to `recraftv3` / `recraftv3_vector` and only opt into V4 for tasks that don't need `style_id`.
+1. **V4 has no styles.** Recraft V4 (released February 2026) still does not support `style` or `style_id` parameters. Confirmed by the official docs as of April 2026: *"Styles are not yet supported for V4 models."* If you build a brand-style pipeline you are currently pinned to V3/V2. Your pipeline should default to `recraftv3` / `recraftv3_vector` and only opt into V4 for tasks that don't need `style_id`.
 2. **Transparent raster PNG is unreliable.** Use `removeBackground` as a second step, or route through `recraftv3_vector` for anything that needs true alpha.
 3. **`text_layout` character set is restricted.** Only ASCII letters/digits/punctuation plus a narrow Latin/Greek/Cyrillic subset — no emoji, no CJK, no Arabic, no Devanagari. Validation is hard-fail.
 4. **Image input limits**: 5 MB max, ≤ 16 MP, ≤ 4096 px max dim, ≥ 256 px min dim. Inpaint masks must be **binary** (exact 0 or 255) — grayscale will error.

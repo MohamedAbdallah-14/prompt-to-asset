@@ -11,7 +11,9 @@ The most cited multi-environment agent benchmark. Evaluates LLMs across 8 task d
 
 **What to borrow:** The controller/worker architecture where a test harness dispatches asset-generation tasks across providers and collects structured results. The idea of a Dev/Test split of prompts — run cheap checks on Dev, full pipeline on Test.
 
-**Caveats:** AgentBench was last substantially updated for ICLR 2024. The function-calling version adds AgentRL, but the evaluation loop assumes discrete correct/incorrect outcomes, not the continuous perceptual scores asset evaluation requires. Docker overhead is significant (webshop needs ~15 GB RAM).
+> **Updated 2026-04-21:** AgentBench's main repo has been updated with a function-calling version integrated with AgentRL (an end-to-end multitask/multiturn LLM agent RL framework); v0.1 and v0.2 remain available for compatibility. THUDM also released **VisualAgentBench** as a companion benchmark specifically for visual foundation agents (LMMs), covering 5 distinct environments across 17 LMMs — more relevant to multimodal asset-pipeline testing than the original AgentBench. **Critical finding (2026):** An automated audit of eight major agent benchmarks — including SWE-bench, WebArena, OSWorld, GAIA, Terminal-Bench, FieldWorkArena, and CAR-bench — found that every benchmark can be exploited to achieve near-perfect scores without solving tasks. Treat leaderboard scores on all agent benchmarks with caution; internal golden-dataset evals with controlled generation are more reliable for the prompt-to-asset use case.
+
+**Caveats:** AgentBench was last substantially updated for ICLR 2024, though the repo is maintained. The evaluation loop assumes discrete correct/incorrect outcomes, not the continuous perceptual scores asset evaluation requires. Docker overhead is significant (webshop needs ~15 GB RAM).
 
 ---
 
@@ -25,6 +27,8 @@ RAGAS is a reference-free evaluation framework for RAG and LLM pipelines. Core m
 
 **What to borrow:** The metric decomposition pattern. Define `LogoCoherence`, `AlphaPresence`, `TextAbsence` as RAGAS-style metric classes. RAGAS 0.2+ supports custom metrics and integrates with LangSmith and Langfuse for dataset management.
 
+> **Updated 2026-04-21:** Current RAGAS version is **0.4.3** (released January 2026). The framework has expanded significantly beyond RAG evaluation: it now includes knowledge-graph-based synthetic test-set generation (up to 90% reduction in manual curation per their benchmarks), an experiments-first evaluation loop, and custom metric support via simple decorators. The core metric decomposition pattern is unchanged and still the primary value for prompt-to-asset use. Built-in metrics remain irrelevant to image quality; borrow the pattern, not the metrics.
+
 **Caveats:** RAGAS is text-first. Its built-in metrics are irrelevant. The value is the evaluation loop, not the metrics. Requires GPT-4o or equivalent as the judge for image sub-questions, adding per-eval cost (~$0.002–0.01 per image depending on model).
 
 ---
@@ -33,7 +37,7 @@ RAGAS is a reference-free evaluation framework for RAG and LLM pipelines. Core m
 **Repo:** https://github.com/confident-ai/deepeval  
 **Docs:** https://deepeval.com
 
-Open-source eval framework with pytest-style test cases. Includes multimodal metrics: `TextToImageMetric` (semantic consistency + perceptual quality via GPT-4V), `ImageCoherence`, `ImageHelpfulness`. Integrates with CI via `deepeval test run` CLI.
+Open-source eval framework with pytest-style test cases. Includes multimodal metrics: `TextToImageMetric` (semantic consistency + perceptual quality via GPT-4V), `ImageCoherence`, `ImageHelpfulness`, `ImageReference`, `ImageEditing`. Integrates with CI via `deepeval test run` CLI.
 
 **Applicability to prompt-to-asset:** The most directly usable framework found. `TextToImageMetric` accepts an image URL and the generation prompt, scores 0–1 using the formula `O = sqrt(min(SC) * min(PQ))`. This is a working baseline for automated asset eval in CI without writing metric classes from scratch.
 
@@ -49,7 +53,9 @@ case = LLMTestCase(
 )
 ```
 
-**Caveats:** GPT-4V as judge means non-deterministic scoring with ~5–10% variance across runs. The `threshold=0.7` value needs calibration against human-reviewed baseline assets — do not ship the default. No built-in alpha-channel or safe-zone checks; those remain custom code.
+> **Updated 2026-04-21:** DeepEval has released **v3.0**, which adds component-level granularity (apply metrics to individual steps: tools, memories, retrievers, generators), production observability, and simulation tools. The multimodal metric suite has expanded to include `ImageEditing` and `ImageReference` in addition to the original `TextToImageMetric`, `ImageCoherence`, and `ImageHelpfulness`. **The default threshold for `TextToImageMetric` is now 0.5** (confirmed in current docs), not 0.7 as previously noted — calibrate against your own baseline before setting. The MLLM judge backend has been updated to support GPT-4o and Claude 3.x series in addition to GPT-4V; GPT-4V is being deprecated by OpenAI, prefer GPT-4o as the judge.
+
+**Caveats:** MLLM-as-judge means non-deterministic scoring with ~5–10% variance across runs. The threshold needs calibration against human-reviewed baseline assets — do not ship the default 0.5. No built-in alpha-channel or safe-zone checks; those remain custom code.
 
 ---
 

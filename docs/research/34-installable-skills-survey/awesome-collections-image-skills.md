@@ -4,6 +4,8 @@
 **Sources mined:** hesreallyhim/awesome-claude-code (39,775★), travisvn/awesome-claude-skills (11,510★), karanb192/awesome-claude-skills (265★)  
 **Methodology:** GitHub API + repo README fetch for each candidate skill.
 
+> **Updated 2026-04-21:** The SKILL.md format is stable through 2026. The `name` field (max 64 chars, lowercase-letters/numbers/hyphens only) and `description` field (max 1024 chars) are required; `disable-model-invocation`, `mode` (bool), `allowed-tools`, and `compatibility` are optional frontmatter fields. Body should be ≤500 lines; split large skills using progressive disclosure. Claude Code's `npx skills add` installer and `/plugin marketplace add` routes remain the two dominant install patterns. The skills format is cross-IDE portable: same SKILL.md works in Claude Code (`~/.claude/skills/`), Cursor (`.cursor/rules/`), Windsurf (`.windsurf/rules/`), Gemini CLI (`~/.gemini/`), Codex CLI, and Cline — only destination path changes. Cline adopted the SKILL.md format natively in 2026. Smithery MCP registry: 7,000+ servers as of April 2026.
+
 ---
 
 ## Ranked Table — All Image/Visual Skills Found

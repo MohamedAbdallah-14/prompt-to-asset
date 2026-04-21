@@ -36,10 +36,13 @@ Sorted by relevance to asset generation (logos, icons, favicons, transparent PNG
 
 ### ComfyUI (core)
 
-- Repo: <https://github.com/comfyanonymous/ComfyUI>
-- Org: Comfy-Org (rebranded from comfyanonymous personal repo in 2024). Stars: ~55k, extremely active (dozens of commits/week as of April 2026).
+- Repo: <https://github.com/comfyanonymous/ComfyUI> (canonical URL now under Comfy-Org: <https://github.com/Comfy-Org/ComfyUI>)
+- Org: Comfy-Org (rebranded from comfyanonymous personal repo in 2024). Stars: **~108.5k as of 2026-04-13** (star-history.com), extremely active (dozens of commits/week, weekly stable releases targeting Mondays).
+
+> **Updated 2026-04-21:** ComfyUI has nearly doubled its star count from the ~55k figure used earlier in this research cycle. As of April 2026 it sits at ~108.5k★ (Comfy-Org/ComfyUI, star-history.com). Weekly release cadence confirmed. ComfyUI-Manager is now at v4.1 (released 2026-03-25) and is officially integrated into the core ComfyUI repo — standalone ComfyUI-Manager star count remains ~14.3k but the package itself has graduated into the core. The `comfy-cli` Python package provides headless programmatic node install.
+
 - Runtime: pure Python + PyTorch, graph executor, web frontend in `ComfyUI_frontend`.
-- Ships with checkpoint loader, CLIP text encoder, KSampler, VAE decode, LoadImage/SaveImage, LatentFromBatch, LoraLoader, ControlNet apply, upscalers, and basic image ops. Supports SD 1.5, SD 2, SDXL, SD 3/3.5, Flux.1 [dev]/[schnell], Stable Cascade, Kolors, video models (LTX, Wan, HunyuanVideo), and audio via extensions.
+- Ships with checkpoint loader, CLIP text encoder, KSampler, VAE decode, LoadImage/SaveImage, LatentFromBatch, LoraLoader, ControlNet apply, upscalers, and basic image ops. Supports SD 1.5, SD 2, SDXL, SD 3/3.5, Flux.1 [dev]/[schnell], Flux.2 [max/pro/dev/flex], Stable Cascade, Kolors, video models (LTX, Wan 2.1/2.2, HunyuanVideo), Z-Image, and audio via extensions.
 - Official Electron desktop wrapper at <https://github.com/Comfy-Org/desktop> (aka `Comfy-Org/electron`) bundles ComfyUI, the frontend, ComfyUI-Manager, and `uv` for dependency management. This is the reference model for "ComfyUI as a backend packaged inside an app".
 
 ### ComfyUI-Manager — `ltdrdata` / `Comfy-Org/ComfyUI-Manager`
@@ -77,6 +80,8 @@ Sorted by relevance to asset generation (logos, icons, favicons, transparent PNG
 - Still widely referenced in existing workflows on civitai/openart. 210+ nodes: BLIP captioning, SAM wrappers, file I/O (Image Save with filename patterns including `%date%`, `%seed%`, `%prompt%`), color palette extraction, conditional logic, text wildcard processing.
 - **Caveat**: archived → treat as legacy. For new pipelines prefer Impact-Pack + Easy-Use + Crystools; only use WAS nodes when an imported workflow already depends on them.
 
+> **Updated 2026-04-21:** WAS Node Suite remains archived (read-only since 2025-06-02). Do not take new dependencies. The ComfyUI-RMBG node pack (1038lab/ComfyUI-RMBG) is now at v3.0.0 (released 2026-01-01), covering RMBG-2.0, BiRefNet, BEN, BEN2, SAM/SAM2/SAM3, SDMatte, and GroundingDINO in one node — a better replacement for the WAS-era background-removal nodes.
+
 ### Efficiency Nodes (efficiency-nodes-comfyui) — `jags111` fork
 
 - Original by `LucianoCirino`, maintained fork at <https://github.com/jags111/efficiency-nodes-comfyui>.
@@ -94,10 +99,13 @@ Sorted by relevance to asset generation (logos, icons, favicons, transparent PNG
 
 ### Background removal and alpha nodes (grouped)
 
-- **ComfyUI-RMBG** wrappers around BRIA RMBG-1.4/2.0 and BiRefNet.
-- **ComfyUI-BRIA_AI-RMBG** — <https://github.com/ZHO-ZHO-ZHO/ComfyUI-BRIA_AI-RMBG>.
-- **rembg** nodes (U²-Net family).
-- **Layer Diffuse for ComfyUI** — <https://github.com/huchenlei/ComfyUI-layerdiffuse> — implements LayerDiffuse (Zhang et al., 2024) producing *native* RGBA output, not post-hoc matting. This is the single most important node for the "transparent logo" use case; LayerDiffuse was designed specifically for transparent foregrounds and handles soft edges/anti-aliasing correctly, unlike rembg's binary mask + feather.
+- **ComfyUI-RMBG** (1038lab/ComfyUI-RMBG) — now at v3.0.0 (2026-01-01). Covers RMBG-2.0, INSPYRENET, BEN, BEN2, BiRefNet, SDMatte, SAM, SAM2, SAM3, GroundingDINO in one node pack. This is now the recommended single node pack for background removal in ComfyUI, superseding the older ZHO-ZHO-ZHO wrapper.
+- **ComfyUI-BRIA_AI-RMBG** — <https://github.com/ZHO-ZHO-ZHO/ComfyUI-BRIA_AI-RMBG> — older wrapper, still works but superseded by ComfyUI-RMBG v3.
+- **rembg** nodes (U²-Net family) — rembg itself is at v2.0.75 as of 2026-04-08, actively maintained.
+- **Layer Diffuse for ComfyUI** — <https://github.com/huchenlei/ComfyUI-layerdiffuse> — implements LayerDiffuse (Zhang et al., 2024) producing *native* RGBA output, not post-hoc matting. This is the single most important node for the "transparent logo" use case; LayerDiffuse was designed specifically for transparent foregrounds and handles soft edges/anti-aliasing correctly, unlike rembg's binary mask + feather. Last commit Feb 2025; receives maintenance updates; open issues through late 2025 indicate it is tracked.
+
+> **Updated 2026-04-21:** BRIA RMBG-2.0 still outperforms open-source BiRefNet (90% vs 85% on Bria's benchmark) and remains CC-BY-NC-4.0 — commercial use requires Bria/fal.ai/Replicate hosted endpoint. BiRefNet (ZhengPeng7/BiRefNet) is actively updated: June 2025 saw an 8x acceleration of `refine_foreground` via GPU; September 2025 upgraded the Swin Transformer attention to SDPA (lower memory). For new ComfyUI pipelines, 1038lab/ComfyUI-RMBG v3 is the recommended single node for both.
+
 - **ComfyUI-InstantMask** and **ComfyUI-SAM2** for mask-based compositing.
 
 ### Save / upload / webhook nodes
@@ -277,16 +285,25 @@ This is the right pattern for a "turn a sentence into a logo" product: the workf
 2. **WAS Node Suite is archived (June 2025)** — do not take new dependencies on it. Replace in imported workflows with Impact-Pack / Easy-Use / Crystools equivalents.
 3. **UI vs. API JSON confusion** — 90% of civitai workflows are shared in *UI format* (often just as a PNG with embedded metadata). A preprocessor that converts UI → API is mandatory; the frontend's `graphToPrompt()` is the reference implementation.
 4. **Transparency correctness** — prefer **LayerDiffuse** (`huchenlei/ComfyUI-layerdiffuse` or Easy-Use's `easy layerDiffusion`) over rembg post-processing when the asset is generated natively (logo, icon). Use rembg/BRIA-RMBG only as a fallback when LayerDiffuse's model isn't available for the target checkpoint.
-5. **Model licensing on serverless** — SDXL is CreativeML-OpenRAIL-M (permissive); Flux.1 [dev] is non-commercial, Flux.1 [schnell] is Apache-2.0, Flux.1 [pro] is API-only. For a commercial asset generator, favor Flux Schnell, SDXL + logo LoRA, or Stable Cascade.
+5. **Model licensing on serverless** — SDXL is CreativeML-OpenRAIL-M (permissive); Flux.1 [dev] is non-commercial, Flux.1 [schnell] is Apache-2.0, Flux.1 [pro] is API-only. Flux.2 variants follow the same split (dev = non-commercial, others check BFL license). For a commercial asset generator, favor Flux Schnell, SDXL + logo LoRA, or Stable Cascade.
 6. **Workflow injection safety** — a user-supplied workflow can call any node, including file-system nodes and arbitrary HTTP fetch nodes. Either lock the agent to a whitelist of template workflows, or run each job in an isolated container (Modal/RunPod/Replicate all provide this by default).
+
+> **Updated 2026-04-21 — ecosystem context:**
+> - **AUTOMATIC1111 (a1111)**: Last release v1.10.1 (July 2024). No releases since; effectively unmaintained. Many advanced users have migrated to ComfyUI or Forge. Do not plan new integrations against a1111 — reference it only for legacy workflow import.
+> - **Forge (lllyasviel/stable-diffusion-webui-forge)**: Last release July 22, 2025. Based on a1111 v1.10.1; syncs with upstream every ~90 days or when critical fixes land. Receives issue reports and occasional patches but is not rapidly developed. Still the preferred drop-in replacement for a1111 users who want Flux support without switching to ComfyUI.
+> - **InvokeAI**: Actively maintained at v6.x (v6.12 adds experimental multi-user mode). Now supports Flux.2 Klein, Z-Image, FLUX.2 LoRA formats. Still the recommended choice for node-graph-free diffusion UIs aimed at professional creatives. Not relevant as a ComfyUI replacement for agentic/headless use.
+> - **kohya_ss**: Actively maintained; supports Flux LoRA training (sd-scripts v0.9.1 as of Oct 2025). Recommended for SDXL/Flux.1 LoRA training on consumer hardware. High VRAM demands for Flux.2.
+> - **ostris/ai-toolkit**: As of April 2026 it is probably the most popular Flux LoRA trainer. Supports 10+ model architectures including Flux.1, Flux.2, Wan 2.1/2.2, Lumina2, Z-Image. Active development confirmed. Supersedes kohya_ss for Flux-native training workflows.
+> - **IP-Adapter (tencent-ailab/IP-Adapter)**: Last commit to the main repo was January 2024 (added FaceID-Portrait). The original repo is effectively unmaintained. The IP-Adapter *concept* lives on in InstantX's FLUX.1-dev IP-Adapter (released Nov 2024) and in the `comfyorg/comfyui-ipadapter` node. For new work, use InstantX's Flux IP-Adapter or the ComfyUI node directly.
+> - **diffusers (Hugging Face)**: At v0.37.1 (released 2026-03-25). Introduced Modular Diffusers (composable pipeline blocks). Full Flux.1/Flux.2 support, SD3.5 support, Z-Image, Flux Klein LoRA loading. Extremely active. Use as the Python-side foundation for custom pipelines.
 
 ## References
 
 ### ComfyUI core & manager
 
-- <https://github.com/comfyanonymous/ComfyUI>
+- <https://github.com/comfyanonymous/ComfyUI> (redirects to Comfy-Org/ComfyUI) — **~108.5k★ as of 2026-04-13**
 - <https://github.com/Comfy-Org/desktop> (Electron wrapper)
-- <https://github.com/Comfy-Org/ComfyUI-Manager> — 14.3k stars
+- <https://github.com/Comfy-Org/ComfyUI-Manager> — 14.3k★; v4.1 (2026-03-25); now officially integrated into core ComfyUI
 - <https://docs.comfy.org/> — official docs (routes, registry, manager, custom-nodes backend)
 - <https://registry.comfy.org/> — node registry
 

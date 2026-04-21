@@ -5,6 +5,21 @@ date: 2026-04-21
 research_files: [01, 02, 03, 04, 05, 06, 07, 08]
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
+> **Key corrections applied 2026-04-21 (across all angle files in this category):**
+>
+> | Item | Old (stale) | New (correct) |
+> |---|---|---|
+> | DALL-E 3 | Active model | **Retiring May 12, 2026.** Migrate to `gpt-image-1.5` (current, 20% cheaper, stronger brand logo preservation) |
+> | Recraft V3 | Current native SVG model | **V3 superseded by V4** (February 2026). Use V4 Vector / V4 Pro Vector for all new work |
+> | Ideogram v3 transparency | `style: "transparent"` param on standard endpoint | **Dedicated endpoint `/ideogram-v3/generate-transparent`** — separate from standard generate |
+> | Midjourney | V7, no API | **V8 Alpha** launched March 17, 2026 (5× faster, native 2K, improved text). Still no official public API |
+> | Claude model references | claude-2/3.x era naming | **Claude 4.0-series** (claude-sonnet-4-20250514, claude-opus-4-20250514) **retires June 15, 2026** → migrate to claude-sonnet-4-6 / claude-opus-4-6 |
+> | Gemini image free tier | "~1,500 images/day free" | **No free image API tier** since Dec 2025. AI Studio web UI is free (interactive); API requires billing. $0.039/img Nano Banana |
+> | MCP spec version | Unspecified | **2025-11-25 is Latest Stable** (released Nov 25, 2025). Adds async Tasks, OpenID Connect Discovery, extension framework |
+> | SKILL.md portability | Claude Code only | **Open cross-IDE standard**: Claude Code, Cursor, Windsurf, Gemini CLI, Codex CLI. Same format, different destination folder |
+
 # P2A Complementary Skills — Synthesis and Recommendations
 
 ---
@@ -95,7 +110,7 @@ Every P2A user who hits a validation failure currently gets a 1–2 sentence rep
 Prompt-dialect knowledge is currently spread across `asset-enhancer` (most complete), `logo`, `illustration`, and `og-image` skills with no decision tree. Users cannot reason about why Flux errors on `negative_prompt`, why Imagen needs ≥30 words, or how to encode brand palette for each model. This skill moves the 7-provider rewriting rules into a deterministic pipeline: normalize brief → rewrite for target model grammar/token budget → inject brand bundle per-provider → validate pre-generation checklist → emit `{dialect_prompt, model_params, warnings[]}`. It sits between `asset_enhance_prompt()` and `asset_generate_*()`.
 
 **Key capabilities:**
-- Per-model rewriting rules for 7 providers: gpt-image-1, Imagen/Gemini, SDXL, Flux.1/2, Midjourney, Ideogram, Recraft
+- Per-model rewriting rules for 7 providers: gpt-image-1.5 (gpt-image-1 still valid; DALL-E 3 retiring May 12, 2026), Imagen/Gemini, SDXL, Flux.1/2, Midjourney v8, Ideogram, Recraft V4
 - Negative-prompt handling table: which models accept, which error, which ignore silently
 - Brand bundle injection per model: Recraft `controls.colors`, Flux.2 `color_palette` JSON, Midjourney `--sref`, SDXL IP-Adapter
 - Text-in-image ceiling table per model (≤3 words for SDXL/MJ; ≤5 for Ideogram/gpt-image-1)

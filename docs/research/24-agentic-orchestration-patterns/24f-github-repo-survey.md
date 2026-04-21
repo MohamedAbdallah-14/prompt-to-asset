@@ -33,7 +33,7 @@ AutoGen v0.4 re-architected the library around async message passing. Key design
 - **`Swarm`** — localized tool-based selection instead of centralized coordinator. Each agent decides whether to hand off based on its own tools.
 - **Async event-driven core** — agents communicate through typed messages, not shared state. This matches the MCP request/response model and makes it safe to run concurrent generation tasks.
 
-AutoGen is now in maintenance mode; Microsoft Agent Framework (MAF) is the production successor. For prompt-to-asset the relevant pattern is `SelectorGroupChat` with a custom selector that reads `asset_type` from the incoming message to deterministically pick a routing path.
+> **Updated 2026-04-21:** AutoGen is now officially in **maintenance mode** — bug fixes and security patches only. **Microsoft Agent Framework (MAF) 1.0 reached GA on April 3, 2026**, merging AutoGen and Semantic Kernel into a single production-ready framework with graph-based workflows, MCP support, checkpointing, and human-in-the-loop. **Do not start new projects on AutoGen v0.4.** Migration guide: learn.microsoft.com/en-us/agent-framework/migration-guide/from-autogen/. For prompt-to-asset the `SelectorGroupChat` pattern remains relevant conceptually — its equivalent in MAF is its group-chat orchestration mode.
 
 Key file: `python/packages/autogen-agentchat/autogen_agentchat/teams/_group_chat/_selector_group_chat.py`
 
@@ -46,7 +46,9 @@ Key file: `python/packages/autogen-agentchat/autogen_agentchat/teams/_group_chat
 
 LangGraph models agent workflows as `StateGraph` — nodes are functions, edges are transitions, state persists across nodes via checkpointers (SQLite, PostgreSQL). Key insight: **after every node execution, state is saved**. If the process crashes mid-pipeline, it resumes from the last successful node. This is exactly what prompt-to-asset needs for `api` mode: if the image model call succeeds but BiRefNet crashes, the checkpoint holds the raw image and the matte step retries without re-billing the generation API.
 
-The `langgraph-js` variant (https://github.com/langchain-ai/langgraphjs) is TypeScript-first, making it directly compatible with the prompt-to-asset MCP server codebase.
+The `langgraph-js` variant (https://github.com/langchain-ai/langgraphjs, npm: `@langchain/langgraph`) is TypeScript-first, making it directly compatible with the prompt-to-asset MCP server codebase.
+
+> **Updated 2026-04-21:** LangGraph is at **v1.1.8** (Python, April 17, 2026) and **v1.2.9** (TypeScript). v1.1.x added deferred node execution (a node only runs after all parallel branches complete), and the `stream(version="v2")` / `invoke(version="v2")` typed API. Python 3.9 support dropped; Python 3.14 added. The JS package sees 42k+ weekly npm downloads. Both are MIT-licensed.
 
 Relevant pattern: conditional edges. After generation, branch: if alpha channel present → skip matte step, else → route through BiRefNet. LangGraph's `addConditionalEdges` handles this in ~10 lines.
 
@@ -146,6 +148,8 @@ Single `generate_image` tool that internally runs a two-stage pipeline: Gemini 2
 
 Pattern for prompt-to-asset: `asset_enhance_prompt` already does this, but shinpr's public/private preset mapping (fast=Flash, quality=Pro) is a clean pattern for exposing cost/quality tradeoffs to users without exposing model names.
 
+> **Updated 2026-04-21:** Google ADK now supports Gemini 3 Pro and Gemini 3 Flash natively. If referencing Gemini model variants in preset mappings for new code, prefer Gemini 3 Flash (fast) / Gemini 3 Pro (quality) over older 2.x naming. Note: Gemini/Imagen image-gen API still requires a billed project — no free API tier as of 2025-12 (see CLAUDE.md).
+
 ---
 
 ## 12. OmniSVG — End-to-End Multimodal SVG Generation
@@ -164,8 +168,9 @@ For prompt-to-asset: OmniSVG or a similar hosted endpoint could replace the LLM-
 | Repo | Stars | Key Pattern | Applicable To |
 |---|---|---|---|
 | openai/openai-agents-python | — | Parallelization, judge, routing, handoffs | Orchestration, validation loop |
-| microsoft/autogen | 40k+ | SelectorGroupChat, async messages | Multi-provider dispatch |
-| langchain-ai/langgraph | 10k+ | Checkpointed state machine | Fault-tolerant pipeline |
+| microsoft/autogen | 40k+ | SelectorGroupChat, async messages (**maintenance mode** — migrate to MAF) | Multi-provider dispatch |
+| microsoft/agent-framework | — | Graph workflows, MCP, checkpointing (GA April 2026) | AutoGen successor |
+| langchain-ai/langgraph | 10k+ | Checkpointed state machine (v1.1.8 Python / v1.2.9 TS) | Fault-tolerant pipeline |
 | lm-sys/RouteLLM | 4.8k | Threshold routing with cost model | Provider selection |
 | huggingface/diffusers | 27k | Modular composable blocks | Pipeline step design |
 | comfyanonymous/ComfyUI | 65k+ | Workflow-as-JSON graph | Reproducible asset bundles |

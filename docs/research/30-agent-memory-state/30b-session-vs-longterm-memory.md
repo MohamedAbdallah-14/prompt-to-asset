@@ -46,9 +46,11 @@ Long-term memory: user-level knowledge graph accumulating across sessions.
 
 Benchmark: 94.8% accuracy on Deep Memory Retrieval vs 93.4% for MemGPT. 90% latency reduction vs naive retrieval.
 
+> **Updated 2026-04-21:** More recent LongMemEval benchmarks (GPT-4o) show Zep at 63.8% vs Mem0 at 49.0% — a 15-point gap that reflects Zep's temporal fact modeling advantage over flat vector storage. Graphiti (Zep's open-source graph engine) crossed 20,000 GitHub stars in early 2026 and is production-grade, with expanding enterprise adoption. Zep has separated clearly into a hosted context-engineering platform and an open-source Graphiti library — the library is usable without the full Zep service. Additionally, **Graphiti MCP Server v1.0** shipped in November 2025 and is compatible with Claude Desktop, Cursor, and any MCP client — this makes Graphiti usable as a drop-in memory backend for MCP servers without writing custom tool integrations. Infrastructure work in late 2025 brought Graphiti P95 graph search latency from 600ms to 150ms, putting it in interactive-viable range.
+
 **Practical fit:** Zep's user-level graph is the right model for "user prefers Recraft, hates checkerboard outputs, always wants 1024×1024." The session-level summary is less useful — asset generation sessions are short.
 
-**Caveat:** Zep is a service (hosted or self-hosted). It adds a hard external dependency for what is fundamentally a local tool. For a CLI-first MCP server, this is a significant burden to put on users.
+**Caveat:** Zep is a service (hosted or self-hosted). It adds a hard external dependency for what is fundamentally a local tool. For a CLI-first MCP server, this is a significant burden to put on users. Using Graphiti directly (without the Zep platform) reduces operational overhead but requires a Neo4j or compatible graph backend.
 
 ### SQLite WAL as the Transition Point
 
@@ -91,10 +93,16 @@ The cleanest boundary:
 
 LLMs with long context windows (200k+) can absorb the full session log as injected context at the start of each call — eliminating the in-process dict entirely and keeping the server fully stateless.
 
+> **Updated 2026-04-21:** Claude context windows as of April 2026: all Claude 4.x models (Haiku 4.5, Sonnet 4.6, Opus 4.6) carry a **200k-token standard context window**. Additionally, Claude Sonnet 4.6 and Opus 4.6 support **1M tokens** at standard pricing (no beta header required in usage tier 4). Claude Haiku 4.5 remains at 200k. GPT-4o is at 128k. This 200k floor changes the calculus for session-log injection: at 200k tokens you can include ~150,000 words of session history inline — the in-process dict is rarely needed unless you're building for long-running agentic loops lasting multiple hours.
+
+> **Updated 2026-04-21:** Anthropic now offers a first-party **Memory Tool** (`type: memory_20250818`) in the Claude API. It supports six file-level operations (view, create, str\_replace, insert, delete, rename) and provides persistent cross-session memory managed by the LLM itself. Compatible models: Sonnet 4.6/4.5/4, Opus 4.5/4.1/4, Haiku 4.5. The tool requires the beta header `context-management-2025-06-27`. This is a viable alternative to rolling a custom SQLite preference store for Claude-hosted agentic workflows — though for an MCP server it still requires the application to call the tool and manage the backing storage. Anthropic reports an 84% token reduction in extended workflows when using this tool to avoid re-loading known context. See [Memory Tool Docs](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool).
+
 ## Sources
 
 - [Zep arXiv Paper](https://arxiv.org/abs/2501.13956)
 - [Zep Agent Memory](https://www.getzep.com/product/agent-memory/)
+- [Graphiti GitHub](https://github.com/getzep/graphiti)
 - [Stevens SQLite Assistant](https://www.geoffreylitt.com/2025/04/12/how-i-made-a-useful-ai-assistant-with-one-sqlite-table-and-a-handful-of-cron-jobs)
 - [Glama MCP Memory Patterns](https://glama.ai/blog/2025-08-15-can-mcp-tools-remember-things-between-calls)
 - [MCP Memory and State Management](https://medium.com/@parichay2406/mcp-memory-and-state-management-8738dd920e16)
+- [Claude API Memory Tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool)

@@ -9,6 +9,8 @@ angles_indexed:
   - 1e-survey-papers.md
 ---
 
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 01 — Prompt Engineering Theory: Synthesis
 
 ## Category Executive Summary
@@ -25,7 +27,7 @@ angles_indexed:
 10. **Prompt weighting is not portable.** `(red:1.5)` means four different things in A1111 (scale the hidden-state slice), ComfyUI default (lerp against empty embedding), Compel (asymmetric masked blend on down-weight), and Midjourney (no per-word weight exists — must rewrite as `::` multi-prompt). Any enhancer that emits weights must track `(ecosystem, model family, parser)` as a triple (see 1d §1, §"Example 1").
 11. **SFT → RL against image-level rewards is the standard training recipe for rewriters.** Promptist, BeautifulPrompt, Datta et al., RePrompt, and PromptToAsset all replace hand-engineered style suffixes ("trending on artstation, 8k") with learned, image-grounded rewrites; all report cross-backbone transfer (see 1c §2; 1e §"Automatic prompt optimization").
 12. **Chain-of-thought decomposition beats monolithic expansion on hard prompts.** PromptToAsset's CoT trace + 24-point AlignEvaluator, DeCoT's two-stage decomposition, LayerCraft's agentic loop, and LayoutGPT's CSS-style emission all outperform single-pass rewrites on attribute binding, counting, and spatial relations (see 1c §3).
-13. **"Magic terms" decay across model versions.** Oppenlaender's ethnography documents that community-password tokens (*unreal engine, trending on artstation, 8k*) weaken on SDXL/SD3 and are largely ignored by MJ v6+ and Flux; modifier lists must be versioned per target (see 1e §"Consensus on failure modes" #2; 1d §6).
+13. **"Magic terms" decay across model versions.** Oppenlaender's ethnography documents that community-password tokens (*unreal engine, trending on artstation, 8k*) weaken on SDXL/SD3 and are largely ignored by MJ v7 (current default) and Flux/FLUX.2; modifier lists must be versioned per target (see 1e §"Consensus on failure modes" #2; 1d §6).
 14. **User-intent preservation through rewriters is unsolved.** DALL·E 3 silently converts `"a logo of OpenAI on a green background"` into `"an emblem that depicts the concept of openness…"` — the rewriter's aesthetic prior clobbers literal intent, with no API opt-out (see 1c §5, §"Known Failures" #1).
 15. **True transparency is not a CFG or attention problem.** No training-free method in any angle produces real alpha; it requires a fine-tuned RGBA model (LayerDiffuse) or post-hoc matting. Emit a transparency *flag*, not a transparency *prompt token* (see 1a §"Open Questions" #3; 1b §"Open Questions").
 
@@ -56,6 +58,8 @@ Both 1a §"oversaturation failure mode" and 1d §F1 cite Sadat et al. arXiv:2410
 ### P5 — Model-family-specific plumbing (1a, 1c, 1d)
 Every angle forces the reader to branch on model family. 1a: SD 1.5/SDXL/SD3 use two-pass CFG; Flux/*-Turbo don't, and `negative_prompt` is a hard error. 1c: CLIP encoders hard-truncate at 77 tokens; T5-XXL and Qwen-Image do not. 1d: the same `(word:1.5)` syntax produces four different conditioning outcomes. For an enhancer targeting heterogeneous backends, *model detection and routing is the architecture*, not an afterthought.
 
+> **Updated 2026-04-21:** FLUX.2 (released Nov 2025, [dev] open-weight Dec 2025) is the current Black Forest Labs generation. It shares the same T5-XXL + CLIP-L architecture and guidance-distillation behavior as FLUX 1.x; the `negative_prompt` restriction carries over. Multi-reference support (up to 10 images) is the key new capability. `gpt-image-1` / `gpt-image-1.5` replace DALL-E 3 in the "black-box API, text-only, no negative prompt channel" family.
+
 ## Controversies / Disagreements
 
 ### C1 — Long, descriptive prompts vs "stop using styles and attention-modifiers"
@@ -84,14 +88,16 @@ Promptist and BeautifulPrompt (1e §"Automatic prompt optimization") reward "mag
 ## Actionable Recommendations for the prompt-to-asset Plugin
 
 1. **Route by `(ecosystem, model family, parser)` triple, not by "model name."** The same Flux.1-dev reached via the stock diffusers pipeline, a CFG-injected wrapper, SwarmUI, or a ComfyUI `CLIPTextEncodeFlux` node has *different* prompt semantics. Detect and dispatch — don't assume a single canonical form (1a §"Guidance distillation"; 1d §1).
-2. **For CLIP-only targets (SD 1.5, SDXL), emit comma-separated keyword lists with measured weighting; for T5/DiT targets (Flux, SD3, DALL·E 3, Imagen 3), emit full-sentence descriptive prose and avoid `(:w)` syntax** (1c §4; 1d §6; SD.Next wiki guidance cited in 1d §6).
+2. **For CLIP-only targets (SD 1.5, SDXL), emit comma-separated keyword lists with measured weighting; for T5/DiT targets (Flux/FLUX.2, SD3, gpt-image-1/1.5 [formerly DALL-E 3], Imagen 3), emit full-sentence descriptive prose and avoid `(:w)` syntax** (1c §4; 1d §6; SD.Next wiki guidance cited in 1d §6).
 3. **Never emit `negative_prompt` for Flux/*-Turbo pipelines. Encode exclusions as natural-language negation inside the positive prompt** ("isolated on white, no drop shadow, no gradient background, no text beyond the letter, no watermark"). Detect the pipeline class and switch (1a §"Guidance distillation"; §"Known Failures" #5).
 4. **When the target supports CFG ≥ 7, emit `guidance_rescale ≈ 0.5–0.7` or APG parameters.** Ship a model-aware CFG default (SD 1.5: 7.0 + rescale 0.7; SDXL: 6.0 + rescale 0.7; Flux: 3.5 raw; SD3: ~4.5) as a lookup rather than a user-facing slider (1a §"oversaturation failure mode"; 1a §"Tools").
 5. **Preserve literal noun phrases and type qualifiers verbatim through any rewrite pass.** "Logo," "icon," "favicon," "wireframe," hex color codes, and any single-quoted phrase should be copy-with-high-probability constraints. The DALL·E 3 intent-override failure is the canonical warning (1c §5; §"Known Failures" #1).
 6. **Decompose complex multi-subject prompts before expansion, not after.** Emit a LayoutGPT-style or DeCoT-style intermediate representation (`{subjects: [{tokens, bbox}], attribute_pairs: [{modifier, head}]}`) when the backend understands it; fall back to a Structured-Diffusion-Guidance-style noun-phrase isolation for text-only APIs (1b §F3, §"Example 2"; 1c §3).
 7. **Budget and chunk against the downstream text encoder.** For CLIP-only pipelines, detect ≤77 tokens and either emit `compel`-style long-weighted embeddings, A1111 `BREAK`-separated chunks, or `lpw_stable_diffusion`. For T5-XXL, allow ~512 tokens of natural language. Never silently ship a 200-token LLM rewrite to SD 1.5 (1c §4, §"Known Failures" #2; 1d §"F4").
 8. **Do not expect the diffusion model to produce alpha.** Emit a `{transparent: true}` flag that the asset pipeline consumes via a separate route — LayerDiffuse for fine-tuned RGBA output, or post-hoc matting (SAM/rembg/BiRefNet). Do *not* rely on prompt tokens like "transparent background" to produce real alpha (1a §"Open Questions" #3; 1b §"Open Questions" — transparency out of scope).
-9. **Version modifier vocabularies per target model.** Ship modifier sets tagged `sd15`, `sdxl`, `sd3`, `flux`, `dalle3`, `imagen3`, `mjv6`, `mjv7`. Oppenlaender's decay finding means a single shared "magic terms" list silently degrades quality on newer targets (1e §"Consensus on failure modes" #2).
+9. **Version modifier vocabularies per target model.** Ship modifier sets tagged `sd15`, `sdxl`, `sd3`, `flux`, `flux2`, `gpt-image-1`, `imagen3`, `mjv6`, `mjv7` (v7 is the current stable default as of June 2025; v8.1 alpha is in testing as of April 2026). Oppenlaender's decay finding means a single shared "magic terms" list silently degrades quality on newer targets (1e §"Consensus on failure modes" #2).
+
+> **Updated 2026-04-21:** `dalle3` tag is now legacy — DALL-E 3 API is deprecated (removal May 12, 2026). Use `gpt-image-1` or `gpt-image-1.5` for current OpenAI image generation. FLUX.2 was released November 2025 (multi-reference, improved text rendering) and should be treated as a distinct target from FLUX 1.x.
 10. **Instrument with a compositional evaluator, not aesthetic score alone.** DSG or TIFA-style VQA scoring on attribute binding, counting, and spatial relations should be a first-class metric alongside CLIPScore and human preference; use it to gate self-rewrites in an LLM-iterative-rewrite loop (OPT2I pattern) before shipping prompts to users (1e §"Automatic prompt optimization"; §"Tools"; 1c §2).
 
 ## Primary Sources Aggregated (De-duplicated)
@@ -126,7 +132,7 @@ Promptist and BeautifulPrompt (1e §"Automatic prompt optimization") reward "mag
 - Prompt Forgetting in DiT 2026 — https://arxiv.org/pdf/2602.06886 (1b)
 
 ### LLM prompt expansion / decomposition
-- Betker et al. 2023, DALL·E 3 (Improving Image Generation with Better Captions) — https://cdn.openai.com/papers/dall-e-3.pdf (1c)
+- Betker et al. 2023, DALL·E 3 (Improving Image Generation with Better Captions) — https://cdn.openai.com/papers/dall-e-3.pdf (1c) [**Note 2026-04-21:** DALL-E 3 deprecated; API removal May 12, 2026. Successor: `gpt-image-1` / `gpt-image-1.5`.]
 - Hao et al. NeurIPS 2023, Promptist — https://arxiv.org/abs/2212.09611 (1c, 1e)
 - Cao et al. EMNLP 2023, BeautifulPrompt — https://arxiv.org/abs/2311.06752 (1c)
 - Datta et al. ACL 2024, Prompt Expansion — https://aclanthology.org/2024.acl-long.189/ (1c)
@@ -190,7 +196,7 @@ Promptist and BeautifulPrompt (1e §"Automatic prompt optimization") reward "mag
 - Midjourney Multi-Prompts & Weights — https://docs.midjourney.com/hc/en-us/articles/32658968492557-Multi-Prompts-Weights (1d)
 - Midjourney Stylize docs — https://docs.midjourney.com/docs/stylize (1d)
 - InvokeAI advanced prompting — https://support.invoke.ai/support/solutions/articles/151000096723-advanced-prompting-syntax (1d)
-- OpenAI Cookbook — What's new with DALL·E 3 — https://cookbook.openai.com/articles/what_is_new_with_dalle_3 (1c)
+- OpenAI Cookbook — What's new with DALL·E 3 — https://cookbook.openai.com/articles/what_is_new_with_dalle_3 (1c) [**legacy** — DALL-E 3 deprecated; see `gpt-image-1` / `gpt-image-1.5` documentation for current behavior]
 - DALL·E 3 system prompt leak 2023-10-07 — https://leaked-system-prompts.com/prompts/openai/openai-dall-e-3_20231007-2 (1c)
 - OpenAI community — rewriter-without-permission (thread 476355) — https://community.openai.com/t/api-image-generation-in-dall-e-3-changes-my-original-prompt-without-my-permission/476355 (1c)
 - Flux.1-dev HF discussion #17 — guidance distillation — https://huggingface.co/black-forest-labs/FLUX.1-dev/discussions/17 (1a)

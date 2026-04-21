@@ -29,6 +29,8 @@ Microsoft's Azure Architecture Center (updated February 2026) documents the full
 
 Google ADK (Agent Development Kit) exposes a `ParallelAgent` primitive directly in its API (google.github.io/adk-docs/agents/workflow-agents/parallel-agents/).
 
+> **Updated 2026-04-21:** Google ADK is now available in Python, TypeScript, Go, and Java; the Java SDK reached 1.0 in April 2026. The ADK release cadence is roughly bi-weekly; latest release April 17, 2026. For the fan-out pattern, `ParallelAgent` remains stable and available across all language SDKs. The OpenAI Agents SDK April 2026 update added native sandbox execution and a model-native harness, launching Python-first; the new sandboxing features for parallel subagents are Python-only as of April 2026 — TypeScript support is planned.
+
 ## Key GitHub Repos and Docs
 
 - **OpenAI Agents SDK Cookbook — parallel_agents** (developers.openai.com/cookbook/examples/agents_sdk/parallel_agents) — canonical asyncio and agents-as-tools implementations

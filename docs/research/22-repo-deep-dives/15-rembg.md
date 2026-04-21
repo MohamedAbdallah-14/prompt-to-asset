@@ -39,6 +39,15 @@ tags: [rembg, matting, u2net, birefnet, bria-rmbg, transparency, background-remo
 
 - **Stars:** ~22.5k (2,268 forks, ~80 contributors)
 - **Latest release:** `v2.0.75`, April 8, 2026 (62 total releases; active)
+
+> **Updated 2026-04-21:** v2.0.75 (April 8, 2026) is confirmed as the latest
+> release. The 2M/month PyPI download rate is sustained. BiRefNet integration
+> remains the highest-quality MIT-licensed model in the catalog. No changes to
+> the `bria-rmbg` CC BY-NC 4.0 license status — it is still a commercial-use
+> landmine and must remain gated behind `REMBG_ALLOW_BRIA=1`. The `rembg s
+> --no-ui` HTTP server path and the `rembg-webgpu` browser path remain
+> unchanged. No new models added in v2.0.73–v2.0.75 (those releases were
+> maintenance: removed unneeded `log_softmax()` calls, added a CLI man page).
 - **PyPI pulls:** ~2 M/month, ~79 k/day — the de-facto default background-remover for Python
 - **Top-level license:** **MIT** on the codebase (`LICENSE` at repo root)
 - **Primary language:** Python (>=3.9), wraps [`onnxruntime`](https://onnxruntime.ai/) and [`pymatting`](https://github.com/pymatting/pymatting)
@@ -127,6 +136,8 @@ Three structural reasons: (a) `u2net.onnx` uses INT64 weights TensorRT doesn't n
 **What actually moves the needle in production:** pick the right model (`birefnet-general-lite` at ~43 MB is ~2× faster than `u2net` at equal quality on logos/icons), warm the session, batch through the HTTP server with uvicorn workers, and stop expecting GPU magic below ~100 concurrent requests.
 
 For Apple Silicon specifically: `onnxruntime-silicon` + CoreML EP gives 2–4× speedup on U²Net-class models but **falls back to CPU on BiRefNet** due to unsupported ops (as of April 2026). On an M2 Pro, `birefnet-general-lite` runs ~1.2 s/image CPU, which is fast enough for interactive use.
+
+> **Updated 2026-04-21:** Apple Silicon CoreML support is not officially documented in the main `rembg` project; community workarounds exist (a gist by fathonix for installing with CoreML) but are not integrated into the mainline package. The `onnxruntime-silicon` path remains unofficial. Treat the 2–4× CoreML speedup figure as community-reported, not maintainer-verified. The CPU path for `birefnet-general-lite` (~1.2 s/image) is the safe baseline for M-series hardware.
 
 ## Alpha quality vs BRIA RMBG 2.0, and the fringing story
 

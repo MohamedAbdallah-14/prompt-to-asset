@@ -20,7 +20,7 @@ Almost every modern T2I VAE is **RGB-only**. Asking Imagen 3/4 or Gemini 2.5/3 F
 | Provider | Mechanism |
 |---|---|
 | **`gpt-image-1` / `gpt-image-1.5`** | API param `background: "transparent"` + `output_format: "png"` or `"webp"` |
-| **Ideogram 3 Turbo** | API param `style: "transparent"` |
+| **Ideogram 3 Turbo** | Dedicated `/ideogram-v3/generate-transparent` endpoint; set `rendering_speed: "TURBO"` for Turbo tier |
 | **Recraft V3** | native SVG output (alpha is trivial); rasterize if raster needed |
 | **LayerDiffuse on SDXL / Flux** | In-diffusion-loop transparency adapter; better edges than post-matte |
 

@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 13 — Transparent Backgrounds
 
 The #1 pain: RGB-only VAEs render a Photoshop-style checkerboard as pixels. Fix hierarchy — route to native-RGBA model → LayerDiffuse → post-matte (BiRefNet / BRIA RMBG-2.0) → vectorize-and-drop.

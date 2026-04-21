@@ -179,6 +179,7 @@ The proposed schema is DTCG-compatible (so existing token tooling like Style Dic
           "use_prose": true,
           "sref": "3827461029",
           "sw": 300,
+          "sv": 6,
           "ar": "from_output_constraints"
         },
         "ideogram-v3": {
@@ -245,9 +246,15 @@ None of these, however, bind their tokens to generative image assets. They stop 
 
 ### Generative-side primitives the bundle must wrap
 
-- **Midjourney `--sref`** — captures palette, texture, composition, lighting of a reference image without copying content ([official docs](https://docs.midjourney.com/docs/style-reference)). Style weight via `--sw 0–1000` (default 100). Multiple refs compose: `--sref URL1 URL2 URL3`. Teams already accumulate `--sref` codes without governance, leading to drift ([Numonic write-up, 2026](https://numonic.ai/blog/midjourney-brand-consistency-guide)) — exactly the problem a bundle solves.
+- **Midjourney `--sref`** — captures palette, texture, composition, lighting of a reference image without copying content ([official docs](https://docs.midjourney.com/hc/en-us/articles/32180011136653-Style-Reference)). Style weight via `--sw 0–1000` (default 100). Multiple refs compose: `--sref URL1 URL2 URL3`. Teams already accumulate `--sref` codes without governance, leading to drift ([Numonic write-up, 2026](https://numonic.ai/blog/midjourney-brand-consistency-guide)) — exactly the problem a bundle solves.
+
+> **Updated 2026-04-21:** MJ V7 introduced six `--sv` (style-version) sub-algorithms (`--sv 1`–`--sv 6`); `--sv 6` is default since June 16, 2025. Store the `--sv` value alongside the sref code in `model_bindings.midjourney` to ensure reproductions use the same algorithm. MJ V8 (alpha March 17, 2026) keeps `--sref` but drops `--oref`/`--ow` in V8.1 Alpha. Update `model_bindings` from `midjourney-v7` to `midjourney-v8` when V8 reaches stable release. Also new: **Style Creator** in the MJ web UI allows browsing and saving internal style codes without uploading references.
 - **IP-Adapter** ([arXiv 2308.06721](https://arxiv.org/abs/2308.06721), cubiq's [ComfyUI implementation](https://github.com/cubiq/ComfyUI_IPAdapter_plus)) — ~100 MB decoupled cross-attention adapter, often called a "one-image LoRA." Plus variants (`ip-adapter-plus_sdxl`, `ip-adapter-plus-face_sdxl`) give stronger conditioning; pairs with CLIP Vision encoder.
+
+> **Updated 2026-04-21:** **XLabs-AI** released `flux-ip-adapter-v2` for Flux.1-dev ([HuggingFace](https://huggingface.co/XLabs-AI/flux-ip-adapter-v2)), trained at 1024×1024 for 350k steps. V2 adds improved aspect-ratio preservation and facial detail, and integrates with XLabs' ControlNet (Canny, Depth, HED) for combined image-prompt + structure conditioning. The `ip_adapter.model` field in the brand bundle schema should support `"xlabs-flux-ip-adapter-v2"` as a valid value for Flux-based pipelines. For the brand bundle: the `ip_adapter` block in `$extensions.ai.generation` should specify `"model": "xlabs-flux-ip-adapter-v2"` when `flux.1-dev` is the generation target.
 - **LoRA on Flux/SDXL** — 25–200 images, consistent trigger phrase (e.g., `acmebrand illustration style`), Style Dictionary-like pipelines on [fal.ai](https://blog.fal.ai/training-flux-2-loras) / [AI Toolkit](https://blog.segmind.com/training-flux-lora-ai-toolkit/). For a brand, 100–200 curated assets + a distinctive trigger token is the current sweet spot.
+
+> **Updated 2026-04-21:** `ostris/ai-toolkit` now supports **Flux.2** (Klein 4B/9B, Dev 9B) and 10+ model architectures (Flux.1, Flux.2, SDXL, Wan 2.1/2.2, LTX-2, Lumina2, Qwen Image, Z-Image Turbo). Flux.2 Klein requires ≥32 GB VRAM; Flux.2 Dev requires 80 GB+. For brand LoRA work, Flux.1-dev remains the most cost-effective open-weights choice; Flux.2 Dev is higher quality but extremely VRAM-hungry. Source: [ostris/ai-toolkit](https://github.com/ostris/ai-toolkit), [FLUX.2 LoRA Training Guide](https://www.runcomfy.com/trainer/ai-toolkit/flux-2-dev-lora-training).
 
 ---
 

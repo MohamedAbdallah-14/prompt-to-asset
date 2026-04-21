@@ -153,7 +153,7 @@ For flat logos, icons, and monochrome marks, the classical algorithms are still
 state-of-the-art on speed and deterministic output — and they compose well as a
 *post-processor* for raster-model outputs.
 
-- **[visioncortex/vtracer](https://github.com/visioncortex/vtracer)** (5.7k★, MIT, Rust):
+- **[visioncortex/vtracer](https://github.com/visioncortex/vtracer)** (5.8k★ as of 2026-04, MIT, Rust):
   O(n) full-color vectorization, WASM and CLI distributions, gigapixel-capable. Default
   choice for full-color or gradient-heavy inputs.
 - **[autotrace/autotrace](https://github.com/autotrace/autotrace)** (~692★, GPL-2.0, C):

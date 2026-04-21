@@ -6,6 +6,8 @@ optimization_criterion: "License-clean commercial stack — MIT/Apache/OpenRAIL-
 date: 2026-04-19
 ---
 
+> **Updated 2026-04-21:** Several model references in this document have drifted. (1) `gpt-image-1` is now labeled "previous" by OpenAI; `gpt-image-1.5` is the current primary. (2) Recraft V3 has been superseded by **Recraft V4** (released Feb 2026), which ships four variants: V4 raster, V4 Vector, V4 Pro raster (2048²), V4 Pro Vector — all available via API. (3) Seedream 4.5 is the current stable CJK model on fal/Replicate; Seedream 5.0 Lite is available via BytePlus enterprise. (4) Ideogram 3 Turbo pricing is $0.03/image; Quality tier is $0.09/image — not $0.02–$0.06 as older references imply. (5) Vercel AI SDK `experimental_generateImage` was promoted to stable `generateImage` in AI SDK v6; update import patterns accordingly. (6) Imagen 4 Fast is $0.02/image on Vertex AI (confirmed).
+
 # Combination 2 — License-Clean Commercial Stack
 
 ## TL;DR
@@ -88,6 +90,8 @@ Nano Banana 2 (flat logos, text-heavy wordmarks, subject consistency), Ideogram 
 (`generate-transparent-v3` for typographic logos), Recraft v3 (`vector_illustration` /
 `icon` styles, native SVG), Together FLUX.2 Pro (brand reference images, up to 8 refs).
 All called via Vercel AI SDK typed providers.
+
+> **Updated 2026-04-21:** Recraft V3 has been succeeded by **Recraft V4** (Feb 2026). Route `svg === "required"` to `Recraft V4 Vector` or `Recraft V4 Pro Vector` (higher resolution). Ideogram 3 Turbo is $0.03/image; Quality is $0.09/image. Seedream 4 has been superseded by Seedream 4.5 (available on fal/Replicate at $0.04/image) for CJK text generation; Seedream 5.0 Lite is available via BytePlus enterprise API with 14-ref support. Vercel AI SDK `experimental_generateImage` is stable `generateImage` as of AI SDK v6.
 
 **License audit.** These are pay-per-call APIs; we never redistribute weights. OpenAI
 `gpt-image-1`, Imagen / Nano Banana, Ideogram 3, Recraft v3, and Together FLUX.2 all

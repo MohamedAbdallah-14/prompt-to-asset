@@ -114,11 +114,15 @@ These numbers change weekly; treat the *ordering* as more stable than the absolu
 
 **GenEval (overall score, higher=better).** Public tracker, updated ~4 days ago at the time of writing (Apr 2026): the leaderboard has been pushed up into the 0.85–0.90 band by RL-finetuned models (UniGRPO at 0.90, several "Thinking=true" AR variants at 0.87–0.88), with FLUX.1 [Dev] near 0.70 out-of-the-box and SD 3.5-Medium + RL-with-Qwen3 in the 0.84 band.[^wizwand-geneval] The top cluster is within 3 points of each other — read as *saturated* given the GenEval-2 drift finding.
 
+> **Updated 2026-04-21:** GenEval saturation is more severe than initially reported. The GenEval 2 paper confirms Gemini 2.5 Flash Image achieves a **96.7% human score** while the original benchmark scores it far lower — absolute error up to 17.7 pp. Original GenEval is effectively a ceiling benchmark for frontier models and should no longer be reported as a primary decision metric.
+
 **DPG-Bench (average score, higher=better).** Current top-10 are 86–89, clustered; Playground v3 (the original SOTA holder at 88.62 on DPG-Bench Hard in 2024) has been joined by Nucleus-Image, SD 3.5-ft-10k + MixFlow, X-Omni, Show-o2, and FLUX.1 [Dev]; leaderboard average ≈ 87.65.[^wizwand-dpg][^playground-v3]
 
 **T2I-CompBench++.** Recent VAR (Visual Autoregressive) work shows **Infinity-8B** beating SDXL, PixArt-α, and even Flux-Dev/Flux-Schnell on attribute binding and spatial relations — a meaningful prior-art signal that architecture class matters more than parameter count on this benchmark.[^compbench-recent]
 
-**ConceptMix.** Leaderboard still dominated by DALL·E 3 for k≥3 (reported above).[^conceptmix-site] No 2025 update with FLUX / SD3 has been published as of April 2026 — if you run a ConceptMix evaluation on FLUX/SD3/Gemini 2.5, that is a publishable data point.
+**ConceptMix.** Leaderboard still dominated by DALL·E 3 for k≥3 (reported above).[^conceptmix-site] No 2025/2026 update with FLUX / SD3 / Gemini models has been published as of April 2026 — confirmed gap. If you run a ConceptMix evaluation on FLUX/SD3/Gemini 2.5/Gemini 3, that remains a publishable data point. The DALL·E 3 baselines in the table above are now over two years old and should not be treated as the SOTA ceiling.
+
+> **Updated 2026-04-21:** A new benchmark, **T2I-CoReBench** (ICLR 2026), addresses both compositional and reasoning capabilities across 12 dimensions and 1,080 prompts with ~13,500 checklist questions ([arXiv:2509.03516](https://arxiv.org/abs/2509.03516); [project](https://t2i-corebench.github.io/); [github](https://github.com/KlingAIResearch/T2I-CoReBench)). Its key finding: even current SOTA T2I models have severely limited *reasoning* capability (deductive/inductive/abductive), lagging even further behind compositional accuracy. This is a more challenging successor benchmark worth tracking for 2026 evaluations alongside GenEval 2 and ConceptMix.
 
 ## Notable gotchas for prompt-to-asset work
 
@@ -178,3 +182,5 @@ Report T2I-CompBench++ and DPG-Bench as *secondary* context — they are still t
 [^wizwand-geneval]: Wizwand SOTA tracker, *Text-to-Image Generation on GenEval*, updated Apr 2026. https://www.wizwand.com/sota/text-to-image-generation-on-geneval-geneval-metric
 
 [^wizwand-dpg]: Wizwand SOTA tracker, *Text-to-Image Generation on DPG-Bench*, updated Apr 2026. https://www.wizwand.com/sota/text-to-image-generation-on-dpg-bench
+
+[^t2i-corebench]: Li et al. (Kling AI Research), *Easier Painting Than Thinking: Can Text-to-Image Models Set the Stage, but Not Direct the Play?* (T2I-CoReBench), ICLR 2026. arXiv:2509.03516. https://arxiv.org/abs/2509.03516

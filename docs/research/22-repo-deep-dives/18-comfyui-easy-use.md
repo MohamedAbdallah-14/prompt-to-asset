@@ -26,7 +26,17 @@ tags: [comfyui, easy-use, layerdiffuse, workflow]
 ## Repo at a glance
 
 - **Repository:** `yolain/ComfyUI-Easy-Use`
-- **Stars / age:** ≈2.47k★, active since late 2023, weekly releases through v1.3.6 (2026).
+- **Stars / age:** ≈2.5k★, active since late 2023, weekly releases through v1.3.6 (Jan 23, 2026); last commit April 9, 2026.
+
+> **Updated 2026-04-21:** v1.3.6 (January 23, 2026) is the latest release;
+> last commit April 9, 2026 — actively maintained. Star count confirmed at
+> ~2.5k. The LayerDiffusion path remains SDXL/SD1.5 only as of v1.3.6 —
+> no Flux LayerDiffusion support has been added inside Easy-Use. GPL-3.0
+> license is unchanged. For Flux transparent output, external
+> `ComfyUI_FluxLayerDiffuse` nodes are still required. The Comfy frontend
+> compatibility issues noted in v1.2.9/v1.3.2/v1.3.5 have been resolved in
+> v1.3.6, but pin-commits discipline remains mandatory in worker images due
+> to the history of breaking regressions.
 - **License:** **GPL-3.0** (confirmed in `LICENSE`; README's donation section re-states
   "GPL-licensed open source project"). Any code fork or direct bundling propagates GPL
   to the dependent work — so for our product we call it from a serverless worker

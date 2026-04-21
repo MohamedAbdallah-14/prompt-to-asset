@@ -101,7 +101,7 @@ an "emoji-mashup" flavour of our `compose_sticker` tool.
 
 | Library | URL | License | Mechanism | Char-consistency |
 |---|---|---|---|---|
-| **DiceBear** | <https://github.com/dicebear/dicebear> (~8.3k★) | MIT code, per-style art licences (mostly CC-BY-4.0) | **Composition** of predefined SVG parts; XorShift32 PRNG | **Seed → identical SVG across languages** — JS, PHP, Vue all produce byte-identical output |
+| **DiceBear** | <https://github.com/dicebear/dicebear> (~8.2–8.3k★, as of 2026-04) | MIT code, per-style art licences (mostly CC-BY-4.0) | **Composition** of predefined SVG parts; XorShift32 PRNG | **Seed → identical SVG across languages** — JS, PHP, Vue all produce byte-identical output |
 | Avataaars | <https://github.com/fangpenlin/avataaars> | MIT (Pablo Stanley + Fang-Pen Lin) | React component picks from part-sets | Not deterministic by default; callers pass props explicitly |
 | Bean Heads (ex-Big Heads) | <https://github.com/RobertBroersma/beanheads> (~1.5k★) | MIT | TypeScript/React, part composition | Same as Avataaars — deterministic if props fixed |
 | Tabler Avatars | <https://tabler.github.io/avatars> | MIT | 124 static PNG illustrations | N/A (pre-made) |

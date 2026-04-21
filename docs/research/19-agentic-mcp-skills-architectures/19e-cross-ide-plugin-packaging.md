@@ -177,7 +177,9 @@ Five of the six target surfaces pick up the plugin *automatically* once the repo
 - **Gemini CLI** — `gemini extension install ./` reads `gemini-extension.json`, which points at `GEMINI.md` plus `skills/<name>/SKILL.md` via `contextFiles`. One command, no config merge needed.
 - **Codex** — auto-discovers `plugins/<name>/.codex-plugin/plugin.json` when the repo is opened.
 
-Only **Claude Code** needs user-scope wiring: `SessionStart` and `UserPromptSubmit` hooks have to be registered in `~/.claude/settings.json` so they fire every session globally, not just when a specific repo is open. That registration is the entire reason `hooks/install.sh` and `hooks/install.ps1` exist.
+Only **Claude Code** needs user-scope wiring for global (cross-project) hooks: `SessionStart` and `UserPromptSubmit` hooks have to be registered in `~/.claude/settings.json` so they fire every session globally, not just when a specific repo is open. That registration is the entire reason `hooks/install.sh` and `hooks/install.ps1` exist.
+
+> **Updated 2026-04-21:** Gemini CLI v0.26.0+ now supports extension-bundled hooks via `hooks/hooks.json` inside the extension directory. These are discovered automatically when the extension is installed — no user-level settings merge required. However, Gemini CLI shows a security consent warning at install time when an extension contains hooks. Wire the `prompt-to-asset-activate` hook into `hooks/hooks.json` so Gemini CLI gets SessionStart enforcement alongside Claude Code and Codex.
 
 (A companion *project-level* install path is also viable via the Claude Code marketplace — see Release Process — which is zero-config but requires the user to invoke `claude plugin install`. The bash/PowerShell installer is the escape hatch for users who aren't using the marketplace yet.)
 
@@ -268,6 +270,7 @@ Port the humanizer pattern by renaming and subsetting. Concrete tasks:
 2. Create one `skills/prompt-to-asset-<category>/SKILL.md` per asset category (logo, icon, favicon, illustration, og-image, splash).
 3. Create `rules/prompt-to-asset-activate.md` with the always-on activation text (two to four sentences telling the agent to route asset requests through the skill).
 4. Create `hooks/install.sh` and `hooks/install.ps1`. Start from the humanizer scripts verbatim; rename every occurrence of `humanizer` to `prompt-to-asset`. The JSON merge logic needs no change.
+4a. Create `hooks/hooks.json` for Gemini CLI extension hooks (v0.26.0+). Define `SessionStart` and `BeforeTool` hooks pointing at the same activate script. This file is auto-discovered when the extension is installed — no separate install step required, but users see a consent warning.
 5. Create `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`.
 6. Create `plugins/prompt-to-asset/.codex-plugin/plugin.json`.
 7. Create `gemini-extension.json` + `GEMINI.md` at repo root.

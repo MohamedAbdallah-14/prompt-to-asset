@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 29 — Rag Brand Knowledge
 
 Brand-guideline extraction via RAG, CLIP-style embeddings for retrieval, brand-bundle storage patterns, Figma design-tokens / brand pipeline, brand consistency across sessions.

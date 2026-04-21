@@ -1,9 +1,16 @@
 /**
  * Conservative SVGO wrapper.
  *
+ * Source: docs/research/12-vector-svg-generation/12c-svg-spec-features-for-assets.md
+ * Source: docs/research/12-vector-svg-generation/12e-hybrid-vector-pipeline-architectures.md
+ *
  * Runs `svgo` if the optional dep is installed; returns the input unchanged
  * otherwise. The preset keeps viewBox, keeps IDs referenced by url(#id),
  * merges paths only when safe, and strips XML prolog / comments / editor metadata.
+ *
+ * Note: SVGO v4.0.0 (Feb 2026) changed defaults — removeViewBox and removeTitle
+ * are now disabled by default in preset-default. Our previous `removeViewBox: false`
+ * override is a no-op on v4 but harmless.
  */
 
 export interface OptimizeResult {

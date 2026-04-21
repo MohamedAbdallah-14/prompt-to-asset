@@ -33,17 +33,20 @@ This is already partially functional: the gap is that the inline SVG is not show
 
 ## Stage 2: Partial Image Preview from Providers
 
+> **Updated 2026-04-21:** `gpt-image-1` now supports native image streaming via the OpenAI Images API. The `stream: true` parameter plus `partial_images` (0–3) causes the API to emit progressive base64-encoded partial images during generation. This invalidates the prior claim that gpt-image-1 has "no streaming." The table below reflects the corrected state as of April 2026.
+
 Not all providers support partial image output. Current state as of April 2026:
 
 | Provider | Partial/incremental output |
 |---|---|
-| `gpt-image-1` | No streaming; full image only. Partial image streaming tracked in Vercel AI SDK issue #9017 (closed in v6.0 milestone — OpenAI responses API partial image). |
+| `gpt-image-1`, `gpt-image-1-mini`, `gpt-image-1.5` | **Native streaming available.** Pass `stream: true` and `partial_images: 1–3` to the OpenAI Images API. The response emits progressive base64-encoded partial images during generation. Reference: https://platform.openai.com/docs/api-reference/images-streaming |
 | fal.ai (FLUX, SD) | Queue-based: `fal.subscribe()` gives queue position events (`onQueueUpdate`). No pixel-level intermediate frames unless using ComfyUI websocket mode. |
-| ComfyUI (local) | WebSocket delivers base64 preview frames at each K-sampler step via `SaveImageWebsocket` node. This is the only real step-by-step pixel preview available today. |
+| ComfyUI (local) | WebSocket delivers base64 preview frames at each K-sampler step via `SaveImageWebsocket` node. Pixel-level step preview remains exclusive to local ComfyUI. |
 | Ideogram, Recraft | No intermediate frames; final image only. |
 
 For fal.ai, the progress events are queue position updates ("IN_QUEUE", "IN_PROGRESS"), not pixel data. They feed the progress percentage but not a visual preview.
 
+Reference: https://platform.openai.com/docs/api-reference/images-streaming  
 Reference: https://fal.ai/docs/documentation/model-apis/inference/real-time
 
 ## Stage 3: Validation Feedback Before Final Display
@@ -81,7 +84,9 @@ If model call fails (network error, content policy), do not wait for the tool to
 
 ## React Pattern (for Companion Web UI)
 
-React 19's `useOptimistic` hook is the standard approach:
+> **Updated 2026-04-21:** React 19 is stable (released December 2024). `useOptimistic` is a stable API. Vercel AI SDK has progressed through major versions: AI SDK 4.x → 5.0 (breaking `useChat` internals, added UIMessage/ModelMessage split) → 6.0 (backwards-compatible improvements). If using Vercel AI SDK, target v5+ APIs — v4 `useChat` tool invocation parts have changed in v5 (`tool-TOOLNAME` parts instead of generic `tool-invocation`). The `useOptimistic` pattern below is unaffected by SDK version.
+
+React 19's `useOptimistic` hook is the standard approach (React 19 stable since December 2024):
 
 ```typescript
 const [optimisticAsset, addOptimisticAsset] = useOptimistic(
@@ -96,22 +101,30 @@ async function handleGenerate(brief: string) {
 }
 ```
 
-Reference: https://www.freecodecamp.org/news/how-to-use-the-optimistic-ui-pattern-with-the-useoptimistic-hook-in-react/
+Reference: https://www.freecodecamp.org/news/how-to-use-the-optimistic-ui-pattern-with-the-useoptimistic-hook-in-react/  
+Vercel AI SDK 5 changes: https://vercel.com/blog/ai-sdk-5  
+Vercel AI SDK 6: https://vercel.com/blog/ai-sdk-6
 
 ## Applicability to prompt-to-asset
+
+> **Updated 2026-04-21:** With `gpt-image-1` native streaming now available (see Stage 2 update above), the priority order changes slightly. The partial-image streaming path via OpenAI is now tractable without ComfyUI.
 
 Priority order for implementing optimistic UX:
 
 1. **High value, zero infra**: Emit `notifications/progress` with stage names (already covered in 32a). Text messages like "Routing to gpt-image-1 (transparent detected)" are informative while the user waits.
 2. **Medium value, light infra**: For inline_svg mode, ensure SVG appears in streaming LLM output before `asset_save_inline_svg` is called. Already happens — just needs documentation.
-3. **Lower value, more infra**: Companion web viewer that watches the output directory for new files and renders them immediately. WebSocket or filesystem watcher → SSE → browser.
-4. **Not worth it now**: ComfyUI step preview frames require a local ComfyUI instance, which is outside the current tool scope.
+3. **Medium value, gpt-image-1 only**: Use `stream: true` + `partial_images: 2` on gpt-image-1 calls. Push each partial frame to the sidecar SSE endpoint so the companion viewer shows the image building up. This is now a real option, not a future gap.
+4. **Lower value, more infra**: Companion web viewer that watches the output directory for new files and renders them immediately. WebSocket or filesystem watcher → SSE → browser.
+5. **Not worth it now**: ComfyUI step preview frames require a local ComfyUI instance, which is outside the current tool scope. (For cloud providers, native streaming is now preferred.)
 
 ## Key References
 
+- https://platform.openai.com/docs/api-reference/images-streaming (gpt-image-1 native streaming — NEW)
 - https://platform.claude.com/docs/en/agents-and-tools/tool-use/fine-grained-tool-streaming
 - https://fal.ai/docs/documentation/model-apis/inference/real-time
-- https://github.com/vercel/ai/issues/9017
+- https://github.com/vercel/ai/issues/9017 (closed in AI SDK v6 milestone)
+- https://vercel.com/blog/ai-sdk-5
+- https://vercel.com/blog/ai-sdk-6
 - https://www.freecodecamp.org/news/how-to-use-the-optimistic-ui-pattern-with-the-useoptimistic-hook-in-react/
 - https://simonhearne.com/2021/optimistic-ui-patterns/
 - https://dev.to/worldlinetech/websockets-comfyui-building-interactive-ai-applications-1j1g

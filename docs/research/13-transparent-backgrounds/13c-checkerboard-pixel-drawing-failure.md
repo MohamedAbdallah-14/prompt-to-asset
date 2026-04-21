@@ -116,7 +116,9 @@ Key observations from the audit:
 - **The word "no" is almost always bad.** "No background," "no scenery," "no floor" — diffusion and autoregressive T2I models lack a native negation operator. CLIP-style text encoders don't encode "not X" the way we think they do; the model attends to "X" anyway. The mitigation is to **replace every negation with a positive anchor** ("seamless studio," "solid color plane") — this is a well-known prompt-engineering result (see e.g. the DataComp / OpenCLIP evaluation writeups).
 - **Explicit hex codes dominate natural-language color names.** `#FFFFFF` produces a flatter, more uniform white than "white" because the string enters the text encoder as a rare, distinctive token sequence and attends to clean-plate training data (ecommerce, studio catalogs) rather than diverse "white" photos.
 - **The word "seamless" is underrated.** It tilts the background texture distribution toward ecommerce and studio-catalog training data, which is almost pure-color by construction.
-- **`gpt-image-1` / `gpt-image-1.5` honor the protocol parameter `background="transparent"`, but only when it is sent as an API field.** If the string "transparent background" appears only in the prompt text and the field is omitted, gpt-image-1 falls into the same trap as its cousins.
+- **`gpt-image-1` / `gpt-image-1.5` honor the protocol parameter `background="transparent"`, but only when it is sent as an API field.** If the string "transparent background" appears only in the prompt text and the field is omitted, gpt-image-1 falls into the same trap as its cousins. Also: transparency works best when `quality` is set to `"medium"` or `"high"` — avoid `"low"` quality for transparent outputs.
+
+> **Updated 2026-04-21:** OpenAI docs confirm `quality: "low"` degrades transparent output; use `"medium"` or `"high"` (or `"auto"`, which typically selects medium/high). Background parameter only supported with `output_format: "png"` or `"webp"`.
 - **Ideogram 3.0 and Recraft V3 are the two production models that natively emit RGBA.** Ideogram's Auto model has a `/ideogram-v3/generate-transparent` endpoint ([Ideogram API](https://developer.ideogram.ai/api-reference/api-reference/generate-transparent-v3)); Recraft V3 exposes a transparent output mode in both its web UI and API ([Recraft docs](https://recraft.ai/docs/using-recraft/image-editing/background-tools)). On those two, the phrase "transparent background" is safe — it is handled at the protocol level, not by pattern matching in the text trunk.
 
 ---
@@ -228,13 +230,21 @@ This research directly shapes the enhancer's behavior contract for any transpare
 The enhancer maintains a per-model capability table:
 
 ```yaml
-alpha_native_models:   [gpt-image-1, gpt-image-1.5, ideogram-3.0, recraft-v3]
-alpha_via_protocol:    [gpt-image-1.5]   # needs background="transparent" API field
+alpha_native_models:   [gpt-image-1, gpt-image-1.5, ideogram-3.0]
+  # gpt-image-1/gpt-image-1.5: background="transparent" API field
+  # ideogram-3.0: /ideogram-v3/generate-transparent endpoint
+  #   (speed tiers: FLASH / TURBO / BALANCED / QUALITY)
+alpha_native_restricted:  [recraft-v3]
+  # recraft-v3: in-generation transparent-style flag is unreliable as of 2026;
+  # use the post-hoc "Remove Background" tool — reliable for vector/icon styles
+alpha_via_protocol:    [gpt-image-1, gpt-image-1.5]   # needs background="transparent" API field
 alpha_not_supported:   [gemini-2.5-flash-image, gemini-3-pro-image,
                         imagen-3, imagen-4-generate, imagen-4-fast, imagen-4-ultra,
                         dall-e-3, midjourney-v6, midjourney-v7,
                         stable-diffusion-xl, flux.1-dev, flux.1-pro]
 ```
+
+> **Updated 2026-04-21:** `recraft-v3` moved from `alpha_native_models` to `alpha_native_restricted`; `ideogram-3.0` stays in `alpha_native_models` but now uses the dedicated transparent endpoint rather than a style flag. Both confirmed via vendor docs as of April 2026.
 
 When the target model is in `alpha_not_supported`, the enhancer **must** rewrite the prompt into a solid-color studio shot and attach a post-processing plan. When the target is in `alpha_via_protocol`, it sets the API field rather than relying on the prompt text. When the target is in `alpha_native_models`, it passes the request through unchanged.
 

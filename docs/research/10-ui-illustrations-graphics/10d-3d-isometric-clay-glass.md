@@ -26,6 +26,8 @@ last_updated: 2026-04-19
 
 # 10d — 3D, Isometric, Claymorphism & Glassmorphism Graphics for Product Marketing
 
+> **Updated 2026-04-21:** Model landscape update since this file was drafted (April 2026). Midjourney V7 is the current stable default; **Midjourney V8 Alpha** launched March 17, 2026 (5× faster, native 2K, improved text; `--sv 7` for new faster style references) — not yet production-default, available on alpha.midjourney.com. **FLUX.2** (November 2025) supersedes FLUX.1 [dev/pro]; FLUX.2 Pro supports up to 10 native reference images, precise hex colors, and improved text rendering. Recraft V3 has been superseded by **Recraft V4** (February 2026), including a V4 Pro SVG tier at 2048×2048. For 3D generation: Rodin Gen-2 and Meshy v5 remain the leading tools; Meshy v5 achieved 97% slicer pass rate for 3D printing, while Rodin continues to target high-fidelity visualization.
+
 ## Executive Summary
 
 The "Stripe / Linear / Framer" aesthetic that dominates 2024–2026 SaaS marketing pages is not a single style but a **family of four interoperable styling registers** layered on top of a real 3D pipeline:
@@ -59,7 +61,7 @@ Each style below ships with (a) a crisp visual definition, (b) physical/lighting
 
 **Lighting.** Three-point lighting with a warm key (≈4500K) from upper-right, cool fill (≈7500K) from lower-left, white rim. **No cast shadows on transparent backgrounds** — use contact shadows only.
 
-**Prompt kernel (MJ v7).**
+**Prompt kernel (MJ v7 / v8 Alpha).**
 
 ```text
 isometric 3D illustration of {subject}, axonometric camera 30 degree,
@@ -67,8 +69,11 @@ soft pastel palette, rounded bevels, matte plastic with micro-roughness,
 subtle ambient occlusion, floating composition, clean white background,
 Clay global style, rauno freiberg lighting, ::2 stylize 400 --ar 3:2 --v 7
 ```
+For V8 Alpha, replace `--v 7` with `--v 8` and optionally add `--sv 7` to use the faster style-reference version.
 
-**Prompt kernel (Flux.1 [pro], natural language).**
+**Prompt kernel (FLUX.2 Pro, natural language).**
+
+> **Updated 2026-04-21:** FLUX.2 Pro (November 2025) supersedes FLUX.1 [pro]. FLUX.2 supports up to 10 native reference images per call (no external IP-Adapter needed for multi-ref), precise hex color control, and improved text rendering. The prompt dialect is unchanged (natural language prose).
 
 ```text
 An isometric 3D render of {subject}. Axonometric projection at 30 degrees,
@@ -86,6 +91,8 @@ isometric render, (axonometric:1.2), rounded 3d, (pastel matte:1.1),
 subsurface micro-roughness, (ambient occlusion:0.8), floating composition,
 [negative: perspective, fisheye, lens flare, vignette, glowing orb, chromatic aberration]
 ```
+
+> **Updated 2026-04-21:** `negative_prompt` is supported natively on SDXL, SD, and SD3. **Do NOT pass `negative_prompt` on any Flux variant** (FLUX.1 or FLUX.2) — it raises a `TypeError` on all Flux models. The portable alternative for Flux is a positive anchor phrase in the main prompt, e.g., `"pure white background, no orb, no lens flare"` rather than using the negative_prompt parameter.
 
 ### 1.2 Claymorphism (Crafter's Crown, Dieter Rams geometry)
 
@@ -105,16 +112,18 @@ design, primitive forms, no text, no logo, studio softbox lighting,
 C4D Octane render, --ar 1:1 --stylize 500 --chaos 10 --v 7
 ```
 
-**Prompt kernel (Flux.1 [dev]).**
+**Prompt kernel (FLUX.2 [dev/pro]).**
+
+> **Updated 2026-04-21:** Replace `Flux.1 [dev]` with `FLUX.2 [dev]` or `FLUX.2 Pro`. Prompt dialect unchanged; FLUX.2 adds native hex color control which benefits claymorphism palette locking.
 
 ```text
 A {subject} sculpted from soft matte clay, in the claymorphism style.
-Inflated rounded geometry, pastel palette (dusty pink, sage, cream).
+Inflated rounded geometry, pastel palette (dusty pink #FFC5A8, sage #B8D8B4, cream #FDF6EC).
 Subsurface scattering enabled, subtle velvet fuzz at silhouette,
 no glossy highlights, no specular reflection. Dual shadow: a crisp
 inner shadow on the upper left, a large diffused outer shadow on the
 lower right. Inspired by Dieter Rams product photography for Braun.
-Neutral off-white backdrop, studio softbox lighting.
+Neutral off-white backdrop (#F7F8FA), studio softbox lighting.
 ```
 
 **Anti-slop clause** (append to all kernels):
@@ -140,7 +149,9 @@ gradient backdrop, Stripe checkout aesthetic, Apple Big Sur lineage,
 photorealistic render, --ar 16:9 --stylize 300 --v 7
 ```
 
-**Prompt kernel (Flux.1 [pro]).**
+**Prompt kernel (FLUX.2 Pro).**
+
+> **Updated 2026-04-21:** Replace `Flux.1 [pro]` with `FLUX.2 Pro`. FLUX.2 supports native hex color specification, which is particularly useful for pinning the gradient colors in glassmorphism prompts.
 
 ```text
 A {subject} rendered as frosted glass in the glassmorphism style.
@@ -229,7 +240,9 @@ Pure T2I is not the right tool for production SaaS hero graphics. The four pipel
 
 **When to use.** Concept exploration, moodboards, throwaway slides. Not production.
 
-Stack MJ `--sref` (style reference) or Flux IP-Adapter against a hand-picked reference from Clay.global, Dribbble shots tagged `claymorphism`, or a Behance project by **Radek Koziel** or **Valentín Reyes**. Without a reference image, the model is guessing at "what this style means."
+Stack MJ `--sref` (style reference, V8 Alpha supports `--sv 7` for faster sref) or FLUX.2's native multi-reference conditioning (up to 10 reference images, no external IP-Adapter needed) against a hand-picked reference from Clay.global, Dribbble shots tagged `claymorphism`, or a Behance project by **Radek Koziel** or **Valentín Reyes**. Without a reference image, the model is guessing at "what this style means."
+
+> **Updated 2026-04-21:** FLUX.2's native multi-reference support (≤10 images) removes the need to wire an IP-Adapter in most moodboarding workflows. For SDXL users, IP-Adapter remains the standard; note that ComfyUI IPAdapter Plus entered maintenance-only mode April 2025.
 
 ---
 
@@ -291,7 +304,9 @@ A catalog of failure modes I've observed reproducibly, with mitigations.
 
 **Symptom.** When asked for PNG with alpha, the shadow under a clay/glass object gets clipped hard, or the edge gets a halo of training-background color.
 
-**Mitigation.** Render at full opacity over a neutral `#F7F8FA`, then matte via BRIA RMBG-2.0 or BiRefNet (see category 13 and 16 of the plan). Do not trust native T2I alpha for 3D subjects.
+**Mitigation.** Render at full opacity over a neutral `#F7F8FA`, then matte via BRIA RMBG-2.0 or BiRefNet (see category 13 and 16 of the plan). Do not trust native T2I alpha for 3D subjects. For Ideogram, use the `/ideogram-v3/generate-transparent` endpoint with `rendering_speed: "TURBO"` — there is no `style: "transparent"` param.
+
+> **Updated 2026-04-21:** BiRefNet received a major June 2025 update: 8× speedup for `refine_foreground`, SDPA attention upgrade, and FP16 inference (~60–80 ms on an RTX 4080). Update your checkpoint before benchmarking matting performance.
 
 ---
 

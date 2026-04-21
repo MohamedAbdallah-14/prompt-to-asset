@@ -32,6 +32,8 @@ tags:
 word_count_target: 2500-3500
 ---
 
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # 18 — Asset Pipeline Tools: Category Synthesis
 
 > Goal: everything a *prompt-to-asset* skill needs to turn "an icon for my note app" into a **platform-correct, production-grade asset bundle** — matching or exceeding what `appicon.co`, `icon.kitchen`, and `pwa-asset-generator` produce today, but as an **open-source, zero-upload, agent-native pipeline** we own end-to-end.
@@ -52,15 +54,15 @@ Fifteen insights synthesized from the five angles ([18a](./18a-appicon-co-teardo
 
 5. **iOS forbids alpha on the 1024 App Store marketing icon.** App Store Connect rejects PNGs with alpha channels. `flutter_launcher_icons`'s `remove_alpha_ios: true` exists for this; `@capacitor/assets` flattens onto the configured background. The enhancer must always emit an `icon-opaque.png` variant pre-flattened onto a user-picked background color ([18a §1.3](./18a-appicon-co-teardown-and-oss-replacement.md), [18b](./18b-framework-native-asset-generators.md)).
 
-6. **PWA iOS splash is a 26-file matrix with no fallback.** Unlike Chrome Android (which auto-composes from `manifest.webmanifest`), Safari requires one `<link rel="apple-touch-startup-image">` per device × orientation × pixel-ratio. Missing a size → black/white blank. `pwa-asset-generator` (3k★, v8.1.4, active) is the de-facto tool — it uses Puppeteer to rasterize a single SVG/HTML source into the full matrix plus the `<link>` tags ([18c](./18c-splash-screen-generators.md), [elegantapp/pwa-asset-generator](https://github.com/elegantapp/pwa-asset-generator)).
+6. **PWA iOS splash is a 26-file matrix with no fallback.** Unlike Chrome Android (which auto-composes from `manifest.webmanifest`), Safari requires one `<link rel="apple-touch-startup-image">` per device × orientation × pixel-ratio. Missing a size → black/white blank. `pwa-asset-generator` (3k★, **v8.1.4**, confirmed active Apr 2026) is the de-facto tool — it uses Puppeteer to rasterize a single SVG/HTML source into the full matrix plus the `<link>` tags ([18c](./18c-splash-screen-generators.md), [elegantapp/pwa-asset-generator](https://github.com/elegantapp/pwa-asset-generator)). Complete matrix is now ~26–30 PNGs as new iPhone/iPad models were added.
 
-7. **`sharp` is the correct engine for the server path.** libvips (sharp's backend) is **~7.7× faster and ~16× more memory-efficient than ImageMagick 7** (0.57 s / 94 MB vs 4.4 s / 1.5 GB on a resize-crop-sharpen pipeline), and sharp's 64 ops/sec throughput is **~27× jimp's 2.4 ops/sec** on equivalent JPEG resizes. Sharp ships prebuilt libvips binaries for all major platforms — no `node-gyp`, no system installs ([18d](./18d-image-processing-libraries.md), [sharp performance](https://sharp.pixelplumbing.com/performance/), [libvips speed-and-memory wiki](https://github.com/libvips/libvips/wiki/Speed-and-memory-use)).
+7. **`sharp` is the correct engine for the server path.** libvips (sharp's backend) is **~7.7× faster and ~16× more memory-efficient than ImageMagick 7** (0.57 s / 94 MB vs 4.4 s / 1.5 GB on a resize-crop-sharpen pipeline), and sharp's 64 ops/sec throughput is **~27× jimp's 2.4 ops/sec** on equivalent JPEG resizes. Sharp ships prebuilt libvips binaries for all major platforms — no `node-gyp`, no system installs ([18d](./18d-image-processing-libraries.md), [sharp performance](https://sharp.pixelplumbing.com/performance/), [libvips speed-and-memory wiki](https://github.com/libvips/libvips/wiki/Speed-and-memory-use)). **Current: sharp v0.34.5; requires Node.js ^18.17.0 or ≥20.3.0.** (Updated 2026-04-21)
 
 8. **`sharp` does not write `.ico` or `.icns`.** Icon-pack writers are a separate concern: `icon-gen` (MIT, 23.8k weekly downloads), `sharp-ico` (used by `@vite-pwa/assets-generator`), and `@shockpkg/icon-encoder` (MPL-2.0, most control over ICNS OSType tags) all compose PNG tiles from sharp into multi-resolution containers. Pillow's `Image.save("x.ico", sizes=[...])` is the native Python equivalent ([18d §Library Matrix](./18d-image-processing-libraries.md)).
 
 9. **SVG rasterization should be a separate tool from bitmap processing.** `@resvg/resvg-js` (Rust/NAPI, MPL-2.0) is deterministic across OS, needs no system fonts, and is **115× faster than its own pre-v0.34 release** (290 ms vs 33.7 s on paris-30k.svg). Sharp's built-in librsvg path inherits LGPL constraints and system font dependencies; resvg-js produces identical output in CI and in browser-wasm ([18d](./18d-image-processing-libraries.md)).
 
-10. **Browser-side generation preserves `appicon.co`'s "nothing uploaded" privacy property.** `jSquash` (WASM fork of Squoosh codecs) + `JSZip` + `@resvg/resvg-wasm` assemble a full iconset ZIP client-side in ~4 MB of WASM. Server path (sharp + `@capacitor/assets`) is the fallback for large SVGs, `.icns`/`.ico` emission, and the MCP/API path coding agents use ([18a §3.1–§3.2](./18a-appicon-co-teardown-and-oss-replacement.md)).
+10. **Browser-side generation preserves `appicon.co`'s "nothing uploaded" privacy property.** `jSquash` (WASM fork of the abandoned `@squoosh/lib` codecs — `@squoosh/lib`/`@squoosh/cli` are unmaintained and break on Node 18+) + `JSZip` + `@resvg/resvg-wasm` assemble a full iconset ZIP client-side in ~4 MB of WASM. Current jSquash versions: `@jsquash/png` v3.1.1, `@jsquash/avif` v2.1.1. Server path (sharp + `@capacitor/assets`) is the fallback for large SVGs, `.icns`/`.ico` emission, and the MCP/API path coding agents use ([18a §3.1–§3.2](./18a-appicon-co-teardown-and-oss-replacement.md)). (Updated 2026-04-21)
 
 11. **`@capacitor/assets` is the closest off-the-shelf 1:1 replacement for `appicon.co` in Node.** One command (`npx capacitor-assets generate`) emits iOS `AppIcon.appiconset`, Android `mipmap-*` with adaptive XML, and PWA icons + splash. MIT. Gaps: monochrome (Android 13) icons are not first-class, and several adaptive-bg bugs were active through 2024–2025 ([18b](./18b-framework-native-asset-generators.md)).
 
@@ -145,7 +147,7 @@ Six places where primary sources are thin or where custom work is needed:
 3. **visionOS / tvOS layered images.** Apple's `AssetTypes.html` specifies these idioms; no surveyed tool emits them. Low-priority, trivial to add.
 4. **Dark-mode PWA iOS splash.** `pwa-asset-generator` has no `--dark-mode` flag; two-pass run + media-query merge is the workaround — opportunity for us to do it in one pass.
 5. **Realistic cache-hit-rate data.** [18e](./18e-production-pipeline-architecture.md) cites 20–40 % from adjacent ecosystems (URL shorteners, avatar generators); no direct-competitor data. Must measure + tune.
-6. **Agent-native invocation surface.** No surveyed tool exposes an MCP or tool-schema API — all are CLIs or npm modules. Wrapping our pipeline behind an MCP tool is net-new work and the main differentiator vs. `appicon.co`.
+6. **Agent-native invocation surface.** No surveyed tool exposes an MCP or tool-schema API — all are CLIs or npm modules. Wrapping our pipeline behind an MCP tool is net-new work and the main differentiator vs. `appicon.co`. (Partially closed: the `prompt-to-asset` MCP server implements this surface — see `asset_generate_app_icon`, `asset_export_bundle`, `asset_sprite_sheet`, etc.)
 
 ---
 
@@ -155,10 +157,14 @@ Concrete directives, ordered by impact, for the stack stated in the prompt: **sh
 
 ### R1. Core engine: `sharp` + `@resvg/resvg-js` + `icon-gen` / `sharp-ico` / `@shockpkg/icon-encoder`
 
-- **Bitmap ops:** `sharp` for all resize, composite, flatten, alpha, metadata-strip, AVIF/WebP/PNG encode ([18d §Library Matrix](./18d-image-processing-libraries.md), [sharp API](https://sharp.pixelplumbing.com/api-operation)).
-- **SVG input:** `@resvg/resvg-js` (not sharp's librsvg path) for deterministic cross-OS rasterization; feed raw RGBA buffer into `sharp(buf, { raw: { width, height, channels: 4 } })`.
+- **Bitmap ops:** `sharp` (v0.34.5, Node ≥18.17.0) for all resize, composite, flatten, alpha, metadata-strip, AVIF/WebP/PNG encode ([18d §Library Matrix](./18d-image-processing-libraries.md), [sharp API](https://sharp.pixelplumbing.com/api-operation)).
+- **SVG input:** `@resvg/resvg-js` (v2.6.2 stable; v2.7.0-alpha in progress) for deterministic cross-OS rasterization; feed raw RGBA buffer into `sharp(buf, { raw: { width, height, channels: 4 } })`.
 - **ICO / ICNS:** `icon-gen` for the common case (Windows `.ico`, macOS `.icns` with standard sizes); `@shockpkg/icon-encoder` when we need to match Xcode's exact OSType tags.
+- **PNG optimization post-step:** `pngquant` (lossy, palette reduction) → `oxipng --opt 4 --strip all` (lossless, Rust multithreaded, v9.1.1). Run this two-pass pipeline on every PNG output before storage write. Skips pngquant for gradient/photo assets with alpha; always runs oxipng.
+- **Text compositing:** `@napi-rs/canvas` (v0.1.98, Skia backend, zero system deps) for compositing wordmarks/taglines onto generated images when the image model cannot be trusted with brand text (see CLAUDE.md strong-text-renderer rules).
 - **Concurrency:** pin `UV_THREADPOOL_SIZE` and `VIPS_CONCURRENCY` to `min(4, cores - 1)` inside workers.
+
+> **Updated 2026-04-21:** Added PNG optimization two-pass pipeline (oxipng + pngquant) and text compositing layer (@napi-rs/canvas). These were gaps in the original R1 spec.
 
 ### R2. Framework path: `@capacitor/assets` as the default "fan-out" tool, wrapped by custom emitters
 

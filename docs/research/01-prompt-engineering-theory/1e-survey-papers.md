@@ -119,7 +119,7 @@ Documented by the surveyed papers:
 - **Numeracy failures** (Gu et al. 2023; Yang et al. 2025): "four dogs" frequently produces 2–6 dogs; no survey reports a reliable purely-prompt fix short of layout conditioning.
 - **Negation failures** (Gu et al. 2023; Yang et al. 2025): "a street without cars" often generates cars. Negative-prompt channel is the community workaround; Schulhoff et al. flag it as an open research problem.
 - **Spatial-relation failures**: "to the left of" / "above" / "behind" fail above ~2 objects (Hartwig et al. 2024 compositional metrics taxonomy).
-- **Magic-term decay** (Oppenlaender 2024): Tokens like *unreal engine, trending on artstation* worked on SD 1.x but weakened on SDXL / SD3 and are largely ignored by MJv6+ and FLUX.1.
+- **Magic-term decay** (Oppenlaender 2024): Tokens like *unreal engine, trending on artstation* worked on SD 1.x but weakened on SDXL / SD3 and are largely ignored by MJv6+, MJv7 (current default as of June 2025), and FLUX.1/FLUX.2.
 - **Subject–text trade-off in personalization** (Cao et al. 2024, arXiv:2405.05538): DreamBooth subject LoRAs at high weights override the text prompt; surveyed mitigations include lower LoRA α, prior-preservation loss, and SID (Selectively Informative Description).
 - **Metric gaming** (Hartwig et al. 2024): CLIPScore saturates and rewards surface similarity; DSG/TIFA/ImageReward are recommended as complementary signals when tuning a prompt-rewriter.
 - **Safety / IP leakage** (Gu et al. 2023; Schulhoff et al. 2024): Style modifiers naming living artists, memorized training data, and NSFW jailbreaks are catalogued as responsibility concerns that a prompt-to-asset should filter.
@@ -142,7 +142,7 @@ Lifted from the "future directions" sections of the surveyed papers:
 
 1. **Can prompt rewriting generalize across model versions?** Every survey notes that modifier effectiveness is version-specific (SD 1.5 ≠ SDXL ≠ SD3 ≠ FLUX.1 ≠ MJv7). No surveyed method produces a portable rewriting policy.
 2. **What is the right primitive unit of a prompt?** Token, concept, modifier category, or structural slot? Schulhoff et al. use "techniques"; Oppenlaender uses "modifiers"; Cao et al. use "conditions." No unified ontology.
-3. **Is prompt engineering a transient skill?** Sahoo et al. and Schulhoff et al. both raise this — as models get better at instruction following (DALL-E 3, GPT-Image, Imagen 3, Gemini 2.5 native image), does the modifier stack become obsolete?
+3. **Is prompt engineering a transient skill?** Sahoo et al. and Schulhoff et al. both raise this — as models get better at instruction following (gpt-image-1/1.5 [DALL-E 3 deprecated May 2026], Imagen 3/4, Gemini 2.5 native image, Ideogram 3 Turbo, Midjourney v7+), does the modifier stack become obsolete?
 4. **How should a prompt-to-asset evaluate itself?** Hartwig et al.'s compositional-vs-general split is widely cited but no survey endorses a single metric; DSG, TIFA, VQA-based scoring, and human preference (HPS/ImageReward) are all partial.
 5. **Where does the enhancer sit in the stack — LLM rewriter, retrieval over modifier DB, learned RL policy, or multi-turn dialogue with the user?** All four are surveyed; none dominates.
 6. **Safety for creative generation**: Gu et al. and Schulhoff et al. both flag that prompt rewriters can *insert* problematic content (artist-name injection, copyrighted franchises, NSFW drift) that the user never asked for. This is an underexplored review topic.

@@ -177,7 +177,7 @@ evaluation protocols*:
 
 ### LLM-as-judge harnesses adapted for image rubrics
 
-- **DeepEval `ImageEditingMetric`** (`confident-ai/deepeval`, Apache-2.0, 14k★).
+- **DeepEval `ImageEditingMetric`** (`confident-ai/deepeval`, Apache-2.0, ~14k★ as of 2026-04, actively maintained).
   Already ships a VLM-judge that decomposes into Semantic Consistency + Perceptual
   Quality and combines them via `O = √(min αᵢ · min βᵢ)` — the VIEScore formula.
   Pytest-style, multi-provider. *✔ high* relevance as the rubric runner.

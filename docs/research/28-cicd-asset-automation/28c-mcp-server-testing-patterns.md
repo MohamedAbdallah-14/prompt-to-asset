@@ -102,6 +102,8 @@ Tools like `asset_generate_logo` with `mode: "api"` require real API keys. Three
 
 ## GitHub Actions workflow for testing
 
+> **Updated 2026-04-21:** Example updated to `actions/setup-node@v6` (latest major, v4 is two major versions behind) and `node-version: 22` (Node 20 EOL is April 30, 2026; Node 22 is LTS through Apr 2027).
+
 ```yaml
 name: test
 on: [push, pull_request]
@@ -110,8 +112,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+      - uses: actions/setup-node@v6
+        with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run build
       - run: npm run test:run -- --reporter=dot

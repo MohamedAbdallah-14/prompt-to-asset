@@ -43,14 +43,15 @@ The practical conclusion is:
    so it is *stable-but-quiet* rather than fast-moving; its internals are
    `sharp` + `xml2js` and it handles SVG input as of 7.0.
    ([GitHub — itgalaxy/favicons](https://github.com/itgalaxy/favicons))
-2. **`RealFaviconGenerator/core`** (MIT, ~34 ⭐, TypeScript monorepo that
+2. **`RealFaviconGenerator/core`** (MIT, TypeScript monorepo that
    publishes `@realfavicongenerator/generate-favicon`, `generate-logo`,
    `check-favicon`, `inject-markups`, plus gulp/grunt adapters) is the
-   *officially open-sourced engine* behind realfavicongenerator.net. It is
-   young and low-traffic but matches the SaaS output 1:1, which is exactly
-   what we want to replace the API. This is the most interesting single
-   find in this angle.
+   *officially open-sourced engine* behind realfavicongenerator.net. Matches
+   the SaaS output 1:1 and is actively maintained with regular npm releases.
+   This is the most interesting single find in this angle.
    ([GitHub — RealFaviconGenerator/core](https://github.com/RealFaviconGenerator/core))
+
+   > **Updated 2026-04-21:** The packages are actively maintained as of April 2026. `@realfavicongenerator/generate-favicon` is at **v0.6.3** (published ~25 days before this update); `@realfavicongenerator/check-favicon` at **v0.8.0** (18 days); the `realfavicon` CLI is at **v0.4.6** with very frequent releases. The repo star count is low but this is irrelevant to its quality — it is the canonical OSS engine for the SaaS and the npm download trend is growing.
 3. **Composition wins**: for vector input, render with
    [`resvg`](https://github.com/linebender/resvg)
    (3.8 k ⭐, MPL-2.0, fastest + most spec-correct per Wikimedia's T243893
@@ -80,13 +81,13 @@ redistribution risk. `svgcleaner` is archived in practice — use SVGO instead.
 | Repo | License | Stars | Last release / activity | What it does | Bundleable (Node / Python) | Cross-platform | Embed risk |
 |---|---|---|---|---|---|---|---|
 | [itgalaxy/favicons](https://github.com/itgalaxy/favicons) | MIT | ~1,234 ⭐ | 7.2.0 Mar 2024 (quiet but stable; 330 k weekly npm) | Full Node lib + CLI. PNG/SVG → favicon.ico, apple-touch, android-chrome, windows tiles, maskable, webmanifest, HTML meta tags. Uses `sharp`. | Node ✅ (direct `npm i favicons`) / Python ❌ | ✅ (sharp prebuilt binaries for darwin/linux/win x64+arm64) | Low. Only concern: slow release cadence. |
-| [RealFaviconGenerator/core](https://github.com/RealFaviconGenerator/core) | MIT | ~34 ⭐ | Active 2024–2026 monorepo | The OSS engine behind realfavicongenerator.net. Packages: `generate-favicon`, `check-favicon`, `generate-logo`, `inject-markups`, `image-adapter-node`, `gulp-real-favicon`, `grunt-real-favicon`. | Node ✅ / Python ❌ | ✅ (Node, uses `@resvg/resvg-js` + `sharp` under the hood) | Low-moderate. Young project, low star count, but authoritative output parity with the SaaS. **Primary candidate for "replace the SaaS".** |
+| [RealFaviconGenerator/core](https://github.com/RealFaviconGenerator/core) | MIT | low ⭐ (star count not indicative) | Active, frequent npm releases Apr 2026: `generate-favicon` v0.6.3, `check-favicon` v0.8.0, `realfavicon` CLI v0.4.6 | The OSS engine behind realfavicongenerator.net. Packages: `generate-favicon`, `check-favicon`, `generate-logo`, `inject-markups`, `image-adapter-node`, `gulp-real-favicon`, `grunt-real-favicon`. | Node ✅ / Python ❌ | ✅ (Node, uses `@resvg/resvg-js` + `sharp` under the hood) | Low. Actively maintained with frequent releases; authoritative output parity with the SaaS. **Primary candidate for "replace the SaaS".** |
 | [RealFaviconGenerator/cli-real-favicon](https://github.com/RealFaviconGenerator/cli-real-favicon) | MIT | ~121 ⭐ | Historical, wraps the *remote* API | Thin CLI that POSTs to realfavicongenerator.net API. **Not** useful for offline bundling. | N/A | ✅ | High — couples us back to the SaaS. Mentioned only to disambiguate. |
 | [RealFaviconGenerator/gulp-real-favicon](https://github.com/RealFaviconGenerator/gulp-real-favicon) | MIT | ~76 ⭐ | Maintained | Same: historical wrapper over the remote API. | N/A | ✅ | High (SaaS coupling). |
 | [thatmattlove/favicons](https://github.com/thatmattlove/favicons) (PyPI: `favicons`) | MIT | ~14 ⭐ (~1 k downloads/mo) | v0.2.2 Feb 2024 | Python 3 lib + CLI, sync & async APIs, HTML tag generation, PNG/SVG/JPEG/TIFF input. Uses Pillow. | Python ✅ (`pip install favicons`) / Node ❌ | ✅ | Low, but feature set is a subset of itgalaxy/favicons (no maskable, fewer Apple splash sizes). |
 | [AlexMili/extract_favicon](https://github.com/AlexMili/extract_favicon) (PyPI: `extract-favicon`) | MIT | ~17 ⭐ (~3.2 k downloads/mo) | Sep 2025, actively maintained | **Extracts** favicons from existing websites (HTML `<link>` parsing, `favicon.ico` fallback, base64, async). *Not* a generator. | Python ✅ | ✅ | n/a — orthogonal capability, useful for "enhance existing site" flows. |
 | [PyPI `faviconx`](https://pypi.org/project/faviconx/) | MIT (per PyPI metadata) | low | 1.0.0, 2024 | CLI-first Python favicon generator: ICO/SVG/PNG, Apple Touch, Android Chrome, PWA manifest, HTML meta tags. | Python ✅ (CLI + lib) | ✅ | Moderate: small user base, no public GitHub repo surfaced, less auditable. |
-| [onderceylan/pwa-asset-generator](https://github.com/onderceylan/pwa-asset-generator) | MIT | ~3,006 ⭐ | Active | Node CLI + lib. Generates **icons + Apple splash screens + favicons** from PNG/SVG/HTML source, updates `manifest.json` + `index.html`. Uses Puppeteer (chromium) for rendering — heavy. | Node ✅ | ✅ (but pulls chromium, ~200 MB) | Medium: chromium download inflates plugin size. Great for dev-time, risky to bundle. |
+| [onderceylan/pwa-asset-generator](https://github.com/onderceylan/pwa-asset-generator) | MIT | ~3,006 ⭐ | Active — ~22K weekly downloads, issues and PRs actively managed through Apr 2026 | Node CLI + lib. Generates **icons + Apple splash screens + favicons** from PNG/SVG/HTML source, updates `manifest.json` + `index.html`. Uses Puppeteer (chromium) for rendering — heavy. | Node ✅ | ✅ (but pulls chromium, ~200 MB) | Medium: chromium download inflates plugin size. Great for dev-time, risky to bundle. |
 | [ionic-team/capacitor-assets](https://github.com/ionic-team/capacitor-assets) | MIT | ~579 ⭐ | Active | Generates iOS, Android **and** PWA icons/splash screens from `assets/` directory. Targeted at mobile but has a PWA target. Uses `sharp`. | Node ✅ | ✅ | Low. Slightly opinionated toward Capacitor projects but invocable as a library. |
 | [3v0k4/favicon_factory](https://github.com/3v0k4/favicon_factory) | MIT | ~31 ⭐ | Active, Ruby gem + Docker | SVG-first. Outputs the *minimal* modern set (`favicon.ico`, `apple-touch-icon.png`, Android manifest). Supports light/dark via CSS media queries. | Ruby ✅ / Node ❌ / Python ❌ | ✅ (Docker) | High for a Node/Python plugin — wrong runtime. Useful as a reference for *the minimal modern set*. |
 | [vercel/satori](https://github.com/vercel/satori) | MPL-2.0 | ~13,295 ⭐ | 0.26.0 Mar 2026, 1.1 M weekly | JSX/HTML/CSS → SVG, designed for OG images and share cards. Pairs with resvg-js to rasterize. | Node ✅ | ✅ (pure JS/WASM) | Low. MPL-2.0 is file-level copyleft — fine as a library dependency of a closed or permissive plugin; only modifications to satori source itself must stay MPL. |
@@ -94,7 +95,7 @@ redistribution risk. `svgcleaner` is archived in practice — use SVGO instead.
 | [vercel/og-image](https://github.com/vercel/og-image) | Apache-2.0 | ~4,056 ⭐ | Reference repo (older) | Original template service; superseded by satori/`@vercel/og`. | — | ✅ | Use only as example. |
 | [lovell/sharp](https://github.com/lovell/sharp) | Apache-2.0 | ~32,155 ⭐ | Active, releases monthly | High-performance libvips binding. Resize, format convert (PNG/WebP/AVIF/JPEG/TIFF), alpha-safe. Foundation of itgalaxy/favicons and capacitor-assets. | Node ✅ | ✅ (prebuilt binaries darwin/linux/win; arm64 & x64) | Low. The *de facto* Node imaging primitive. |
 | [linebender/resvg](https://github.com/linebender/resvg) (was `RazrFalcon/resvg`) | MPL-2.0 (crates dual Apache-2.0/MIT for parts) | ~3,787 ⭐ | Active | Rust SVG renderer. Per Wikimedia T243893: fastest of resvg/librsvg/Inkscape (W3C suite 1 m 04 s vs Inkscape 7 m 57 s) and highest correctness (0.831 vs 0.745). | Node via `@resvg/resvg-js` ✅, Python via `resvg-py` or subprocess ✅ | ✅ (prebuilt binaries) | Low. Preferred renderer for SVG → PNG at specific raster sizes. |
-| [yisibl/resvg-js](https://github.com/yisibl/resvg-js) | MPL-2.0 | ~1,915 ⭐ | Active | napi-rs bindings around `resvg`. Used by satori / `@vercel/og`. | Node ✅ | ✅ | Low. |
+| [yisibl/resvg-js](https://github.com/yisibl/resvg-js) | MPL-2.0 | ~1,915 ⭐ | Latest stable: **2.6.2** (2 years ago); alpha pre-releases (2.6.3-alpha, 2.7.0-alpha.0 as of Jan 2026) show active Rust development but no new stable npm release yet. CI workflows active. | napi-rs bindings around `resvg`. Used by satori / `@vercel/og`. | Node ✅ | ✅ | Low. Pin to 2.6.2 for stability; monitor for 2.7.0 stable. |
 | [svg/svgo](https://github.com/svg/svgo) | MIT | ~22,439 ⭐ | Active | SVG minifier / cleaner. Essential before rasterizing so the input SVG is normalized (viewBox fixed, CSS inlined, `<defs>` deduped). | Node ✅ | ✅ | Low. |
 | [RazrFalcon/svgcleaner](https://github.com/RazrFalcon/svgcleaner) | MPL-2.0 | ~1,667 ⭐ | **Archived / unmaintained** (author moved focus to resvg) | Rust CLI SVG optimizer. | CLI only | ✅ | Superseded by SVGO for library use. |
 | [piqnt/svgexport](https://github.com/piqnt/svgexport) (listed in query as "kolodny/svgexport" — that org doesn't exist) | MIT | ~954 ⭐ | v0.4.2 (npm), repo last touched Apr 2025 | Puppeteer-based SVG → PNG/JPEG CLI. | Node ✅ (but heavy) | ✅ (pulls chromium) | Medium. Chromium bloat; resvg-js is better for our use. |
@@ -308,7 +309,7 @@ Repositories (with star counts captured during this pass, 2026-04-19):
 
 - [itgalaxy/favicons](https://github.com/itgalaxy/favicons) — ~1,234 ⭐, MIT, Node
 - [itgalaxy/favicons releases](https://github.com/itgalaxy/favicons/releases) — v7.2.0 (Mar 15 2024) is current
-- [RealFaviconGenerator/core](https://github.com/RealFaviconGenerator/core) — ~34 ⭐, MIT, TypeScript monorepo (OSS engine of the SaaS)
+- [RealFaviconGenerator/core](https://github.com/RealFaviconGenerator/core) — MIT, TypeScript monorepo (OSS engine of the SaaS); `@realfavicongenerator/generate-favicon` v0.6.3, `check-favicon` v0.8.0, `realfavicon` CLI v0.4.6 (all active as of Apr 2026)
 - [RealFaviconGenerator/cli-real-favicon](https://github.com/RealFaviconGenerator/cli-real-favicon) — ~121 ⭐, MIT (wraps remote API — not embed candidate)
 - [RealFaviconGenerator/gulp-real-favicon](https://github.com/RealFaviconGenerator/gulp-real-favicon) — ~76 ⭐, MIT (same)
 - [3v0k4/favicon_factory](https://github.com/3v0k4/favicon_factory) — ~31 ⭐, MIT, Ruby

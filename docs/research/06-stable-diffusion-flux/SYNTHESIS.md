@@ -13,6 +13,8 @@ last_updated: 2026-04-19
 tags: [stable-diffusion, sdxl, flux, flux2, controlnet, ip-adapter, lora, dora, comfyui, diffusers, asset-generation, brand-consistency]
 ---
 
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # 06 — Stable Diffusion & Flux: Category Index
 
 ## Category Executive Summary
@@ -69,9 +71,13 @@ Across five angles (6a SD 1.5/2.1/XL, 6b Flux family, 6c conditioning adapters, 
 - **VAE choice and color-accuracy impact on brand palette fidelity.** 6a documents VAE as "the pixel-space autoencoder" but doesn't cover the SDXL VAE 0.9 vs. 1.0 vs. madebyollin SDXL-FP16 VAE choice, which materially affects color accuracy for brand work.
 - **Serving economics.** 6e gives VRAM profile and cloud options but not a full cost-per-1000-assets comparison across Replicate vs. fal vs. self-hosted A100 vs. RunPod spot. The plugin roadmap needs this.
 - **Quantitative benchmarks for text rendering inside logos/wordmarks.** 6b cites ELO and correctness ratios but doesn't include a reproducible test harness the plugin could use as CI.
-- **Flux.2 ecosystem coverage.** Flux.2 launched 2025-11-25 (inside the research window) but ComfyUI / Forge / Diffusers custom-node maturity is still settling; 6e's matrix assumes Flux.1 for most rows.
+- **Flux.2 ecosystem coverage now improving.** Flux.2 launched 2025-11-25 and ComfyUI support landed at launch via NVIDIA-collaborated FP8 path; 6e's matrix still assumes Flux.1 for most rows but has been updated with coverage notes.
+- **Flux.2 [klein] (released Jan 2026) unifies T2I and editing** in a single compact architecture — 4B (Apache 2.0, ~13 GB VRAM) and 9B (Non-Commercial, ~29 GB VRAM) — partially replacing the need for separate Kontext and Fill tools on Flux.2. Klein is not yet covered in depth in the angle files.
+- **SD 3.5 prompting contract not covered.** 6a covers SD 1.5/2.1/XL; SD 3.5 (released Oct 2024, 8B Large + 2.6B Medium) has a different three-encoder architecture (CLIP-L + OpenCLIP-bigG + T5-XXL) closer to Flux's prose style than SDXL tag-soup. No angle covers SD 3.5-specific prompting patterns in depth.
 - **Agentic use of Kontext as an iterative edit tool.** 6b flags Kontext as "the primitive that makes iterative asset generation economically viable" but there's no worked example of a multi-turn agentic loop (generate → critique → Kontext-edit → accept). This connects to category 19.
-- **Legal/licensing coverage.** FLUX-1 Non-Commercial, FLUX-2 Non-Commercial, Apache 2.0 (schnell, klein, VAE) matter for the plugin's commercial posture; 6b lists licenses but doesn't translate them into product decisions.
+- **Legal/licensing coverage.** FLUX-1 Non-Commercial, FLUX-2 Non-Commercial, Apache 2.0 (schnell, Flux.2-klein-4B, VAE) matter for the plugin's commercial posture; 6b lists licenses but doesn't translate them into product decisions. Note: Flux.2 [klein] 4B is Apache 2.0 (commercial-safe); the 9B variant is Non-Commercial.
+
+> **Updated 2026-04-21:** Several gaps above are now partially closed. Flux.2 [klein] 4B (Apache 2.0) is now the recommended local consumer-GPU path for Flux.2-quality output, not a "forthcoming" model. AUTOMATIC1111 is maintenance-only (last release Jul 2024) — the "A1111 as a viable option" framing in the self-hostable pipeline recommendation should be understood as "legacy" for users with existing SD 1.5/SDXL workflows only. Fooocus is LTS/SDXL-only. kohya sd-scripts Flux training is no longer experimental — it's in main via `flux_train_network.py`.
 
 ## Actionable Recommendations for the Plugin
 
@@ -81,7 +87,9 @@ Across five angles (6a SD 1.5/2.1/XL, 6b Flux family, 6c conditioning adapters, 
 - **Low-VRAM path: Forge with NF4 Flux + A1111-shape API** [6e]. Any existing `sdwebuiapi` client works unchanged. Useful for enthusiast tier / user-owned GPU (12–16 GB).
 - **High-throughput path: Diffusers in-process with `torch.compile` + `enable_model_cpu_offload` + bnb-4bit** [6e]. 64-image batches via `itertools.product` over (subject × seed × style × aspect) with inner `BATCH=4`. Wrap in `asyncio.Queue` for request-level concurrency.
 - **Multi-box path: SwarmUI fronting N ComfyUI backends** [6e]. One session per plugin instance; `GenerateText2ImageWS` fans the request across backends automatically.
-- **Model defaults**: Flux.1 [dev] for typography / identity / prompt-adherence jobs; Flux.1 [schnell] for fast iteration; SDXL (Juggernaut XL / RealVis XL for photoreal, Vector illustration SDXL LoRA stack for flat assets) for flat/vector icon work and where VRAM is tight; Flux.2 [dev]/[flex] once the ecosystem stabilizes and for any job that needs JSON-hex-color prompts or multi-reference.
+- **Model defaults**: Flux.1 [dev] for typography / identity / prompt-adherence jobs; Flux.1 [schnell] for fast iteration; SDXL (Juggernaut XL / RealVis XL for photoreal, Vector illustration SDXL LoRA stack for flat assets) for flat/vector icon work and where VRAM is tight; Flux.2 [pro]/[flex] via API for maximum quality / multi-reference; **Flux.2 [klein] 4B** (Apache 2.0, ~13 GB VRAM, sub-second inference) as the new local consumer-GPU default when Flux.2-quality output is needed.
+
+> **Updated 2026-04-21:** **Flux.2 [klein]** shipped January 15, 2026 (not "beta forthcoming") and is the practical local choice for Flux.2-quality output on consumer hardware. The "wait for Flux.2 ecosystem to stabilize" caveat from the original synthesis is now resolved — ComfyUI, diffusers, and InvokeAI all have production-ready Flux.2 support. **AUTOMATIC1111** is maintenance-only (last release v1.10.1, July 2024); remove it from active recommendations — point users to Forge instead. **Fooocus** is SDXL-only LTS; not suitable for Flux or SD3.5 workflows.
 
 ### ControlNet / IP-Adapter strategy
 
@@ -94,7 +102,7 @@ Across five angles (6a SD 1.5/2.1/XL, 6b Flux family, 6c conditioning adapters, 
 ### LoRA training hook
 
 - **Ship a "Train a brand LoRA" flow** [6d] that accepts 10–30 images and runs one of three presets: (A) flat-vector icon pack (rank 8, alpha 8, 2k steps, Flux ostris `ai-toolkit` or SDXL kohya), (B) painterly marketing illustration (rank 16 with DoRA, 4k steps), (C) duotone brand (rank 8–16 with hex-anchored captions), (D) logo mark (LoHA rank 4 with 50–100 regularization images).
-- **Backend**: Replicate `ostris/flux-dev-lora-trainer` or fal.ai `flux-lora-fast-training` for $2–6 per brand, with an optional RunPod-H100 + ai-toolkit queue path for self-hosted.
+- **Backend**: Replicate `ostris/flux-dev-lora-trainer` or fal.ai `flux-lora-fast-training` for $2–6 per brand, with an optional RunPod-H100 + ai-toolkit queue path for self-hosted. For SDXL LoRAs, kohya `sd-scripts` (main branch, `flux_train_network.py` for Flux — no longer experimental) is the alternative; kohya GUI (bmaltais) exposes the full parameter surface.
 - **Captioning pipeline**: auto-caption with BLIP-2 / CogVLM → strip style words → inject rare trigger token as first word → expose the captions for user review before training kicks off. This is the single biggest quality lever [6d].
 - **Inference integration**: the enhancer must know (a) the trigger token for each brand LoRA, (b) the LoRA weight range (default 0.8–1.0 Flux, 0.65–0.9 SDXL), (c) the asset-template whitelist (flat icon vs. illustration) the LoRA was trained for. Store these as metadata alongside the safetensors file.
 - **Multi-brand serving**: keep the base model shared; hot-swap adapters via `diffusers.set_adapters()` or ComfyUI Power Lora Loader (rgthree). Don't merge-and-unload per-brand unless the brand is so high-volume it warrants its own dedicated endpoint — loss of dynamic scale control outweighs the ~2% inference speedup.

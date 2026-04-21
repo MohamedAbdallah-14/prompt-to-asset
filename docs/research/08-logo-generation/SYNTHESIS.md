@@ -25,6 +25,8 @@ tags:
   - transparency
 ---
 
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category Index — 08 Logo Generation
 
 ## Category Executive Summary
@@ -76,11 +78,17 @@ skill must encode before a single pixel is generated. The top 15 insights:
    Recraft and Ideogram expose explicit `style=` / `magic_prompt` controls that
    outperform prompt tokens (angle 8b).
 9. **Text rendering is still the hardest subproblem and it is model-routed.**
-   Ideogram 3, Recraft V3, Gemini 3 Pro Image ("Nano Banana Pro"), and
-   GPT-Image-1.5 are production-grade for Latin wordmarks; Flux and Midjourney
-   are draft-grade; Gemini 3 Pro + AnyText are the only realistic path for CJK;
-   Arabic/Hebrew/Devanagari remain in the "generate the mark, typeset the name"
-   fallback zone (angle 8c).
+
+   > **Updated 2026-04-21:** Recraft V4 (Feb 2026) supersedes V3; DALL·E 3 is deprecated
+   > May 2026; Midjourney V8 Alpha (Mar 2026) substantially improved quoted-text rendering.
+   > Nano Banana Pro has no free API tier. Nano Banana 2 (gemini-3.1-flash-image, Feb 2026)
+   > adds 4K output and improved text accuracy on a partial free tier.
+
+   Ideogram 3, Recraft V4, Gemini 3 Pro Image ("Nano Banana Pro"), and
+   GPT-Image-1.5 are production-grade for Latin wordmarks; Flux and Midjourney v7
+   are draft-grade (MJ V8 Alpha improving); Nano Banana Pro + AnyText are the only
+   realistic path for CJK; Arabic/Hebrew/Devanagari remain in the "generate the
+   mark, typeset the name" fallback zone (angle 8c).
 10. **Cap quoted strings at 5–6 words.** Ideogram's own docs, Midjourney's
     own docs, and every third-party benchmark converge on this number. Longer
     phrases require multi-render strategies or post-hoc retyping
@@ -103,19 +111,20 @@ skill must encode before a single pixel is generated. The top 15 insights:
     as style signals (`clean, geometric, constructed-looking`), not literal
     constraints — forced φ-grids produce stiff, over-engineered marks
     (angle 8a).
-14. **Transparency is lie-able.** Gemini 2.5 Flash Image, `gpt-image-1`
-    (ChatGPT UI), and Imagen routinely ship a 16×16 checker pattern or a
-    near-white fill when asked for a transparent PNG. Default architecture:
-    generate on pure white, run BiRefNet / RMBG 2.0 matting with alpha-matting
-    refinement, then flatten-to-white before vectorizing (angles 8d, 8e;
-    cross-ref category 13).
+14. **Transparency is lie-able.** Gemini Flash Image models, and Imagen routinely
+    ship a 16×16 checker pattern or a near-white fill when asked for a transparent
+    PNG. `gpt-image-1` and `gpt-image-1.5` support true RGBA via API
+    (`background: "transparent"`) but should still be matted as a safety pass.
+    Default architecture: generate on pure white, run BiRefNet / RMBG 2.0 matting
+    with alpha-matting refinement, then flatten-to-white before vectorizing
+    (angles 8d, 8e; cross-ref category 13).
 15. **A logo ships as a family, not a PNG.** Canonical master = clean SVG;
     fanout = PNGs @{16,32,48,64,128,180,192,256,512,1024} + `favicon.ico`
     (16+32+48 bundled) + `apple-touch-icon-180.png` +
     `android-chrome-{192,512}.png` + `og-1200x630.png` + `logo.pdf` +
-    `logo-{dark,light,monochrome}.svg`. The pipeline is Recraft-V3-SVG OR
+    `logo-{dark,light,monochrome}.svg`. The pipeline is **Recraft-V4-Vector** OR
     (Flux/Imagen → BiRefNet → vtracer → SVGO → resvg → sharp → png-to-ico)
-    (angle 8e).
+    (angle 8e). Recraft V4 released February 2026; supersedes V3 for new work.
 
 ## Map of the Angles
 
@@ -135,14 +144,14 @@ selection in the middle, pixel-to-SVG mechanics on the right.
   with core/supporting/kill tokens and best-fit models. 15 before→after
   rewrites, a designer/school signal-strength table, ten anti-patterns,
   and model-specific tuning for MJ v6/v7, SDXL, Flux, Recraft, Ideogram,
-  Gemini/Imagen, DALL·E 3/gpt-image-1.
+  Gemini/Imagen, gpt-image-1/gpt-image-1.5 (DALL·E 3 deprecated May 2026).
 
 - **8c — Rendering Text Reliably Inside Logos.** The *wordmark routing*
-  angle. Benchmarks across Recraft V3, Ideogram 3, Gemini 3 Pro Image,
-  GPT-Image-1.5, Flux.1/2 Pro, Midjourney v7, AnyText, TextDiffuser-2,
-  Imagen 4. Model-by-model canonical syntax; academic lineage (GlyphControl,
-  TextDiffuser-2, AnyText, character-aware encoders); an 11-script A/B/C/D
-  quality matrix; four production retyping recipes.
+  angle. Benchmarks across Recraft V4 (formerly V3), Ideogram 3, Gemini 3 Pro Image
+  (Nano Banana Pro), GPT-Image-1.5, Flux.1/2 Pro, Midjourney v7/v8, AnyText,
+  TextDiffuser-2, Imagen 4. Model-by-model canonical syntax; academic lineage
+  (GlyphControl, TextDiffuser-2, AnyText, character-aware encoders); an 11-script
+  A/B/C/D quality matrix; four production retyping recipes.
 
 - **8d — Monograms and Color Palette Control.** The *hardest sub-genre* plus
   the *exact-color* angle. Why monograms corrupt strokes; junction
@@ -154,7 +163,7 @@ selection in the middle, pixel-to-SVG mechanics on the right.
 
 - **8e — Full SVG Logo Pipeline.** The *mechanics* angle. Six-stage pipeline
   (Prompt → Generation → Matting → Vectorization → SVG Cleanup → Multi-format
-  Export). Native-vector path (Recraft V3 SVG, StarVector, SVGDreamer,
+  Export). Native-vector path (**Recraft V4 Vector**, StarVector, SVGDreamer,
   Chat2SVG) vs raster-first. Matting (rembg/BiRefNet/RMBG 2.0/SAM 2);
   vectorization (vtracer, potrace, LIVE, StarVector); SVGO recipe; resvg /
   sharp / png-to-ico fanout. Three reference repos (LogoLoom, Chat2SVG,
@@ -218,11 +227,11 @@ but is far below `controls.colors` / IP-Adapter / named palettes. Resolution:
 emit hex as a hint *and* carry the palette into a post-hoc recolor / Recraft
 `controls.colors` step; never rely on prompt hex alone.
 
-**C4 — Native vector vs raster-first.** 8e picks a hybrid (Recraft V3 SVG
+**C4 — Native vector vs raster-first.** 8e picks a hybrid (Recraft V4 Vector
 first, fall back to raster → vtracer) but the research frontier (StarVector,
 SVGDreamer, Chat2SVG) pushes toward native-vector by default. Resolution:
-route by style — flat/monogram/simple symbol → Recraft V3 SVG; mascot /
-gradient / 3D → raster-first → vtracer.
+route by style — flat/monogram/simple symbol → **Recraft V4 Vector** (Feb 2026);
+mascot / gradient / 3D → raster-first → vtracer.
 
 **C5 — Designer style anchors.** 8b shows Paul Rand / Saul Bass / Bauhaus
 as strong anchors; Haviv, Scher, Chermayeff & Geismar are "absent from
@@ -308,25 +317,29 @@ that the five angles directly mandate:
 
 Decision tree (in order, first match wins):
 
-- `category == wordmark && script == Latin && words ≤ 6` → Recraft V3 OR
-  Ideogram 3 (prefer Recraft if exact color/brand consistency matters,
+> **Updated 2026-04-21:** Router updated for Recraft V4 (Feb 2026), DALL·E 3 deprecation (May 2026), and Midjourney V8 Alpha (Mar 2026). Nano Banana Pro has no free API tier.
+
+- `category == wordmark && script == Latin && words ≤ 6` → **Recraft V4** OR
+  Ideogram 3 (prefer Recraft V4 if exact color/brand consistency matters,
   Ideogram for typographic variety).
-- `category == wordmark && script ∈ {CJK}` → Gemini 3 Pro Image
-  ("Nano Banana Pro") OR AnyText self-host.
+- `category == wordmark && script ∈ {CJK}` → **Nano Banana Pro** (Gemini 3 Pro Image,
+  billed) OR AnyText self-host. Nano Banana 2 (free dev tier) is a lower-cost alternative
+  with improved CJK over Nano Banana.
 - `category == wordmark && script ∈ {Arabic, Hebrew, Devanagari}` →
-  generate mark-only via Flux/Recraft, then hand off to a shaping
+  generate mark-only via Flux/Recraft V4, then hand off to a shaping
   engine for the wordmark (HarfBuzz in Figma/Illustrator). Warn user.
-- `category == mascot || style == 3D rendered` → Midjourney v6/v7 OR
-  DALL·E 3 / gpt-image-1 (good 3D priors).
+- `category == mascot || style == 3D rendered` → Midjourney v7/v8 OR
+  gpt-image-1 / gpt-image-1.5 (good 3D priors). Do **not** route to DALL·E 3 —
+  deprecated May 12, 2026.
 - `category == pictorial || style ∈ {flat vector, minimalist, geometric,
   monoline, line-art, isometric, flat-vector-SVG, negative-space}` →
-  Recraft V3 SVG (native vector) preferred; Flux.1 [pro] fallback;
+  **Recraft V4 Vector** (native SVG) preferred; Flux.1 [pro] fallback;
   SDXL + relevant LoRA (logo.redmond, vector-illustration, isometric,
   negative-space-logo-lora) for local.
-- `category == monogram` → Ideogram 2.0/3 OR Recraft V3 (8d §"Per-model
+- `category == monogram` → Ideogram 3 OR **Recraft V4** (8d §"Per-model
   notes"). SDXL + ControlNet lineart + IP-Adapter Style-Only for exact
   junction control.
-- `palette == exact brand hex` → Recraft V3 with `controls.colors`; else
+- `palette == exact brand hex` → **Recraft V4** with `controls.colors`; else
   FLUX Pro Finetune or IP-Adapter Style-Only with a palette-swatch
   reference at weight 0.6–0.8.
 
@@ -337,7 +350,7 @@ Decision tree (in order, first match wins):
 - Emit model-specific wrapper syntax:
   - Ideogram 3: `… with the text 'FOO' in <style>, <position>…`
   - Midjourney v7: `… text: "FOO", <style> --v 7`
-  - Recraft V3: natural language with inline quotes + `style=vector_illustration`
+  - Recraft V4 (formerly V3): natural language with inline quotes + `style=vector_illustration`
   - GPT-Image-1.5: `The phrase "FOO" rendered in <classification+weight>,
     centered, crisp edges, optical alignment, pixel-perfect anti-aliasing`
   - Flux / Gemini 3 Pro / Imagen 4: prose, quote exact string early
@@ -354,7 +367,7 @@ Decision tree (in order, first match wins):
 Encode the 8e six-stage pipeline as the default code path, with Recraft
 V3 SVG as the short-circuit:
 
-1. **Generation.** Recraft V3 SVG (skip stages 3–4) OR raster-first.
+1. **Generation.** **Recraft V4 Vector** (skip stages 3–4) OR raster-first. Recraft V4 released Feb 2026; supersedes V3.
 2. **Matting.** On raster outputs: detect checker pattern → replace with
    white → `rembg -m birefnet-general --alpha-matting
    --alpha-matting-foreground-threshold 240 --alpha-matting-background-threshold
@@ -416,9 +429,10 @@ re-run incrementally.
   https://recraft.ai/docs, https://www.recraft.ai/docs/api-reference/endpoints
 - Ideogram — Text & Typography prompting guide, v3 API reference —
   https://docs.ideogram.ai/, https://developer.ideogram.ai/
-- OpenAI — image-generation cookbook, gpt-image-1.5 model docs —
+- OpenAI — image-generation cookbook, gpt-image-1 / gpt-image-1.5 model docs —
   https://cookbook.openai.com/examples/generate_images_with_gpt_image,
   https://platform.openai.com/docs/models/gpt-image-1.5
+  **Note:** DALL·E 3 API deprecated May 12, 2026. Migrate to gpt-image-1 or gpt-image-1.5.
 - Google — Gemini API image generation, Gemini 3 Pro Image model card,
   Imagen 4 (Vertex AI) — https://ai.google.dev/gemini-api/docs/image-generation,
   https://deepmind.google/models/model-cards/gemini-3-pro-image/

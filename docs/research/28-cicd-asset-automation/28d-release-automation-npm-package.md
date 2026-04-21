@@ -30,6 +30,9 @@ permissions:
 ```
 
 Full workflow (`.github/workflows/release.yml`):
+
+> **Updated 2026-04-21:** `actions/setup-node@v6` is the current major version (v4 is two major versions behind). `node-version` bumped to `22` — Node 20 reaches EOL April 30, 2026. npm OIDC trusted publishing requires Node ≥ 22.14.0, so `node-version: 20` already broke that path.
+
 ```yaml
 name: release
 on:
@@ -41,9 +44,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
       - run: npm ci
@@ -61,14 +64,16 @@ Add `"ci:publish": "changeset publish"` to the mcp-server `package.json` scripts
 
 ## npm Trusted Publishing (OIDC — no NPM_TOKEN needed)
 
-As of npm CLI 11.5.1+ and Node 22.14+, npm supports OIDC-based trusted publishing.
-You register a GitHub Actions workflow as a trusted publisher on npmjs.com, then publish
-with `id-token: write` and no `NPM_TOKEN` secret. Provenance attestations are generated
-automatically for public packages.
+As of npm CLI 11.5.1+ and Node 22.14+, npm supports OIDC-based trusted publishing
+(generally available as of July 2025). You register a GitHub Actions workflow as a trusted
+publisher on npmjs.com, then publish with `id-token: write` and no `NPM_TOKEN` secret.
+Provenance attestations are generated automatically for public packages.
 
 Caveats:
-- Requires Node 22+ (project's `engines.node` is `>=20.11.0` — needs an explicit bump
-  in the publish job step, not the package engine field).
+- Requires Node ≥ 22.14.0 (npm 11 also accepts `^20.17.0` for the CLI itself, but the
+  trusted publishing feature specifically needs Node 22.14+). The project's `engines.node`
+  is `>=20.11.0` — bump that field and the publish job's `node-version` to `22` or `24`.
+  Node 20 is EOL April 30, 2026, making the `>=20.11.0` engine field actively misleading.
 - Only GitHub-hosted runners are supported; self-hosted runners do not work.
 - The workflow filename configured on npmjs.com must match exactly (case-sensitive,
   including the `.yml` extension).

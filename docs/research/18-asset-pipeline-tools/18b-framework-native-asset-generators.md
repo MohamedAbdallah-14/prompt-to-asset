@@ -63,6 +63,8 @@ The rest of this report enumerates each tool's exact input contract, output tree
 | IconSync | Compose Multiplatform | Uses *existing* Android launcher icon as source of truth | iOS `Assets.xcassets/AppIcon.appiconset/*.png` + `Contents.json` | Gradle: `plugins { id("io.github.ansgrb.iconsync") version "1.0.1" }` |
 | `pwa-asset-generator` | PWA / web | Any PNG/SVG source | `icons/*.png` (Android + iOS touch icons + mstile), `splashscreens/apple-splash-*.png`, updates `manifest.json` + `index.html` meta tags | CLI; optional `.pwa-asset-generator.json` |
 
+> **Updated 2026-04-21:** Version notes as of April 2026: `@capacitor/assets` **v3.0.5** (last published ~2 years ago — no breaking changes but Ionic's active development focus has shifted; functionally stable). `flutter_launcher_icons` **v0.14.4** (June 2025). `pwa-asset-generator` **v8.1.4** (March 2026, actively maintained). `react-native-bootsplash` actively maintained (~173k weekly downloads mid-2026).
+
 ## Tool Deep Dives
 
 ### @capacitor/assets (Ionic / Capacitor)
@@ -209,7 +211,7 @@ Both want a 1024²+ transparent PNG or a vector drawable. Neither handles splash
 
 ### pwa-asset-generator (honourable mention)
 
-Though primarily a web tool, `pwa-asset-generator` (elegantapp, v8.1.4, Mar 2026, 3k★) is the only open-source generator that handles the full matrix of PWA icons + iOS `apple-touch-startup-image` splash screens + mstile images *and* patches `manifest.json` / `index.html` atomically. Capacitor internally leans on similar Puppeteer-based rendering for PWA outputs. [[15]](https://github.com/elegantapp/pwa-asset-generator)
+Though primarily a web tool, `pwa-asset-generator` (elegantapp, **v8.1.4**, Mar 2026, ~3k★) is the only open-source generator that handles the full matrix of PWA icons + iOS `apple-touch-startup-image` splash screens + mstile images *and* patches `manifest.json` / `index.html` atomically. Capacitor internally leans on similar Puppeteer-based rendering for PWA outputs. [[15]](https://github.com/elegantapp/pwa-asset-generator) Active issues as of Apr 2026 confirm ongoing maintenance.
 
 ## Recommended "Feed" Format for AI-Generated Assets
 

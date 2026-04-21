@@ -2,7 +2,7 @@
 category: 10-ui-illustrations-graphics
 title: "Category 10 — UI Illustrations & Graphics: Synthesis & Map of the Angles"
 indexer: category-indexer-10
-date: 2026-04-19
+date: 2026-04-21
 status: synthesis
 angle_files:
   - 10a-empty-state-onboarding-illustrations.md
@@ -20,18 +20,21 @@ related_categories:
   - 18-asset-pipeline-tools
 primary_models_referenced:
   - midjourney-v7
-  - flux-1-dev-pro-ultra
+  - midjourney-v8-alpha
+  - flux-2-pro
   - flux-redux
   - sdxl
-  - gpt-image-1
+  - gpt-image-1.5
   - imagen-4
-  - ideogram-3
-  - recraft-v2-v3
+  - ideogram-3-turbo
+  - recraft-v4
   - gemini-2.5-flash-image
   - rodin-gen-2
   - meshy-v5
   - luma-genie
 ---
+
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
 
 # Category 10 — UI Illustrations & Graphics
 
@@ -53,7 +56,9 @@ Twelve insights foundational for the prompt-to-asset skill:
 8. **The 2024–2026 SaaS aesthetic has fragmented into ~8 named styles.** Dark product-first (Linear/Vercel), Vercel/Frame monochrome-grain, Stripe iridescent mesh, Supabase low-poly 3D, claymorphism, glassmorphism over gradient mesh, neo-brutalism/Swiss-grid, holographic chrome. Each has a reproducible palette + material + lighting + texture recipe (10b §Style Taxonomy; 10d §1).
 9. **Production-fidelity 3D needs a hybrid pipeline.** Pure T2I "isometric 3D office" ships broken perspective ~60% of the time. Studios use Blender/Spline/C4D for geometry and Flux/SDXL only for a texturing img2img at denoise 0.25–0.40 driven by ControlNet-Depth (~0.6) and ControlNet-Normal (~0.4) (10d Finding 1).
 10. **Clay/glass need material physics vocabulary; kill the orb with negatives.** Clay prompts collapse to Play-Doh without `matte subsurface scattering, velvet sheen, 0% specular`; glass collapses to frosted PNG rectangles without `frosted dielectric glass, Fresnel rim, caustics, IOR 1.45` (10d §3.3–3.4). The "AI glowing 3D orb" slop signal appears in ~40% of unguided Flux outputs; mitigate with `glowing orb, nebula, lens flare, stock 3d, chromatic aberration` negatives and concrete object references via `--cref`/IP-Adapter (10d §3.1).
-11. **Model selection is driven by what the asset must carry.** Legible text ≤6 words → `gpt-image-1` / Ideogram 3. Cinematic no-text → Midjourney v7. Strict composition adherence → Flux 1.1 Pro / Imagen 4. Vector SVG delivery → Recraft v3 (only commercial option). Brand-consistent series → Flux Pro + `--sref` or Recraft saved Style (10b §Model Picks).
+11. **Model selection is driven by what the asset must carry.** Legible text ≤6 words → `gpt-image-1.5` / Ideogram 3 Turbo (Ideogram transparency uses the `/ideogram-v3/generate-transparent` endpoint with `rendering_speed: "TURBO"` — not a `style: "transparent"` param). Cinematic no-text → Midjourney v7 (V8 Alpha available March 2026). Strict composition adherence → FLUX.2 Pro / Imagen 4. Vector SVG delivery → Recraft V4 / V4 Pro SVG (only commercial option; V3 stays viable only for brand-style pipelines via saved Style ID). Brand-consistent series → FLUX.2 Pro (up to 10 native refs) or Recraft V4 with saved Style (10b §Model Picks).
+
+> **Updated 2026-04-21:** Recraft V3 → V4 (Feb 2026) for all new generation. V4 has **no style_id** parameter — the brand-style pipeline changed; use Recraft's "Brand Style" feature via the API's `style` object with a saved style reference, not `style_id`. V3 remains usable for existing brand-style pipelines that already have a saved style. gpt-image-1 → gpt-image-1.5 (4× faster, 20% cheaper); gpt-image-1.5 also supports native streaming via `stream: true` + `partial_images: 0–3`. Flux `negative_prompt` raises TypeError on ALL Flux variants — use affirmative positive anchors instead (e.g., `"pure white background"` not `"no checkerboard"`). InstantX FLUX.1-dev IP-Adapter replaces the unmaintained tencent-ailab original for Flux pipelines.
 12. **A generated asset is half the work.** Format chain (AVIF/WebP/PNG), responsive framework wrappers (`next/image`, `<enhanced:img>`, `<NuxtImg>`, Astro `<Image />`), animation runtimes (dotLottie v2 over JSON Lottie; Rive for state machines), and a11y (`role="img"`+`<title>`/`<desc>`, `prefers-reduced-motion`, `prefers-reduced-data`) are where pipelines leak. `prefers-reduced-motion` is not optional and `lottie-web`/`rive-react` don't auto-respect it — wire it yourself and skip the fetch entirely for decorative reduced-motion (saves ~60 KB runtime) (10e §Format Matrix + §Accessibility).
 
 ## Map of the Angles
@@ -72,15 +77,17 @@ Cross-references: 10a and 10c share the LoRA/IP-Adapter/`--sref` stack (10a §Co
 
 Every angle converges on the same five-part playbook.
 
-**1. Freeze the style outside the prompt.** Style is pinned, in descending durability, as: (a) a **trained adapter** — LoRA on SDXL (`kohya-ss/sd-scripts`) or Flux (`ostris/ai-toolkit`), ranks 16–64, inference weight 0.7–0.9, ConsisLoRA for content-leakage control; (b) a **reference-image bundle** of 3–10 approved exemplars fed via IP-Adapter (`ip-adapter-plus`/`ip-adapter-style-plus`/`ip-adapter-faceid`), MJ `--sref <url> --sw`, Flux Redux, Recraft Brand Styles, or Gemini/`gpt-image-1` multi-image input — additive, so approved outputs rejoin the anchor set and cause drift to *converge* not compound (10c §Style Spec + Anchor Image); (c) a **text style spec** in `style.yaml` (palette hex, stroke px, cap/join, corner radius, aspect defaults, negatives), frozen and appended unchanged every time.
+**1. Freeze the style outside the prompt.** Style is pinned, in descending durability, as: (a) a **trained adapter** — LoRA on SDXL (`kohya-ss/sd-scripts`) or Flux (`ostris/ai-toolkit`), ranks 16–64, inference weight 0.7–0.9, ConsisLoRA for content-leakage control; (b) a **reference-image bundle** of 3–10 approved exemplars fed via IP-Adapter (`ip-adapter-plus`/`ip-adapter-style-plus`/`ip-adapter-faceid`; for Flux use `InstantX/FLUX.1-dev-IP-Adapter`), MJ `--sref <url> --sw`, FLUX.2 native multi-reference (≤10 refs, no external adapter needed), Recraft Brand Styles (V4: via `style` API object, not `style_id`), or Gemini/`gpt-image-1.5` multi-image input — additive, so approved outputs rejoin the anchor set and cause drift to *converge* not compound (10c §Style Spec + Anchor Image); (c) a **text style spec** in `style.yaml` (palette hex, stroke px, cap/join, corner radius, aspect defaults, negatives), frozen and appended unchanged every time.
 
 **2. Deterministic post-processing enforces what generation cannot.** Raster→vector via `vtracer` (spline, `--filter_speckle 4–6`, `--corner_threshold 60`) or `potrace`; Recraft short-circuits this with native SVG. SVGO default preset + icon-specific passes: force canonical viewBox, hoist `stroke-width` to root, set `stroke-linecap/linejoin="round"`, coerce fills to `currentColor`, quantize precision to 2 decimals, reject any icon whose bounding box falls outside the live-area rectangle. Palette quantization snaps fills to brand tokens. Tesseract OCR reject-pass catches baked-in "OOPS!"/gibberish text before ship. Finally, a 10-column visual review grid at native and 2× — drift is invisible one-at-a-time and obvious in the grid (10c §Visual Review Grid).
 
-**3. Composition directives beat aspect flags.** `--ar 16:9` alone never produces overlay-ready layouts. Prompts must encode all five of: focal region ("subject in right third, 65% of frame"), text-safe zone ("left 45% low-contrast field"), subject safety margin ("critical subject within center 85%"), safe-area 70% for gutter/rounded-corner clipping in cards, and horizon on a third-line. Flux 1.1 Pro and Imagen 4 honor these best; MJ v7 partially; `gpt-image-1` most literally.
+**3. Composition directives beat aspect flags.** `--ar 16:9` alone never produces overlay-ready layouts. Prompts must encode all five of: focal region ("subject in right third, 65% of frame"), text-safe zone ("left 45% low-contrast field"), subject safety margin ("critical subject within center 85%"), safe-area 70% for gutter/rounded-corner clipping in cards, and horizon on a third-line. FLUX.2 Pro and Imagen 4 honor these best; MJ v7 partially; `gpt-image-1.5` most literally.
 
 **4. Material physics vocabulary beats style labels.** For 3D, "claymorphism" / "glassmorphism" collapse to Pixar-plastic or flat frosted rectangles. Clay needs `matte subsurface scattering, velvet sheen, 0% specular, soft ambient occlusion`; glass needs `frosted dielectric glass, Fresnel rim, volumetric caustics, IOR 1.45, 15% surface roughness`. For flat styles, `tactile tech, film grain, halftone stipple, editorial restraint` counter the AI-smooth slop signal.
 
 **5. The anti-slop clause is as important as the positive prompt.** The reusable union set: `text, letters, signage, watermark, extra fingers, extra limbs, realistic photo` (in-app vector); `stock photo, corporate handshake, AI slop gradient, 3D rendered blob, overbaked HDR, plastic shine, warped hands, gibberish text` (hero); `glowing orb, nebula, Pixar, DreamWorks, stock 3d, chromatic aberration` (3D). Kill the generic before requesting the specific.
+
+> **Updated 2026-04-21:** These negatives belong in the `negative_prompt` parameter for SD/SDXL/SD3. For **Flux (all variants)**, `negative_prompt` raises a TypeError — translate each negative into an affirmative anchor in the main prompt instead (e.g., `"clean white background, no glowing orb, no lens flare, no text"`).
 
 ## Controversies
 
@@ -88,9 +95,11 @@ The angles disagree in instructive ways.
 
 1. **LoRA-first or reference-image-first for pack generation?** 10a's decision matrix says LoRA for "ongoing, 200+ assets" and `--sref`/Recraft Style for ≤20. 10c argues reference-image-first (Recraft Brand Styles + 3–8 anchor icons) is the production default for icon packs because a LoRA on 30–60 icons risks content leakage (ConsisLoRA paper). **Resolution**: default to reference-image; recommend LoRA only when drift exceeds what anchors can hold, or when the user needs offline/self-hosted reproducibility.
 2. **Stroke philosophy: single-weight or size-banded?** Lucide/Tabler/Feather = single 2 px at every size (simple, heavy at 16 px). Carbon + Material Symbols = stroke scales with canvas (1→1.25→1.5→2 px). **Resolution**: default single-weight (more tractable for AI); recommend size-banded only for dense products (admin panels, IDEs) where 2 px at 16 px reads heavy.
-3. **Alpha/transparency: model-native or matte-in-post?** 10a's flat-vector workflow trusts native transparent output via Recraft/vector conversion; 10d warns explicitly "do not trust native T2I alpha for 3D subjects" because clay/glass renders get halos and clipped shadows — render over `#F7F8FA` and matte via BRIA RMBG-2.0 or BiRefNet. **Resolution**: matte-in-post is the conservative production default for raster; native alpha is fine for vector-native pipelines and flat styles.
+3. **Alpha/transparency: model-native or matte-in-post?** 10a's flat-vector workflow trusts native transparent output via Recraft/vector conversion; 10d warns explicitly "do not trust native T2I alpha for 3D subjects" because clay/glass renders get halos and clipped shadows — render over `#F7F8FA` and matte via BRIA RMBG-2.0 or BiRefNet. **Resolution**: matte-in-post is the conservative production default for raster; native alpha is fine for vector-native pipelines and flat styles. For Ideogram transparency, use the `/ideogram-v3/generate-transparent` endpoint with `rendering_speed: "TURBO"` — there is no `style: "transparent"` parameter.
+
+> **Updated 2026-04-21:** BiRefNet received a significant June 2025 update: 8× speedup for `refine_foreground`, SDPA attention upgrade, FP16 inference (~60–80 ms on RTX 4080). Use the updated checkpoint for production matte pipelines.
 4. **Lottie vs Rive for animated illustrations.** 10e: Lottie/dotLottie v2 for single-state loops and branded motion (~60 KB runtime, <100 KB animations); Rive for state-driven interactive animation (200–400 KB runtime). Don't pay Rive's cost unless you need states.
-5. **Text-in-illustration: render or composite?** 10a: always composite in the DOM; add OCR reject pass. 10b: `gpt-image-1` / Ideogram 3 can render ≤6 words reliably. **Resolution**: composite by default for in-app; allow baked text only for marketing banners ≤6 words via `gpt-image-1`/Ideogram 3, verified with OCR.
+5. **Text-in-illustration: render or composite?** 10a: always composite in the DOM; add OCR reject pass. 10b: `gpt-image-1.5` / Ideogram 3 Turbo can render ≤6 words reliably. **Resolution**: composite by default for in-app; allow baked text only for marketing banners ≤6 words via `gpt-image-1.5`/Ideogram 3 Turbo, verified with OCR.
 
 ## Gaps
 
@@ -100,7 +109,7 @@ Where the category research does not yet cover enough for the prompt-to-asset to
 2. **Animation prompting from scratch.** 10e covers runtime/delivery; no angle covers prompting an AI to produce a Lottie-ready AE project or a Rive state machine. Text-to-Lottie tools (LottieFiles AI, Aarva) are unsurveyed.
 3. **Character identity across a carousel.** 10a flags this as the hardest consistency test but doesn't give a worked recipe for composing a character LoRA with a style LoRA at inference without catastrophic drift.
 4. **Accessibility of 3D/interactive graphics.** 10e covers `prefers-reduced-motion` and Rive focus handling at a surface level; screen-reader descriptions of Spline/Three.js scenes and keyboard navigation patterns are unmapped.
-5. **Cost-per-asset economics.** The category names the tools (Recraft/MJ/Flux/gpt-image-1/Imagen/Rodin/Meshy/Luma) but lacks a comparative dollars-per-asset table for pipeline recommendation.
+5. **Cost-per-asset economics.** The category names the tools (Recraft V4/MJ/FLUX.2/gpt-image-1.5/Imagen/Rodin/Meshy/Luma) but lacks a comparative dollars-per-asset table for pipeline recommendation.
 6. **Localization / RTL composition.** Hero directives ("subject right-third, text left-third") assume LTR. No guidance on mirroring for Arabic/Hebrew or generating localized variants.
 7. **Quantitative drift benchmarks + auto-grading.** 10c cites "30–50% reject rate" and "≥99% to ship" but proposes no structured metric (CLIPScore drift, LPIPS pairwise, palette-distance) for CI to auto-reject non-conforming outputs — partly belongs in category 03.
 
@@ -117,7 +126,7 @@ Turn the user's brand identity into a durable style anchor usable across every s
 **Behavior**:
 
 1. **Classify** the dominant style register against the closed vocabulary from 10b §Style Taxonomy and 10d §1 (flat duotone, character-driven, editorial, isometric, clay, glass, neo-brutal, monochrome-grain, holographic chrome).
-2. **Emit a durable anchor** matched to the renderer: Recraft Brand Style ID; MJ `--sref <url> --sw 150–300` (start at 200); Flux/SDXL IP-Adapter bundle at scale 0.6–0.8 (`ip-adapter-plus` or `ip-adapter-style-plus`); `gpt-image-1` / Gemini 2.5 Flash Image inline multi-image conditioning.
+2. **Emit a durable anchor** matched to the renderer: Recraft Brand Style (V4 — use `style` object in API, not `style_id` which is V3-only); MJ `--sref <url> --sw 150–300` (start at 200); Flux/SDXL IP-Adapter bundle at scale 0.6–0.8 (`ip-adapter-plus` or `ip-adapter-style-plus`, or InstantX FLUX.1-dev IP-Adapter for Flux); `gpt-image-1.5` / Gemini 2.5 Flash Image inline multi-image conditioning.
 3. **Write `style.yaml`** at repo root with frozen style block, palette hex, stroke width, corner radius, linecap/join, safe-area %, per-intent aspect defaults, negative-prompt list, and pointers to the anchor bundle and any renderer-specific style ID.
 4. **Upgrade path**: when reference-image anchors drift, surface the LoRA recipe from 10a §LoRA (Flux: `ostris/ai-toolkit`, rank 16–32, 1500 steps, weight 0.7–0.9 at inference; SDXL: `kohya-ss/sd-scripts`, rank 16, 1e-4 LR) plus dataset requirements (15+ for SDXL style, 30–60 for a Flux icon pack) and a ConsisLoRA option for content-leakage control.
 
@@ -137,7 +146,7 @@ Emit the complete prompt for any named illustration state, with the frozen style
 
 **Behavior**: load `style.yaml` → select the canonical template from 10a/10b/10d → interpolate `{style_block}`, `{subject}`, `{aspect}`, `{safe_area}`, `{palette}` → append composition directive from 10b §Aspect Ratio Table (focal region, text-safe zone, edge-safety) → append universal suffix and anti-slop negatives (union of 10a/10b/10d negative blocks) → translate flags per renderer (`--ar` → `size=` → `aspectRatio=`) → emit validation contract (OCR reject, palette quantization, aspect validate, bounding-box-within-live-area for icons, safe-area-70% for illustrations).
 
-**Renderer defaults** (10b §Model Picks): legible text ≤6 words → `gpt-image-1` / Ideogram 3; cinematic no-text → MJ v7; strict composition → Flux 1.1 Pro / Imagen 4; brand-consistent series → Flux Pro + `--sref` or Recraft saved Style; SVG deliverable → Recraft v3; full-fidelity 3D hero → escalate to 10d §2.1 or §2.3 hybrid pipeline (not pure T2I).
+**Renderer defaults** (10b §Model Picks): legible text ≤6 words → `gpt-image-1.5` / Ideogram 3 Turbo; cinematic no-text → MJ v7 (V8 Alpha available); strict composition → FLUX.2 Pro / Imagen 4; brand-consistent series → FLUX.2 Pro (native ≤10 refs) or Recraft V4 saved Style; SVG deliverable → Recraft V4 / V4 Pro SVG; full-fidelity 3D hero → escalate to 10d §2.1 or §2.3 hybrid pipeline (not pure T2I).
 
 ### Skill 3 — `illustration.production-delivery-format`
 
@@ -162,9 +171,9 @@ Consolidated from 10a–10e; deduplicated.
 
 **Icon design specs**: Lucide <https://lucide.dev/contribute/icon-design-guide> · Tabler <https://tabler.io/icons/icon-design-guide> · Feather <https://github.com/feathericons/feather/issues/171> · Heroicons <https://heroicons.com> · Phosphor <https://github.com/phosphor-icons/homepage/issues/514> · Material Symbols <https://developers.google.com/fonts/docs/material_symbols> · IBM Carbon <https://www.ibm.com/design/language/iconography/ui-icons/design> · Ant Design <https://ant.design/docs/spec/icon/> · Remix Icon <https://github.com/Remix-Design/RemixIcon> · Material 3 Illustration <https://m3.material.io/styles/illustration/overview>.
 
-**Commercial AI generation**: Recraft <https://www.recraft.ai/>, <https://www.recraft.ai/docs> · Midjourney v7 + Style Reference <https://docs.midjourney.com/hc/en-us/articles/32162917505549-Style-Reference> · Ideogram <https://about.ideogram.ai/> · OpenAI gpt-image-1 <https://platform.openai.com/docs/guides/images> · Google Imagen (Vertex) <https://cloud.google.com/vertex-ai/generative-ai/docs/image/overview> · Flux (BFL) API <https://docs.bfl.ml/> · Flux.1 Tools (Redux/Fill/Depth/Canny) <https://blackforestlabs.ai/announcing-flux-1-tools/>.
+**Commercial AI generation**: Recraft V4 <https://www.recraft.ai/>, <https://www.recraft.ai/docs> · Midjourney v7 / v8 Alpha + Style Reference <https://docs.midjourney.com/hc/en-us/articles/32162917505549-Style-Reference> · Ideogram 3 Turbo <https://about.ideogram.ai/> · OpenAI gpt-image-1.5 <https://platform.openai.com/docs/guides/images> · Google Imagen (Vertex) <https://cloud.google.com/vertex-ai/generative-ai/docs/image/overview> · FLUX.2 (BFL) API <https://docs.bfl.ml/> · Flux.1 Tools (Redux/Fill/Depth/Canny) <https://blackforestlabs.ai/announcing-flux-1-tools/>.
 
-**Style-control & training**: LoRA paper <https://arxiv.org/abs/2106.09685> · IP-Adapter paper <https://arxiv.org/abs/2308.06721> · IP-Adapter repo <https://github.com/tencent-ailab/IP-Adapter> · IP-Adapter-Art <https://github.com/aihao2000/IP-Adapter-Art> · ConsisLoRA <https://arxiv.org/html/2503.10614v1> · ostris/ai-toolkit <https://github.com/ostris/ai-toolkit> · kohya-ss/sd-scripts <https://github.com/kohya-ss/sd-scripts> · XLabs-AI/x-flux <https://github.com/XLabs-AI/x-flux> · HF Diffusers LoRA guide <https://huggingface.co/docs/diffusers/en/training/lora> · Modal Flux LoRA <https://modal.com/blog/fine-tuning-flux-style-lora> · Flux Icon Kit LoRA <https://dataloop.ai/library/model/strangerzonehf_flux-icon-kit-lora/> · IconsRedmond SDXL <https://huggingface.co/artificialguybr/IconsRedmond-IconsLoraForSDXL> · Civitai <https://civitai.com>.
+**Style-control & training**: LoRA paper <https://arxiv.org/abs/2106.09685> · IP-Adapter paper <https://arxiv.org/abs/2308.06721> · IP-Adapter repo (original, unmaintained since Jan 2024) <https://github.com/tencent-ailab/IP-Adapter> · InstantX FLUX.1-dev IP-Adapter (current for Flux) <https://github.com/InstantX-Team/InstantX-IP-Adapter> · IP-Adapter-Art <https://github.com/aihao2000/IP-Adapter-Art> · ConsisLoRA <https://arxiv.org/html/2503.10614v1> · ostris/ai-toolkit <https://github.com/ostris/ai-toolkit> · kohya-ss/sd-scripts <https://github.com/kohya-ss/sd-scripts> · XLabs-AI/x-flux <https://github.com/XLabs-AI/x-flux> · HF Diffusers LoRA guide <https://huggingface.co/docs/diffusers/en/training/lora> · Modal Flux LoRA <https://modal.com/blog/fine-tuning-flux-style-lora> · Flux Icon Kit LoRA <https://dataloop.ai/library/model/strangerzonehf_flux-icon-kit-lora/> · IconsRedmond SDXL <https://huggingface.co/artificialguybr/IconsRedmond-IconsLoraForSDXL> · Civitai <https://civitai.com>.
 
 **3D generation**: Rodin Gen-2 <https://developer.hyper3d.ai/api-specification/overview> · Meshy <https://www.meshy.ai/> · Luma Genie <https://lumalabs.ai/genie> · Spline <https://spline.design>, <https://github.com/splinetool/react-spline> · ControlNet <https://github.com/lllyasviel/ControlNet>.
 

@@ -6,6 +6,8 @@ optimization_criterion: "Agent-native first — MCP/Skills/WebMCP is the product
 date: 2026-04-19
 ---
 
+> **Updated 2026-04-21:** (1) Recraft V3 → **Recraft V4** (Feb 2026): route `vector === true` to Recraft V4 Vector / V4 Pro Vector. (2) Seedream 4.5 is current stable CJK model; Seedream 5.0 Lite available via BytePlus enterprise with 14-ref support. (3) Vercel AI SDK `experimental_generateImage` → stable `generateImage` in AI SDK v6. (4) `ModelId` schema in §Layer 8 lists `"seedream-4.5"` which is now correct; add `"recraft-v4"` as a variant. (5) `gpt-image-1` is now the "previous" model; `gpt-image-1.5` is current.
+
 # Combination 06 — Agent-Native First
 
 ## Thesis
@@ -67,10 +69,13 @@ this combination's whitespace.
 Vercel AI SDK v5 `generateImage` as the typed polyglot; direct SDKs
 (`@fal-ai/client`, `replicate`, `together-ai`) for hot paths. Router chooses
 by *capability map*, never by vendor: `transparency && textInImage !== 'poor'`
-→ `gpt-image-1` with `background: "transparent"`; `vector === true` →
-Recraft V3; `photoreal === true` → Flux.1 [pro]; otherwise Imagen 4 / Nano
-Banana. Exposed introspectably as the `route_model` tool so agents can
-audit the decision.
+→ `gpt-image-1.5` with `background: "transparent"`; `vector === true` →
+Recraft V4 Vector (Feb 2026, $0.08/img, SOTA for native SVG — V3 only when
+existing V3 `style_id` is required); `photoreal === true` → Flux.1 [pro];
+otherwise Imagen 4 / Nano Banana. Exposed introspectably as the `route_model`
+tool so agents can audit the decision.
+
+> **Updated 2026-04-21:** `gpt-image-1.5` is the current primary OpenAI image model (released Dec 2025); `gpt-image-1` is labeled "previous." Recraft V4 (Feb 2026) supersedes V3 for all new SVG/vector work; V3 stays only when `style_id` portability is needed. Ideogram transparency: use the `/ideogram-v3/generate-transparent` dedicated POST endpoint — there is no `style: "transparent"` parameter on the standard generate endpoint. DALL-E 3 API shuts down May 12, 2026 — remove any DALL-E 3 references.
 
 ### Layer 4 — Execution
 
@@ -129,10 +134,13 @@ export const AssetType = z.enum([
 ]);
 
 export const ModelId = z.enum([
-  "imagen-4", "nano-banana", "gpt-image-1",
-  "flux-pro-1.1", "flux-schnell", "recraft-v3",
+  "imagen-4", "nano-banana", "gpt-image-1.5",
+  "flux-pro-1.1", "flux-schnell", "recraft-v4", "recraft-v4-vector",
   "ideogram-3", "seedream-4.5",
 ]);
+// NOTE 2026-04-21: gpt-image-1 is "previous" — use gpt-image-1.5.
+// recraft-v3 retained in registry as legacy alias for style_id compatibility only.
+// DALL-E 3 API shuts down 2026-05-12; remove any dall-e-3 router slots.
 
 export const Brand = z.object({
   id: z.string().cuid().optional(),

@@ -449,6 +449,8 @@ The following table maps each major video generation provider to the skills that
 
 **Coverage gaps.** Pika has no dedicated Claude Code skill. Haiper, Wan 2.2 standalone, and Hailuo (MiniMax alternative) are absent from all surveyed skills. Gen-3 Alpha direct (non-FAL Runway) is covered only in OpenMontage.
 
+> **Updated 2026-04-21:** No major provider coverage changes since original research. Kling 3.0 remains the most consistently covered video provider across skills. Veo 3.1 has grown — now covered by idanbeck/fal-video-skill, ZeroLu, SamurAIGPT, and kie-ai-skill. Sora 2/Pro remains behind an organization-verified OpenAI account gating. The `doctorm333/promptpilot-mcp-server` (Pollinations-based, zero-key for images, paid for video) is the closest thing to a free video path but requires a Pollinations API key for Seedance video. There is still no meaningful zero-key programmatic video generation path.
+
 ---
 
 ## 4. Architectural Patterns

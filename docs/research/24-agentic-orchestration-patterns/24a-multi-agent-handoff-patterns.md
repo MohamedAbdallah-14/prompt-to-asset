@@ -38,12 +38,19 @@ One practical concern: the `handoff` approach (specialist owns the response) doe
 - Swarm is explicitly marked educational-only; do not deploy it. Use the Agents SDK.
 - LLM-based routing adds latency and cost per request; for a hot path like image generation (already 5–30 s), routing overhead is acceptable but should be benchmarked.
 - Context size grows with each handoff step; trim intermediate results before passing to the next agent.
-- The OpenAI Agents SDK is Python-first; the JS/TS version (openai-agents-js) exists but lags in documented patterns.
+- The OpenAI Agents SDK JS/TS version (openai-agents-js) has closed most of the gap with Python for core handoff patterns. As of April 2026, new sandboxing and subagent features are launching Python-first with TypeScript support planned — verify specific capabilities before committing.
+
+> **Updated 2026-04-21:** The **Claude Agent SDK** (Anthropic, released September 2025) is an alternative orchestration layer for Claude-native multi-agent workflows. It supports the same handoffs-vs-agents-as-tools distinction using subagents with isolated context windows. For prompt-to-asset running on Claude, this SDK is worth evaluating alongside the OpenAI Agents SDK for the triage → provider-specialist → post-process chain.
+>
+> Additionally, **Google's A2A (Agent-to-Agent) protocol** (v1.0, early 2026) provides a standardized inter-agent communication protocol that complements MCP. A2A handles agent-to-agent delegation while MCP handles agent-to-tool calls — the distinction matters for multi-framework deployments where provider agents might run on different runtimes.
 
 ## References
 
 - [openai/swarm](https://github.com/openai/swarm)
 - [OpenAI Agents SDK — multi_agent docs](https://openai.github.io/openai-agents-python/multi_agent/)
 - [OpenAI Cookbook — Orchestrating Agents: Routines and Handoffs](https://cookbook.openai.com/examples/orchestrating_agents)
+- [OpenAI Agents SDK April 2026 update](https://openai.com/index/the-next-evolution-of-the-agents-sdk/)
 - [langchain-ai/langgraph-swarm-py](https://github.com/langchain-ai/langgraph-swarm-py)
 - [OpenAI Agents SDK — Handoffs (JS)](https://openai.github.io/openai-agents-js/guides/handoffs/)
+- [Claude Agent SDK overview](https://platform.claude.com/docs/en/agent-sdk/overview)
+- [Google Agent2Agent Protocol (A2A)](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/)

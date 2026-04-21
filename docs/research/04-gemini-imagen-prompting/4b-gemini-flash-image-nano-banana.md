@@ -15,8 +15,10 @@ compare_with:
   - imagen-4
   - imagen-4.0-ultra-generate-001
 sources_count: 10
-last_reviewed: 2026-04-19
+last_reviewed: 2026-04-21
 ---
+
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
 
 # Gemini 2.5 Flash Image ("Nano Banana") — prompting, editing, and API surface
 

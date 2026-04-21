@@ -190,7 +190,9 @@ A bundle is immutable once committed:
 
 No text-to-image model honors hex codes natively. The strategy is **layered enforcement**: generation-time nudging + post-process correction + validation.
 
-### Recraft V3 (Highest fidelity)
+### Recraft V4 (Current — V3 superseded)
+
+> **Updated 2026-04-21:** Recraft V3 is superseded by V4 (released February 2026). Use V4 or V4 Vector for all new work. The `controls.colors` API is compatible with V4; verify exact parameter names via context7. V4 Pro Vector is the highest-fidelity native SVG option.
 
 **Generation time:**
 ```python
@@ -217,7 +219,9 @@ controls = {
 
 **Post-process:** CSD cosine similarity check + palette remap
 
-### Midjourney V6/V7
+### Midjourney V7 / V8
+
+> **Updated 2026-04-21:** Midjourney V8 Alpha launched March 17, 2026. V8 sref numeric codes differ from V6/V7 codes — regenerate style codes against V8 for any bundle that captured codes under earlier versions. V8 has no official public API (no REST endpoint, SDK, or API key system); all generation is via web UI. `external_prompt_only` mode is the only valid P2A path for Midjourney.
 
 **Generation time:**
 - `--sref <numeric_code>` or `--sref <url>` pins the style
@@ -225,7 +229,7 @@ controls = {
 - Palette is **not** explicit; encode in prompt prose ("orange (#FF6A00) and deep charcoal (#0B1220)")
 - Optional: `--cref` for character/object consistency if generating branded mascots
 
-**Best practice:** Create one canonical reference image, upload to MJ, save the numeric code. Record in the bundle. Reuse forever.
+**Best practice:** Create one canonical reference image, upload to MJ, save the numeric code. Record in the bundle with the MJ version it was generated under (V7 vs V8). Codes are not interchangeable across major versions.
 
 ### SDXL / Flux + IP-Adapter
 
@@ -567,7 +571,10 @@ The asset-enhancer's rewriter (currently in `packages/mcp-server/src/rewriter.ts
 - **OCR accuracy (OG image):** if text is overlaid, Levenshtein distance between detected text and expected. Fail if > 2 chars off.
 
 **Tier 2 (VLM, on failure or user request):**
-- Call Claude Sonnet against asset-type rubric: "Does this app icon look like it belongs to the same brand family as [anchor image]? Rate 1–5."
+
+> **Updated 2026-04-21:** Claude model naming: use claude-sonnet-4-6 (or claude-opus-4-6) for VLM rubric calls. The claude-sonnet-4-20250514 / claude-opus-4-20250514 snapshots retire June 15, 2026.
+
+- Call claude-sonnet-4-6 (current) against asset-type rubric: "Does this app icon look like it belongs to the same brand family as [anchor image]? Rate 1–5."
 - Used to catch subtle drift (slightly off corner radius, line weight creep, composition imbalance)
 
 ### Validation Gate Example (UI Icon)

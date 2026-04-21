@@ -7,6 +7,8 @@ date: 2026-04-20
 scope: "Claude Code, Cursor, Codex, Windsurf, Gemini CLI, Cline, Zed"
 ---
 
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # Installable Skills Survey — Image, Video, Audio, Diagram, and Asset Generation
 
 ## Overview
@@ -48,7 +50,9 @@ The table covers repositories with confirmed media-generation skills (image, vid
 | awesome-cursorrules | PatrickJS/awesome-cursorrules | 48k | Cursor rules | None (rules only) | No generation; context injection |
 | agentskills.my | agentskills.my | spec | Open standard | — | SKILL.md specification body |
 | awesome-mcp-servers (Cursor dir.) | cursor.directory | 73.7k members | MCP registry | Multiple | Image, video generation MCPs |
-| smithery.ai | smithery.ai | 6k+ servers | Hosted MCP registry | Multiple | Image, video MCPs (routed) |
+| smithery.ai | smithery.ai | 7k+ servers | Hosted MCP registry | Multiple | Image, video MCPs (routed) |
+
+> **Updated 2026-04-21:** Smithery registry crossed 7,000 servers as of April 2026 (up from ~6,000 in March 2026). Servers can be installed locally via the Smithery CLI or run as hosted remote servers on Smithery's infrastructure. The registry has clean app-store UI, keyword search, and one-command install.
 
 ### Media Skills Detail — fal-ai-community/skills
 
@@ -78,7 +82,9 @@ Four image-relevant skills: `text-to-image` (gpt-image-1), `edit-image` (gpt-ima
 
 ### Media Skills Detail — kingbootoshi/nano-banana-2-skill
 
-A single SKILL.md that wraps the Gemini Flash Image API via the `@google/genai` npm package. Key design decision: `GEMINI_API_KEY` is the only required env var and the free tier of Google AI Studio covers ~1500 images/day. Trigger phrases: "generate an image", "create an illustration", "make a picture of". No post-processing. Returns the raw model output URL. 347 stars as of discovery; likely the most-copied single skill for "zero-API-cost image generation."
+A single SKILL.md that wraps the Gemini Flash Image API via the `@google/genai` npm package. Key design decision: `GEMINI_API_KEY` is the only required env var. The free tier of Google AI Studio historically covered ~1500 images/day — that quota was withdrawn in December 2025. As of April 2026 this skill requires a billed project. Trigger phrases: "generate an image", "create an illustration", "make a picture of". No post-processing. Returns the raw model output URL. 347 stars as of discovery; likely the most-copied single skill for "zero-API-cost image generation" (now a misnomer — see free tier table in SYNTHESIS.md).
+
+> **Updated 2026-04-21:** Gemini free image-gen quota removed December 2025. Active model as of April 2026: `gemini-3.1-flash-image-preview`. Dead model (do not use): `gemini-3-pro-image-preview` (shut down March 9, 2026). For zero-key programmatic generation, route to Cloudflare Workers AI, HF Inference, or Pollinations instead.
 
 ---
 
@@ -100,6 +106,24 @@ Ranked by (a) architectural overlap with prompt-to-asset's pipeline, (b) quality
 | 10 | **alirezarezvani/claude-skills (156+ skills)** | Largest single-author Claude skill library; media section includes ComfyUI, Midjourney-prompt helpers, and image-editing flows. | Mixed quality; per-target adapter scripts drift; no pipeline abstraction. |
 
 ---
+
+## New Skill/Plugin Marketplaces (2025–2026)
+
+> **Updated 2026-04-21:** Several marketplaces and distribution surfaces have launched or reached maturity since this document was first written.
+
+| Surface | URL | Notes |
+|---|---|---|
+| **skills.sh** (Vercel) | https://skills.sh | Official directory and leaderboard for agent skill packages. Launched January 20, 2026. Tracks real install counts across 90k+ skills. Supports 19 agents including Claude Code, Cursor, Codex, Gemini CLI, Copilot. |
+| **Smithery** | https://smithery.ai | 7,000+ MCP servers as of April 2026 (up from ~6k in March). Clean app-store UI, hosted remote servers, one-command install via `npx @smithery/cli install <name>`. |
+| **vercel-labs/skills CLI** | `npx skills` | v1.1.1 as of January 2026, ~14.7k★ on GitHub. `npx skills find` (interactive discovery), `npx skills add <pkg>` (install), `npx skills update` (refresh). The de facto cross-IDE skill package manager. |
+| **mcpmarket.com** | https://mcpmarket.com | MCP server marketplace; cross-references with GitHub skill repos. |
+| **mdskills.ai** | https://www.mdskills.ai | AI Agent Skills marketplace with install instructions. |
+| **claudemarketplaces.com** | https://claudemarketplaces.com | Claude Code plugin/skill/MCP directory, 105k+ monthly visitors. |
+| **microsoft/skills** | https://github.com/microsoft/skills | Official Microsoft skills repo for GitHub Copilot — ships MCP servers, custom agents, AGENTS.md, skills for SDKs to ground coding agents. |
+
+**MCP as the unifying skills delivery layer.** As of April 2026, MCP is the common denominator across all major coding assistants: Claude Code, Cursor, Windsurf, Codex, Gemini CLI, and GitHub Copilot all support MCP server registration. The AAIF (Agentic AI Foundation, hosted by Linux Foundation) is the neutral governance body for MCP, with 170+ member organizations as of April 2026 and Mazin Gilbert as permanent Executive Director. SKILL.md (the Anthropic-originated format, adopted as an open standard) is the portable skill description layer on top of MCP.
+
+**SSE transport is deprecated.** The MCP specification (2025-03-26) deprecated SSE in favor of Streamable HTTP for remote server transport. Claude Code supports Streamable HTTP natively. New remote MCP server implementations should use Streamable HTTP, not SSE. SSE still works for backward compatibility but is not recommended for new deployments.
 
 ## Files in this Survey
 

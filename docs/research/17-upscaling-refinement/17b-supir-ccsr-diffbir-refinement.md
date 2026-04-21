@@ -50,8 +50,8 @@ The target use case for this project is software-asset generation — logos, app
 | **SDXL refiner** (Podell et al., arXiv:2307.01952) | 2023 | SDXL-specific | 2.3 B | 1 (SDEdit on base latent, first 200 noise scales) | base latent + prompt | 10–12 GB (on top of base) | N/A (polish only) | Faithful by design (low-noise regime only) |
 | **Flux-dev "refiner"** (community, not an official mode) | 2024–2026 | Flux.1-dev | 12 B | 1 (img2img) | image + prompt + denoise 0.10–0.30 | 16–24 GB | Mid | Faithful at ≤0.20; creative at ≥0.35 |
 | **Magnific.ai** (closed) | 2024 | Multiple (SD-family engines: illusio / sharpy / sparkle, plus Flux variant) | n/a | Tiled diffusion + prompt guidance | image + prompt + Creativity/HDR/Resemblance/Fractality/engine/optimization mode + 2/4/8/16× | Cloud | Low (stochastic) | **Creative by design** |
-| **Clarity Upscaler** (philz1337x) | 2024 | SD1.5 + Tile ControlNet + LoRA stack | ~1 B | Tiled img2img | image + prompt + denoise + LoRA selection | 8–12 GB | Mid | Magnific-like; tunable |
-| **Topaz Gigapixel / Photo AI** (closed) | 2024–2025 | Proprietary (regressive + optional "Redefine" generative mode from 2024) | n/a | 1 | image (+ optional text for Redefine) | Local GPU (3–8 GB) | High (regressive), mid (Redefine) | **Faithful by default**, creative only in Redefine mode |
+| **Clarity Upscaler** (philz1337x) | 2024–2025 | SD1.5 + Tile ControlNet + LoRA stack (OSS); Flux variant on ClarityAI.co (closed) | ~1 B (SD1.5 path) | Tiled img2img | image + prompt + denoise + LoRA selection | 8–12 GB | Mid | Magnific-like; tunable; Flux path now available but paywalled |
+| **Topaz Gigapixel / Photo AI** (closed) | 2024–2026 | Proprietary (regressive + optional "Redefine" generative mode from 2024) | n/a | 1 | image (+ optional text for Redefine) | Local GPU (3–8 GB) | High (regressive), mid (Redefine) | **Faithful by default**, creative only in Redefine mode |
 
 Note on SDXL refiner: the refiner is trained on the "first 200 discrete noise scales" of the SDXL schedule, i.e. the low-noise, high-detail end. It is run as an SDEdit-style noising-denoising pass on the base output's latent, not as a super-resolution stage. Resolution is unchanged (1024² → 1024²).
 
@@ -128,6 +128,10 @@ There is no official Flux refiner. The community pattern is:
 
 This is surprisingly competitive on stylized assets — at denoise ≤ 0.20 Flux will fix its own small-scale artifacts (aliased edges, letterform micro-defects) without repainting. It is especially strong on **type** because Flux's type prior is already better than SDXL's; a low-denoise pass sharpens rather than mutates glyphs.
 
+> **Updated 2026-04-21:** **Flux.1 Pro Ultra** (Black Forest Labs, released late 2024) generates natively at **2048×2048 (4 MP)** — four times the pixel count of standard Flux 1.1 Pro — using flow-matching in a 12B-parameter transformer. This is not an upscale; it is genuinely native high-resolution generation. For the pipeline, this means Flux Pro Ultra outputs may need only 2× upscaling (rather than 4×) to reach 4K deliverable sizes, reducing hallucination risk. The community Flux ControlNet upscaler (`jasperai/Flux.1-dev-Controlnet-Upscaler`) provides a separate inference-time upscale path for Flux.1-dev outputs.
+>
+> **gpt-image-1 upscaling note:** `gpt-image-1` (and gpt-image-1.5) do **not** natively upscale images — maximum output is 1536×1024. For 4K deliverables from GPT-Image pipeline outputs, an external regressive upscaler (DAT2, Real-HAT) is required after generation. Native 4K from OpenAI is not yet available via API as of April 2026.
+
 ### Magnific.ai
 
 Magnific does not publish an architecture paper, but the public API and product signals point to a **tiled SD + prompt-guided img2img** pipeline with multiple engines:
@@ -148,21 +152,25 @@ Controls exposed to users:
 
 Magnific is the canonical "creative upscaler" UX and is worth studying as the interface model for our skill's "refine" action — the slider set maps cleanly to parameters in a Clarity-style open-source tiled pipeline.
 
+> **Updated 2026-04-21:** Magnific AI pricing as of early 2026 starts at **$39/month** (Pro tier, ~2,500 tokens/month ≈ 200 normal + 100 large upscales). There is no free tier. The product operates on a token system; scale selection (2×/4×/8×/16×) consumes different token amounts. For pipelines that cannot justify this cost, Clarity Upscaler (OSS SD1.5 path) or ClarityAI.co Flux tier are the practical alternatives.
+
 ### Clarity Upscaler (open-source Magnific clone)
 
-`philz1337x/clarity-upscaler` (5k+ stars, AGPL-3.0) is effectively a Magnific-shaped wrapper around Stable Diffusion 1.5 with:
+`philz1337x/clarity-upscaler` (AGPL-3.0) is effectively a Magnific-shaped wrapper around Stable Diffusion 1.5 with:
 
 - **Tile ControlNet** to preserve structure per-tile.
 - A stack of LoRAs (detail, clarity, skin, etc.) that can be swapped per call.
 - Tunable denoise (the "Creativity" analog), sharpen, steps, schedule.
 - Multi-step mode: upscale→refine→upscale→refine.
-- Up to 13k × 13k outputs.
+- Up to 205 megapixel (14,336 × 14,336) outputs as of late 2024.
 
-Flux upscaling is **not** in the OSS repo; it is paywalled into the hosted ClarityAI.co service.
+> **Updated 2026-04-21:** As of March 2025, Clarity Upscaler now supports **Flux**. Flux upscaling is not in the OSS repo — it is paywalled into the hosted ClarityAI.co service and the API. The free/open-source path (ComfyUI, A1111) remains SD1.5-based. Flux is especially better at upscaling faces and text per the developer's own benchmarks.
 
 ### Topaz Gigapixel / Photo AI
 
 Topaz's tools are closed-source but architecturally distinct from everything above: they are **regressive** AI upscalers trained for fidelity. Since 2024 Gigapixel has added a **"Redefine"** generative mode that uses a diffusion-style prior with an optional text prompt and a creativity slider, putting it into direct comparison territory with Magnific — but the *default* mode is still faithful regression. For asset pipelines that must not hallucinate new geometry (e.g. an existing logo being upscaled for a vendor spec), Topaz in default mode is the safest commercial option.
+
+> **Updated 2026-04-21:** Topaz Labs ended all perpetual licenses on **3 October 2025** — no new perpetual purchases are possible after that date. All products (Gigapixel, Photo AI, Video AI) now ship only via the **Topaz Studio subscription** bundle. Current pricing: Topaz Studio at $399/year ($33/month annual) or $69/month; Topaz Studio Pro at $799/year. Existing perpetual license holders keep their current version but receive no further updates. Budget-conscious pipelines should evaluate open-source DAT2 fine-tunes or Upscayl before committing to the subscription cost.
 
 ## Quality Tradeoffs — Creative vs Faithful
 
@@ -259,10 +267,12 @@ Operationally, we expose this as a single tool call with a `mode` parameter — 
 
 **Commercial product pages:**
 
-- Magnific.ai: https://magnific.ai · API: https://magnific.ai/api
+- Magnific.ai: https://magnific.ai · API: https://magnific.ai/api (starts at $39/month as of 2026)
 - Scenario integration docs (Magnific parameters): https://docs.scenario.com/docs/image-upscale-models-magnific
-- Topaz Gigapixel AI: https://www.topazlabs.com/gigapixel-ai
+- Topaz Gigapixel AI: https://www.topazlabs.com/topaz-gigapixel (subscription-only since Oct 2025)
 - Topaz Photo AI: https://www.topazlabs.com/topaz-photo-ai
+- Topaz Labs ends perpetual licenses: https://www.cgchannel.com/2025/09/topaz-labs-to-end-perpetual-licenses-of-its-software/
+- Clarity Upscaler Flux support (March 2025): https://x.com/philz1337x/status/1897287693689856511
 
 **Corroborating community sources:**
 

@@ -36,7 +36,11 @@ This is a retrieval problem before it is a generation problem. The right answer 
 
 The key bottleneck is PDF parsing. Standard text extraction loses color swatches (rendered as images), font specimens (often SVG or rasterized), and table-formatted guidelines. **LlamaParse** (the hosted SaaS parser from LlamaIndex) solves this by treating each page as an image, sending it to a vision-LLM, and producing structured markdown that preserves headings, table cells, and image captions. Relevant endpoint: `POST /api/parsing/upload`.
 
-Practical limit: LlamaParse is a paid API (free tier ~1,000 pages/day as of 2026). For local-only pipelines, use **Unstructured** ([github.com/Unstructured-IO/unstructured](https://github.com/Unstructured-IO/unstructured)) with `strategy="hi_res"`, which renders PDFs as images via `pdf2image` + `detectron2` layout detection. It handles 64 file types and ships as Python package `unstructured`. The `hi_res` strategy adds ~30–60 s/page on CPU.
+Practical limit: LlamaParse is a paid API.
+
+> **Updated 2026-04-21:** LlamaParse V2 (launched December 2025) replaced the previous per-page-per-day free tier with a **credit-based system**. All accounts receive **10,000 free credits/month**. The default "Cost-effective" parsing mode costs ~3 credits/page, so the monthly free allotment covers roughly **3,000–3,300 pages/month** (not 1,000/day as the pre-V2 tier offered). Premium tiers (Agentic, Agentic Plus) cost more credits per page. Unused credits do not roll over. See [llamaindex.ai/pricing](https://www.llamaindex.ai/pricing) for current rates.
+
+For local-only pipelines, use **Unstructured** ([github.com/Unstructured-IO/unstructured](https://github.com/Unstructured-IO/unstructured)) with `strategy="hi_res"`, which renders PDFs as images via `pdf2image` + layout detection. It handles 64 file types and ships as Python package `unstructured`. The `hi_res` strategy supports `yolox` and `detectron2_onnx` models (ONNX variant is faster but lower accuracy); `detectron2_onnx` is the current default. The `hi_res` strategy adds ~30–60 s/page on CPU.
 
 **Extraction schema for brand PDFs:**
 

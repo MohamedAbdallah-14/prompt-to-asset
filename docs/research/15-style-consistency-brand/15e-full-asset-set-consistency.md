@@ -314,6 +314,8 @@ approved codes, version names, per-client access control, audit trails.
 For our own pipeline this maps directly to the brand-token idea — the
 `--sref` code is one of the anchors baked into the token.
 
+> **Updated 2026-04-21:** Always record the `--sv` (style-reference version) alongside the sref code in the brand token. MJ V7 has six `--sv` sub-algorithms; `--sv 6` is the current default (changed June 16, 2025). MJ V8 Alpha (March 2026) keeps `--sref` but renders differently — regenerate canonical golden sets after V8 reaches stable. Store as: `"mj_sref": "--sref 3142857 --sw 250 --sv 6"`. Midjourney V8 also introduces **Style Creator** (web UI) for browsing built-in style handles without uploading external reference images. MJ V8.1 Alpha drops `--oref`/`--ow` — if you relied on Omni Reference for character consistency in V7, revert to V7 until V8 final is released.
+
 ## Reference Pipeline (code sketches)
 
 Below is a sketch of what the end-to-end pipeline looks like in Python. It

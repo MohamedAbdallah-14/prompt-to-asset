@@ -91,7 +91,9 @@ GUI-free reference exists at `lllyasviel/LayerDiffuse_DiffusersCLI`.
 
 ## ComfyUI port: huchenlei / ComfyUI-layerdiffuse
 
-The canonical ComfyUI implementation. 1,769★, Apache-2.0, last updated February 2025.
+> **Updated 2026-04-21:** Repository star count has grown slightly to ~1.8k★; last confirmed meaningful code push was December 2024 (v1.0.2 pyproject update). Flux support remains unresolved as an open issue. The project is effectively in maintenance mode — no new Flux integration landed in 2025 or early 2026.
+
+The canonical ComfyUI implementation. ~1.8k★ (as of 2026-04), Apache-2.0, last updated December 2024.
 Provides `LayeredDiffusionApply`, `LayeredDiffusionDecode`, `LayeredDiffusionDecodeRGBA`,
 `LayeredDiffusionDecodeSplit`, and the conditional FG/BG variants. The decode node
 turns the `[B, 3, H, W]` latent output into `[B, 4, H, W]` RGBA plus a separate alpha
@@ -184,10 +186,14 @@ ART and PSDiffusion release weights but not pretraining pipelines.
 
 ## Commercial closed-source baselines
 
-- **OpenAI `gpt-image-1` / `gpt-image-1.5`.** First-class `background` API field
+- **OpenAI `gpt-image-1` / `gpt-image-1.5` / `gpt-image-1-mini`.** First-class `background` API field
   accepting `"transparent" | "opaque" | "auto"` (default `"auto"`), returns base64
   PNG/WebP. Pricing for `gpt-image-1.5` HQ 1024² = $0.133 (low $0.009, medium $0.034;
-  2026 rates). Quality evidence: NanoEditor's December 2025 review reports "glass,
+  2026 rates); `gpt-image-1-mini` HQ = $0.005 (low), up to 80% cheaper.
+
+  > **Updated 2026-04-21:** OpenAI has deprecated DALL-E 2 and DALL-E 3 (shutdown: May 12, 2026). The current image family is `gpt-image-1.5` (flagship), `gpt-image-1` (stable), and `gpt-image-1-mini` (cost-efficient, released October 2025). Additionally, `gpt-image-2` is reportedly nearing release as of April 2026. Batch API pricing is half the standard rate across all tiers.
+
+  Quality evidence: NanoEditor's December 2025 review reports "glass,
   smoke, wispy hair rendered perfectly against a transparent backdrop" — consistent
   with a native alpha decoder, not a post-hoc matter. **Failure modes:** (1) the
   `/edit` endpoint ignores `background:"transparent"` and frequently returns an
@@ -202,7 +208,7 @@ ART and PSDiffusion release weights but not pretraining pipelines.
   February 2026 launch blog make no mention of native alpha output. Assume the
   checker-hallucination failure mode from category 13 still applies and all
   Gemini/Imagen outputs need the post-matte fallback.
-- **Ideogram 3.0** has a dedicated `generate-transparent-v3` endpoint; **Recraft v3**
+- **Ideogram 3.0** has a dedicated `generate-transparent-v3` endpoint (POST to `/ideogram/v3/generate-transparent`); transparency is controlled via this separate endpoint, not via a `style` parameter value. Supports `style_preset` values including `FLAT_VECTOR`, `MINIMAL_ILLUSTRATION`, `ICONIC` for icon/logo use. **Recraft v3**
   supports it on `vector_illustration` / `icon` styles only (see 13a/13c for
   caveats).
 
@@ -228,7 +234,8 @@ ART and PSDiffusion release weights but not pretraining pipelines.
    coverage than options 1–2 but decisive when text is the hero.
 
 **Fallback chain (in order).** gpt-image-1.5 (`background:"transparent"`) →
-Ideogram 3.0 generate-transparent-v3 (typography/flat) → Recraft v3 vector/icon
+gpt-image-1-mini (budget path, same transparency support) →
+Ideogram 3.0 `/generate-transparent-v3` endpoint (typography/flat) → Recraft v3 vector/icon
 style → fal `layer-diffusion` (SDXL) → self-hosted ComfyUI + LayerDiffuse (SDXL) →
 Flux-LayerDiffuse (**research/personal only** — non-commercial) → generate-on-white
 + BiRefNet matter (category 13's default post-matte fallback) → difference-matting

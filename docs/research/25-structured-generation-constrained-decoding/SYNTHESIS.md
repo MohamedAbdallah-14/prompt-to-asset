@@ -1,3 +1,5 @@
+> **📅 Research snapshot as of 2026-04-21 (updated from 2026-04-20).** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Research 25 — Structured Generation & Constrained Decoding
 
 **Problem**: The prompt-to-asset MCP server uses LLMs in two ways that benefit from structured output guarantees: (1) Claude authoring SVG markup in `inline_svg` mode, and (2) Claude producing a structured `AssetSpec` from `asset_enhance_prompt`. Without enforcement, both are prone to malformed output, hallucinated fields, and constraint violations (path budget, color palette, provider routing).
@@ -7,10 +9,14 @@
 ## Files
 
 ### [25a — Constrained Decoding Frameworks](./25a-constrained-decoding-frameworks.md)
-Outlines, LM-Format-Enforcer, Guidance, and native Claude/OpenAI structured outputs. Covers the mechanism (token filtering vs. grammar compilation vs. retry loops), backend requirements, and the critical caveat that token-level grammar enforcement can distort LLM distributions (Grammar-Aligned Decoding paper, 2024). **Key takeaway**: For Claude API usage, native structured outputs (Nov 2025 beta) are the only token-level option. Outlines/LM-Format-Enforcer require logit access — incompatible with hosted APIs.
+Outlines, LM-Format-Enforcer, Guidance, and native Claude/OpenAI structured outputs. Covers the mechanism (token filtering vs. grammar compilation vs. retry loops), backend requirements, and the critical caveat that token-level grammar enforcement can distort LLM distributions (Grammar-Aligned Decoding paper, 2024). **Key takeaway**: For Claude API usage, native structured outputs (GA post-Nov 2025, no beta header required as of 2026) are the only token-level option. Outlines/LM-Format-Enforcer require logit access — incompatible with hosted APIs.
+
+> **Updated 2026-04-21:** Claude SO moved from beta to GA. The `structured-outputs-2025-11-13` beta header is no longer required. The SDK now auto-transforms unsupported constraints (`minimum`/`maximum`/`minLength`/`maxLength`) into description text and validates client-side. Current supported GA models: Opus 4.7, Opus 4.6, Sonnet 4.6, Sonnet 4.5, Opus 4.5, Haiku 4.5.
 
 ### [25b — Instructor, Pydantic, TypeScript Validation](./25b-instructor-pydantic-typescript-validation.md)
 Instructor (Python + instructor-js TypeScript) as the practical validation wrapper for Claude API calls. Covers Zod schema integration, the retry-on-validation-error loop, instructor-js production caveats, and comparison with Claude's native SO for the `asset_enhance_prompt` tool. **Key takeaway**: Use instructor-js for complex business-rule validation (cross-field constraints, provider routing checks). Use Claude native SO for high-volume paths where retry cost matters.
+
+> **Updated 2026-04-21:** Instructor Python is at v1.14.x; new `from_provider()` API simplifies client init. Zod v4 (stable August 2025) has native `z.toJSONSchema()` — the `zod-to-json-schema` third-party package is deprecated. Model names in examples updated to `claude-sonnet-4-6` (claude-sonnet-4-5 still valid; Claude Sonnet/Opus 4.0 series retire June 15, 2026). Claude SO beta header is no longer required in the native SO path.
 
 ### [25c — SVG Grammar and Schema Enforcement](./25c-svg-grammar-schema-enforcement.md)
 Three approaches to enforcing SVG constraints: (1) EBNF grammar + constrained decoding for self-hosted models, (2) JSON typed intermediate representation → deterministic SVG render for hosted APIs, (3) post-hoc validation pipeline (path count, viewBox, palette, no rasters, SVGO). Covers the SVGGenius benchmark (ACM MM 2025) findings on model degradation by path count. **Key takeaway**: The 40-path budget is empirically well-calibrated — all models succeed in the "Easy" tier; degradation is sharp above it. Post-hoc validation + retry outperforms grammar enforcement for semantic SVG quality.
@@ -27,7 +33,7 @@ TypeScript library comparison (TypeBox vs Zod vs ArkType), three-stage handler v
 
 | Concern | Recommended approach |
 |---|---|
-| `asset_enhance_prompt` AssetSpec | Claude native SO (Nov 2025) + TypeBox schema; instructor-js for retry fallback |
+| `asset_enhance_prompt` AssetSpec | Claude native SO (GA 2026, no beta header) + TypeBox schema; instructor-js for retry fallback |
 | `inline_svg` SVG quality | Typed JSON intermediate + deterministic render; post-hoc tier-0 validation + up to 2 retries |
 | `inline_svg` syntax validity | Post-hoc: xmldom parse + SVGO; no token-level grammar (Claude API is a black box) |
 | MCP tool inputSchema | TypeBox (direct JSON Schema object, no conversion shim) |

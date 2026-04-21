@@ -41,12 +41,14 @@ tags:
 
 A production-grade logo — the kind a developer can drop into a React repo, an App Store listing, a favicon link tag, and a printed business card without re-exporting by hand — is not a single artifact. It is a **family of derivatives** anchored to a clean master SVG. Getting from a one-line prompt (*"a transparent logo for my note-taking app"*) to that family is a pipeline problem, not a model problem. Even the best text-to-image model emits a PNG that is too busy, too anti-aliased, or too "AI" to ship directly as a logo. The pipeline is where correctness is manufactured.
 
+> **Updated 2026-04-21:** Recraft V4 (released February 2026) replaces V3 as the recommended native-vector path. V4 ships four variants: raster (1024²), Vector (SVG), Pro raster (2048²), Pro Vector (SVG 2048²). The native SVG output, `controls.colors` API, and text-rendering capabilities are all improved over V3. References to "Recraft V3 SVG" in this document should be read as "Recraft V4 Vector" for new pipelines. DALL·E 3 is being deprecated from the OpenAI API on May 12, 2026 — remove it from generation fallback chains and replace with `gpt-image-1` or `gpt-image-1.5`.
+
 There are two viable top-level architectures in 2025–2026:
 
-1. **Native-vector path.** Generate SVG directly from a prompt with a model whose output space *is* SVG code or Bézier paths. The market leader is [Recraft V3 (`recraft-v3-svg`)](https://replicate.com/recraft-ai/recraft-v3-svg), and the research frontier is [StarVector](https://github.com/joanrod/star-vector) (CVPR 2025, ~4.3k stars) and [SVGDreamer/SVGDreamer++](https://github.com/ximinng/SVGDreamer) (CVPR 2024, 435 stars), together with [Chat2SVG](https://github.com/kingnobro/Chat2SVG) (CVPR 2025, 219 stars) which uses an LLM to emit primitives and then refines them with DiffVG. These produce small, editable SVGs but have limited style range and weak photoreal/illustrative quality.
-2. **Raster-first path (default in practice).** Generate a high-resolution PNG with the best available T2I model (Flux, Imagen 4, `gpt-image-1`, SDXL + LoRA), matte the background to a clean alpha, vectorize with [vtracer](https://github.com/visioncortex/vtracer) (5.7k stars) or [potrace](https://potrace.sourceforge.net/) for monochrome, optimize with [SVGO](https://github.com/svg/svgo) (22.4k stars), then re-export at every size the product needs via [resvg](https://github.com/linebender/resvg) / [resvg-js](https://github.com/yisibl/resvg-js) and [sharp](https://github.com/lovell/sharp). This path has the highest visual ceiling today and is what [LogoLoom](https://github.com/mcpware/logoloom), [Logomaker](https://github.com/manicinc/logomaker), and most commercial tools actually run under the hood.
+1. **Native-vector path.** Generate SVG directly from a prompt with a model whose output space *is* SVG code or Bézier paths. The market leader is [Recraft V4 Vector](https://www.recraft.ai/docs/recraft-models/recraft-V4) (formerly Recraft V3 SVG; available via Recraft API and Replicate), and the research frontier is [StarVector](https://github.com/joanrod/star-vector) (CVPR 2025, ~4.3k stars) and [SVGDreamer/SVGDreamer++](https://github.com/ximinng/SVGDreamer) (CVPR 2024, 435 stars), together with [Chat2SVG](https://github.com/kingnobro/Chat2SVG) (CVPR 2025, 219 stars) which uses an LLM to emit primitives and then refines them with DiffVG. These produce small, editable SVGs but have limited style range and weak photoreal/illustrative quality.
+2. **Raster-first path (default in practice).** Generate a high-resolution PNG with the best available T2I model (Flux, Imagen 4, `gpt-image-1.5`, SDXL + LoRA), matte the background to a clean alpha, vectorize with [vtracer](https://github.com/visioncortex/vtracer) (5.7k stars) or [potrace](https://potrace.sourceforge.net/) for monochrome, optimize with [SVGO](https://github.com/svg/svgo) (22.4k stars), then re-export at every size the product needs via [resvg](https://github.com/linebender/resvg) / [resvg-js](https://github.com/yisibl/resvg-js) and [sharp](https://github.com/lovell/sharp). This path has the highest visual ceiling today and is what [LogoLoom](https://github.com/mcpware/logoloom), [Logomaker](https://github.com/manicinc/logomaker), and most commercial tools actually run under the hood.
 
-The **hybrid that wins** for a prompt-to-asset product is: try Recraft V3 SVG first (cheap, clean, editable); fall back to Flux/Imagen → BiRefNet/RMBG 2.0 → vtracer → SVGO → resvg → sharp → png-to-ico. Export is not optional — a logo ships only when you have SVG + PNG@{16,32,48,64,128,192,256,512,1024} + `apple-touch-icon-180.png` + `favicon.ico` + `icon.pdf` + `og-1200x630.png`.
+The **hybrid that wins** for a prompt-to-asset product is: try Recraft V4 Vector first (cheap, clean, editable); fall back to Flux/Imagen → BiRefNet/RMBG 2.0 → vtracer → SVGO → resvg → sharp → png-to-ico. Export is not optional — a logo ships only when you have SVG + PNG@{16,32,48,64,128,192,256,512,1024} + `apple-touch-icon-180.png` + `favicon.ico` + `icon.pdf` + `og-1200x630.png`.
 
 This document walks the full pipeline, the tool choices at each stage, quality trade-offs, and three open-source reference architectures that implement it end-to-end.
 
@@ -76,13 +78,14 @@ Three sub-choices, each with different downstream consequences.
 
 | Tool | Cost | SVG Quality | Text in logo | Notes |
 |---|---|---|---|---|
-| [Recraft V3 SVG](https://recraft.ai/docs) (API) | $0.08/img | Very good, clean paths | Yes (uniquely strong) | Only mass-market native-SVG API. Available via Replicate and Recraft's own API. |
+| [Recraft V4 Vector](https://www.recraft.ai/docs/recraft-models/recraft-V4) (API) | ~$0.08/img | Very good, clean paths; improved over V3 | Yes (improved in V4) | Only mass-market native-SVG API. Available via Recraft API, Replicate, fal.ai. Released Feb 2026. |
+| [Recraft V4 Pro Vector](https://www.recraft.ai/docs/recraft-models/recraft-V4) (API) | Higher | 2048² SVG output | Yes | Premium tier; use for print-quality masters. |
 | [StarVector-8B](https://huggingface.co/starvector/starvector-8b-im2svg) | Self-host GPU | Good on icons/logos, struggles on photoreal | Partial | Treats vectorization as code generation, produces circles/polygons/paths/text rather than pure Béziers. CVPR 2025. |
 | [SVGDreamer](https://github.com/ximinng/SVGDreamer) | Self-host, slow (VPSD optimization loop) | Strong on stylized logos | No | Diffusion-guided particle optimization; best results require 20–60 min/image. |
 | [Chat2SVG](https://github.com/kingnobro/Chat2SVG) | LLM API + local DiffVG | Clean, editable, compact | Yes (LLM emits `<text>`) | Three-stage: LLM → ControlNet → DiffVG refine. CVPR 2025. |
 | [IconShop](https://github.com/kingnobro/IconShop) | Self-host | Monochrome icons only | No | SIGGRAPH Asia 2023, autoregressive path transformer. |
 
-Recraft V3 SVG is the only production-reliable option today. The research models are fantastic inside their training distribution (icons, mascots, flat vector) and collapse outside it (photoreal, 3D, complex illustration).
+Recraft V4 Vector is the only production-reliable native-SVG option today. The research models are fantastic inside their training distribution (icons, mascots, flat vector) and collapse outside it (photoreal, 3D, complex illustration).
 
 **2b. Raster with transparency (skip Stage 3 partially).**
 
@@ -322,7 +325,7 @@ Three open-source repositories that implement a recognizable end-to-end version 
 
 | Library | Stage | Lang | Stars | License | One-line purpose |
 |---|---|---|---|---|---|
-| [Recraft V3 SVG API](https://recraft.ai/docs) | 2 | — | — | commercial | Native text-to-SVG |
+| [Recraft V4 Vector API](https://www.recraft.ai/docs/recraft-models/recraft-V4) | 2 | — | — | commercial | Native text-to-SVG (V4 released Feb 2026, supersedes V3) |
 | [StarVector](https://github.com/joanrod/star-vector) | 2/4 | Python | ~4.3k | Apache-2.0 | Vision-language model that emits SVG code |
 | [SVGDreamer](https://github.com/ximinng/SVGDreamer) | 2 | Python | 435 | MIT | Diffusion-guided SVG via particle optimization |
 | [SVGDreamer++](https://ximinng.github.io/SVGDreamer-project/) | 2 | Python | (in SVGDreamer repo) | MIT | Improved VPSD, Nov 2024 |
@@ -369,11 +372,13 @@ Three open-source repositories that implement a recognizable end-to-end version 
 ## Practitioner Recipe (Copy-Pasteable Default)
 
 ```bash
-# 1. Generate raster (fall back from Recraft V3 SVG)
+# 1. Generate raster (fall back from Recraft V4 Vector/SVG)
+# Recraft V4: use style "vector_illustration" (raster) or the V4 vector endpoint for native SVG
 curl -X POST https://external.api.recraft.ai/v1/images/generations \
   -H "Authorization: Bearer $RECRAFT_KEY" \
   -d '{"prompt":"flat vector logo, notebook icon, minimal, 3 colors",
-       "style":"vector_illustration","size":"1024x1024"}' \
+       "style":"vector_illustration","size":"1024x1024",
+       "model":"recraftv4"}' \
   | jq -r '.data[0].url' | xargs curl -o raw.png
 
 # 2. Matte

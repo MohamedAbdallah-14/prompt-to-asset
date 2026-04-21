@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 16 — Background Removal Vectorization
 
 Post-processing spine: rembg / BiRefNet / BRIA RMBG-2.0 / SAM 2 / vtracer / potrace / SVGO. Two-stage segment → matte; ONNX session reuse for latency.

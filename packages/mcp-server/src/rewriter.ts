@@ -56,15 +56,18 @@ export function rewrite(input: RewriteInput): RewriteOutput {
 
   switch (dialect) {
     case "tag-salad":
+      // Source: docs/research/06-stable-diffusion-flux/6a-sd-15-21-xl-prompting-fundamentals.md
+      // BREAK prevents color/attribute leakage between subject and background on SDXL.
       prompt = [
         tagify(style),
         tagify(`${subject}`),
         palette.length > 0 ? `palette: ${palette.join(", ")}` : null,
         textClause ? tagify(textClause) : null,
-        tagify(aspectClause),
-        backgroundClause ? tagify(backgroundClause) : null,
         "masterpiece",
-        "highly detailed"
+        "highly detailed",
+        "BREAK",
+        tagify(aspectClause),
+        backgroundClause ? tagify(backgroundClause) : null
       ]
         .filter(Boolean)
         .join(", ");

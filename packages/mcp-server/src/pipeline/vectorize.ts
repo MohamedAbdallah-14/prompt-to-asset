@@ -8,6 +8,10 @@ import { optimizeSvg } from "./svgo.js";
 /**
  * Vectorize — raster to SVG.
  *
+ * Source: docs/research/12-vector-svg-generation/12b-raster-to-svg-tracers.md
+ * Source: docs/research/08-logo-generation/8e-svg-vector-logo-pipeline.md
+ * Source: docs/research/16-background-removal-vectorization/16c-vectorization-tooling-production.md
+ *
  * Four paths, tried in priority:
  *   1. Recraft /vectorize (hosted) — best quality, needs PROMPT_TO_BUNDLE_RECRAFT_VECTORIZE_URL.
  *   2. vtracer (CLI on PATH) — multi-color polygon/spline. `brew install vtracer` or `cargo install vtracer`.

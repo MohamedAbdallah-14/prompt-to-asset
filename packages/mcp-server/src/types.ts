@@ -210,7 +210,6 @@ export type FailureCode =
   | "T0_DIMENSIONS"
   | "T0_SAFE_ZONE"
   | "T0_FILE_SIZE"
-  | "T0_DCT_ENTROPY"
   // Tier-1 alignment + perceptual
   | "T1_PALETTE_DRIFT"
   | "T1_TEXT_MISSPELL"

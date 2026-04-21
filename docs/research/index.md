@@ -6,6 +6,8 @@ categories: 36
 angle_files: 185
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # prompt-to-asset — Research Index
 
 This folder is the research substrate behind the `prompt-to-asset` MCP server, its skills, and its routing tables. Each numbered subfolder covers one category; every angle inside a category is a single primary-source-grounded document. Read [`SYNTHESIS.md`](./SYNTHESIS.md) for the cross-category synthesis that drives the product's design decisions.

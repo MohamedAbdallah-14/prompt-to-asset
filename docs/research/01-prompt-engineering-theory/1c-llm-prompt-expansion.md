@@ -33,9 +33,15 @@ For a prompt-to-asset targeting arbitrary software-asset generation, the stronge
 ## Key Findings
 
 ### 1. DALL-E 3 set the "GPT-4 rewrites everything" default
+
+> **Updated 2026-04-21:** DALL-E 3 was deprecated by OpenAI on November 14, 2025, with API removal on **May 12, 2026**. Its replacement — `gpt-image-1` (released March 25, 2025) and `gpt-image-1.5` (released December 16, 2025) — continues the same LLM-integrated rewriting pattern but embeds image generation natively inside the GPT model rather than calling a separate DALL-E model. The Betker et al. 2023 paper and its upsampler template remain the foundational reference for *why* rewriting is needed; gpt-image-1 applies the same principle within a unified multimodal architecture. References to "DALL-E 3 as OpenAI's current image model" should be read as historical — the current production model is `gpt-image-1` / `gpt-image-1.5`.
+
 Betker et al. 2023 showed a T2I model trained on 95% synthetic long captions is **unusable on short human prompts out-of-the-box**, and solved this by having GPT-4 "upsample" any user query to a 15–80 word descriptive caption at inference time (paper §3.5, Appendix C prompt). The exact upsampler system prompt is published (Appendix C) and has become the de-facto template. Production ChatGPT additionally layers safety rewrites on top: artist substitution, public-figure genericization, branded-object removal, and mandatory demographic diversification of people (per the 2023-10-07 leaked system prompt and OpenAI's DALL-E 3 system card).
 
 ### 2. Two-stage SFT → RL has become the standard training recipe
+
+> **Updated 2026-04-21:** The "PaLM-family" base model listed for Datta et al. 2024 reflects the Google internal model lineage at that time. As of 2025–2026, Gemini 2.5 and GPT-4o / o4-mini have largely superseded GPT-4 and PaLM as the default base models for production prompt-expansion pipelines. The SFT→RL recipe itself is unchanged. Also note: the OpenAI Cookbook reference to "What's new with DALL-E 3" documents legacy behavior; gpt-image-1 integrated the rewriting step differently (native multimodal architecture rather than a separate GPT-4 call).
+
 | System | Year | Base model | SFT data | RL reward |
 |---|---|---|---|---|
 | Promptist (Microsoft) | 2022 | GPT-2 | manually-engineered prompt pairs | CLIP sim + aesthetic score |
@@ -138,7 +144,7 @@ This is then consumed by GLIGEN or a grounded SD backend. The LLM does numeric r
 - **RePrompt** — code on GitHub per the ICLR 2026 acceptance; RL-only training, no human-annotated pairs required.
 - **LayoutGPT** — [layoutgpt.github.io](https://layoutgpt.github.io/). CSS-style layout emitter, pairs with GLIGEN.
 - **compel** — [damian0815/compel](https://github.com/damian0815/compel). Long-prompt embeddings to bypass CLIP's 77-token cap on SD 1.5 / SDXL.
-- **OpenAI Cookbook — "What's new with DALL·E 3"** — [cookbook.openai.com](https://cookbook.openai.com/articles/what_is_new_with_dalle_3). Confirms the rewriter cannot be disabled; documents `revised_prompt` return field.
+- **OpenAI Cookbook — "What's new with DALL·E 3"** — [cookbook.openai.com](https://cookbook.openai.com/articles/what_is_new_with_dalle_3). Confirms the rewriter cannot be disabled; documents `revised_prompt` return field. **Note (2026-04-21):** DALL-E 3 is deprecated (API removal May 12, 2026). The successor `gpt-image-1` / `gpt-image-1.5` also rewrites prompts internally but within a native multimodal GPT architecture rather than a separate call. Behavior is analogous; the Cookbook page remains useful for understanding the design intent.
 
 ## Open Questions
 

@@ -18,23 +18,31 @@ This defers the expensive full-resolution generation until the prompt and compos
 
 ## Cost Structure
 
-**gpt-image-1 pricing by size (approximate, as of 2025):**
-- 256×256: ~$0.01/image (low quality)
-- 512×512: ~$0.02/image (standard)
-- 1024×1024: ~$0.04/image (standard)
-- 1024×1024: ~$0.08/image (high quality)
+> **Updated 2026-04-21:** GPT Image 1 is now labeled "previous generation" by OpenAI (as of March 22, 2026). GPT Image 1.5 is the current flagship. Pricing figures below updated to April 2026 confirmed rates. The thumbnail-first pattern applies equally to both models.
 
-**Draft-then-upscale math:**
+**gpt-image-1 pricing by size (confirmed April 2026):**
+- Low quality (any size): ~$0.011/image (gpt-image-1-mini medium as reference)
+- 1024×1024 medium: ~$0.042/image (gpt-image-1)
+- 1024×1024 high: ~$0.167/image (gpt-image-1)
+
+**gpt-image-1.5 pricing by size (confirmed April 2026, current model):**
+- 1024×1024 low: ~$0.009/image
+- 1024×1024 medium: ~$0.034/image
+- 1024×1024 high: ~$0.133/image
+
+> **Note:** The prior figure of "$0.04/image standard" was approximate for gpt-image-1; confirmed medium rate is ~$0.042. "$0.08/image high" was also understated; confirmed high rate is ~$0.167. The thumbnail-first cost math below is updated accordingly.
+
+**Draft-then-upscale math (using gpt-image-1.5, April 2026 pricing):**
 If 30% of briefs require at least one regeneration due to composition failure:
-- Without thumbnail-first: 1.3 × $0.04 = $0.052 average cost
-- With thumbnail-first (256 draft, regenerate on fail, upscale on pass): (1.3 × $0.01) + (1.0 × $0.04) = **$0.053 average cost**
+- Without thumbnail-first: 1.3 × $0.034 = **$0.044** average cost (medium quality)
+- With thumbnail-first (low-quality draft at $0.009, regenerate on fail, upscale on pass): (1.3 × $0.009) + (1.0 × $0.034) = **$0.046 average cost**
 
-At similar rates, the cost savings are modest for single-regeneration scenarios. The savings compound when failure rates are high (novel style, complex brand constraints) or when upscaling uses a cheaper dedicated upscaler rather than re-generating at full res.
+At these rates, the cost savings are modest for single-regeneration scenarios at medium quality. The savings compound when failure rates are high (novel style, complex brand constraints) or when upscaling uses a cheaper dedicated upscaler rather than re-generating at full res.
 
 **With a dedicated upscaler:**
 Upscaling services like Real-ESRGAN (self-hosted) or Pruna API (~$0.005/image) are substantially cheaper than full regeneration. The math becomes:
-- Draft (256): $0.01 + upscale: $0.005 = **$0.015 for a passing asset** vs $0.04
-- 62% cost reduction on the happy path
+- Draft (low quality gpt-image-1.5): $0.009 + upscale: $0.005 = **$0.014 for a passing asset** vs $0.034 (medium full-res)
+- ~59% cost reduction on the happy path
 
 ---
 

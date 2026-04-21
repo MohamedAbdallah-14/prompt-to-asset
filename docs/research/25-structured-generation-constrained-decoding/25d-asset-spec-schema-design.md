@@ -112,9 +112,9 @@ These constraints must live in the tool handler, not the schema:
 
 ## Claude Schema Subset Compatibility
 
-Claude's native structured output has specific schema limitations. The AssetSpec above is compatible: it avoids recursive `$ref`, `minimum`/`maximum` on numbers (use array `maxItems` instead), and complex `oneOf` chains. The `additionalProperties: false` is present, which is required. The `format: "uri"` on paste target URLs is supported.
+> **Updated 2026-04-21:** Claude structured outputs are now GA (no beta header required). The schema constraint picture has changed: the Python and TypeScript SDKs now **automatically transform** schemas with unsupported constraints. When you include `minLength`, `maxLength`, `minimum`, or `maximum`, the SDK strips them from the grammar spec, updates the field `description` with the constraint info (e.g., "Must be at least 1 character"), and then validates the model's response against your original schema client-side. This means the AssetSpec schema can include `minLength: 1` on `subject` — the SDK handles the fallback without errors. Token-level enforcement still does not apply to these numeric constraints; they are post-hoc. The guidance to use `maxItems` on arrays still holds (array length constraints are grammar-enforced).
 
-What would break Claude SO: adding `minLength: 1` on `subject` (`minLength` is not in the supported subset — use `minLength: 0` or omit it and enforce in the handler). Similarly, avoid `minimum`/`maximum` constraints on numeric fields; express limits as enum or string pattern instead.
+Claude's native structured output is compatible with the AssetSpec schema: it avoids recursive `$ref` and complex `oneOf` chains. The `additionalProperties: false` is still required. The `format: "uri"` on paste target URLs is supported. For numeric field limits, use `maxItems` on arrays where possible (grammar-enforced); for string length and numeric ranges, the SDK handles them as described above.
 
 ---
 

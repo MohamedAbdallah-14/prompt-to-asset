@@ -30,6 +30,8 @@ tags: [icon, iconify, composition, appicon-forge]
 - **Stars / forks / watchers:** 983★ / 142🍴 / 983 watchers at 2026-04-19 (GitHub API).
 - **Created:** 2024-11-20.  **Last push:** 2025-07-09 (≈9 months idle at time of writing).
 - **Default branch:** `main`. **Open issues:** 11. **Releases:** none tagged.
+
+> **Updated 2026-04-21:** Last push of 2025-07-09 confirmed via web search. ~9 months idle as of April 2026. No new releases, no forks picking up maintenance. The live instance at `zhangyu1818.github.io/appicon-forge/` is still operational. Status: **idle but functional**. Adopt the schema/composition pattern but do not rely on upstream receiving bug fixes. The missing SPDX/LICENSE file concern remains unresolved.
 - **Language mix:** TypeScript ≈95%.  Repo size ≈3.6 MB (mostly screenshots).
 - **License:** README declares **MIT**; no `LICENSE` file is committed (GitHub's license detector returns `null`). Treat as MIT but be aware of the missing SPDX marker.
 - **Hosting surfaces:** live on GitHub Pages (`zhangyu1818.github.io/appicon-forge/`) and on Vercel (`appicon-forge.vercel.app`) — both are the same static bundle.

@@ -33,7 +33,9 @@ The favicon landscape has fundamentally simplified over the past five years. The
 
 The modern stack is:
 
-1. **`favicon.svg`** — a single vector icon with embedded `@media (prefers-color-scheme: dark)` CSS for adaptive light/dark rendering. Supported in Chrome 80+, Firefox 41+, Edge 80+, and Safari 17+ ([caniuse](https://caniuse.com/link-icon-svg)).
+1. **`favicon.svg`** — a single vector icon with embedded `@media (prefers-color-scheme: dark)` CSS for adaptive light/dark rendering. Supported in Chrome 80+, Firefox 41+, and Edge 80+. Safari added SVG favicon support in Safari 17 (macOS Sonoma, Sept 2023), but **Safari ignores `prefers-color-scheme` media queries inside SVG favicons** — it renders the base (light) variant regardless of OS theme. iOS Safari does not use SVG favicons; it uses `apple-touch-icon` for home-screen icons. ([caniuse](https://caniuse.com/link-icon-svg))
+
+> **Updated 2026-04-21:** Safari 17+ supports `<link rel="icon" type="image/svg+xml">` for tab favicons, but the embedded `@media (prefers-color-scheme: dark)` block inside SVG favicons is **not honoured** by Safari as of Safari 18/19. The dark-mode adaptive media query works only in Chrome/Firefox/Edge. For Safari dark-mode favicon support, you currently need a JS-based `<link href>` swap keyed on `matchMedia('(prefers-color-scheme: dark)')`, or accept the light variant on Safari. No fix is expected until Safari Technology Preview implements the relevant spec change.
 2. **`favicon.ico`** — a multi-image ICO (16/32/48) at the document root as a legacy fallback, and because RSS readers, Slackbot, and crawlers still request `/favicon.ico` unconditionally.
 3. **`apple-touch-icon.png`** — a single 180×180 flat PNG (no transparency, no rounded corners — iOS adds both).
 4. **Web App Manifest** (`manifest.webmanifest`) referencing a 192×192 and a 512×512 PNG, plus a dedicated 512×512 `maskable` icon for Android 8+ adaptive launchers.
@@ -86,7 +88,7 @@ Every file a modern site *should* ship, every file it *may* ship, and every file
 
 | Filename | Size / Format | Purpose | Deploy Path | Reference |
 |---|---|---|---|---|
-| `favicon.svg` | Vector SVG, square `viewBox` | Primary tab icon for Chrome 80+, Firefox 41+, Edge 80+, Safari 17+. Supports adaptive dark mode. | `/favicon.svg` or hashed under `/assets/` | [caniuse](https://caniuse.com/link-icon-svg) |
+| `favicon.svg` | Vector SVG, square `viewBox` | Primary tab icon for Chrome 80+, Firefox 41+, Edge 80+, Safari 17+. Supports adaptive dark mode in Chrome/Firefox/Edge; Safari renders the base variant only (ignores embedded media queries as of Safari 18/19). | `/favicon.svg` or hashed under `/assets/` | [caniuse](https://caniuse.com/link-icon-svg) |
 | `favicon.ico` | Multi-image ICO containing 16×16, 32×32, and 48×48 PNG-compressed entries | Legacy IE/old Safari; RSS readers; Slackbot; generic crawlers that only probe `/favicon.ico` | **Must** be at `/favicon.ico` (root) so `/favicon.ico` HEAD requests resolve | [ICO format spec (Wikipedia)](https://en.wikipedia.org/wiki/ICO_(file_format)) |
 | `apple-touch-icon.png` | 180×180 PNG, **opaque** (no alpha), no rounded corners | iOS home-screen icon; Safari tab-group cover; many macOS system surfaces; also used as a high-res social fallback by some scrapers | `/apple-touch-icon.png` at root (iOS probes the root unconditionally) | [favicondl.com apple-touch-icon guide](https://favicondl.com/blog/apple-touch-icon-guide.html) |
 | `icon-192.png` | 192×192 PNG, transparent OK | Android home-screen icon (`purpose: "any"`) | referenced by manifest | [MDN manifest/icons](https://developer.mozilla.org/en-US/docs/Web/Manifest/icons) |
@@ -157,7 +159,9 @@ A single SVG can flip colors based on the OS theme by embedding a `<style>` bloc
 Rules that trip people up:
 
 - **The media query reads the OS theme, not the per-site theme.** A user who sets the OS to dark but flips the site to light will still get the dark favicon. There is no workaround that survives Chrome's aggressive favicon caching ([Stack Overflow](https://stackoverflow.com/questions/67207095/issue-with-prefers-color-scheme-media-query)).
-- **Safari ignores media queries inside favicon SVGs** on desktop up through Safari 17, and its SVG favicon support is itself new (Safari 17, 2023). If a dark-mode favicon is business-critical on Safari, you must either (a) accept the default, or (b) use a JS workaround that swaps the `<link>` `href` based on `matchMedia('(prefers-color-scheme: dark)')`.
+- **Safari ignores `prefers-color-scheme` media queries inside SVG favicons** across all current Safari versions including Safari 18/19 (2024–2025). Safari 17 added SVG favicon support for tabs, but the embedded `<style>` media query is silently skipped — Safari always renders the default (light) path. If a dark-mode favicon is business-critical on Safari, you must use a JS workaround that swaps the `<link>` `href` based on `matchMedia('(prefers-color-scheme: dark)')`.
+
+> **Updated 2026-04-21:** No current stable Safari release (through Safari 19.x) honours `@media (prefers-color-scheme: dark)` inside an SVG favicon `<style>` block. This is a long-standing WebKit limitation. The JS `<link href>` swap remains the only cross-browser path if you need adaptive favicons on Safari.
 - **Changes require a page reload.** Browsers cache favicons aggressively; flipping the OS theme mid-session rarely re-renders the tab icon. This is a Chromium/Firefox implementation limitation, not a spec requirement.
 - **`xmlns` is mandatory.** Without `xmlns="http://www.w3.org/2000/svg"`, Firefox will fail to render the SVG as a favicon even though it happily renders it as an `<img>` source.
 - **Optimize with SVGO but preserve `<style>`.** SVGO's default preset strips `<style>` blocks; pass `--disable=removeStyleElement` or use the `modern` preset. ([SVGO](https://github.com/svg/svgo))

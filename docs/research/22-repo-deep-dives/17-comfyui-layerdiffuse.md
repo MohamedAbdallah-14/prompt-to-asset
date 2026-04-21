@@ -45,7 +45,16 @@ or the wrapper node in `ComfyUI-Easy-Use`.
 |---|---|
 | Stars | ~1.77 k (1,769 at date of scrape; HN/awesome-ComfyUI lists cluster around 1.6 k–1.8 k) |
 | Forks | 0 visible (public GitHub UI shows `0` — likely GitHub caching quirk; package is widely forked via registry installs) |
-| Last commit | 2025-02-25 — essentially frozen through April 2026 |
+| Last commit | 2025-02-25 — frozen through April 2026; no Flux support added |
+
+> **Updated 2026-04-21:** Repository confirmed frozen as of April 2026. Last
+> commit remains 2025-02-25. Issue #121 ("Support for Flux LayerDiffuse") is
+> confirmed still stale — no Flux support has been added to this pack.
+> `RedAIGC/Flux-version-LayerDiffuse` remains the only available path for
+> Flux-based transparent generation. Maintenance activity since the freeze has
+> been limited to locale updates and minor Comfy core API compatibility fixes —
+> the fundamental eight-node set and workflow JSON are unchanged and stable.
+> SDXL/SD1.5 native-RGBA path continues to work as documented.
 | Language mix | Python (100 %) — 1 node file (`layered_diffusion.py`) + `lib_layerdiffusion/` helpers |
 | Install surface | ComfyUI-Manager ("ComfyUI-layerdiffuse (layerdiffusion)") or `git clone` + `pip install -r requirements.txt` |
 | Author | `huchenlei` (also maintains `sd-webui-layerdiffusion`; 3160-day-old GitHub account) |
@@ -213,10 +222,13 @@ paths are saved for a later `compose_hero_image` tool.
   ([comfyanonymous/ComfyUI #1841](https://github.com/comfyanonymous/ComfyUI/issues/1841))
   that compounds across layered-diffuse + inpaint + save/load cycles; the
   `ImageCompositeMasked` workaround applies.
-- **No Flux / SD3 / FLUX.2 path.** Issue #121 stale. For Flux we fork to
-  `RedAIGC/Flux-version-LayerDiffuse` (separate repo, separate maintainer,
-  weights sit in `RedAIGC/Flux-version-LayerDiffuse` under their own license
-  — legal review pending per 13-INDEX Gaps).
+- **No Flux / SD3 / FLUX.2 path.** Issue #121 stale as of April 2026 — no Flux
+  support has been added to this pack since the repo froze (last commit 2025-02-25).
+  For Flux we fork to `RedAIGC/Flux-version-LayerDiffuse` (separate repo, separate
+  maintainer, weights sit in `RedAIGC/Flux-version-LayerDiffuse` under their own
+  license — legal review pending per 13-INDEX Gaps).
+
+> **Updated 2026-04-21:** As of April 2026, the `huchenlei/ComfyUI-layerdiffuse` repository remains frozen at the 2025-02-25 commit with no Flux support. Issue #121 ("Support for Flux LayerDiffuse") is confirmed still stale. The recommendation to use `RedAIGC/Flux-version-LayerDiffuse` for Flux-based transparent generation remains the only available path.
 
 ## Compared to `ComfyUI-Easy-Use`'s `easy kSamplerLayerDiffusion`
 

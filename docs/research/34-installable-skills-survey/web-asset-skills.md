@@ -522,6 +522,8 @@ All five repos use `.claude-plugin/` directories for plugin manifest metadata. M
 
 ---
 
+> **Updated 2026-04-21:** Distribution landscape update. The `vercel-labs/skills` CLI (`npx skills`) v1.1.1 is now the standard cross-IDE install tool (~14.7k★). `npx skills find` provides interactive discovery. `skills.sh` (launched January 2026) is the canonical leaderboard directory tracking real install counts. Skills from all five surveyed repos would benefit from packaging via `npx skills` to reach Claude Code, Cursor, Codex, Gemini CLI, and Copilot users in one step. The MeiGen skill already supports `npx meigen init cursor` as a multi-IDE install primitive — similar patterns are the expectation in the 2026 ecosystem.
+
 ## Summary: Largest Gaps in prompt-to-asset
 
 Ranked by impact/feasibility:

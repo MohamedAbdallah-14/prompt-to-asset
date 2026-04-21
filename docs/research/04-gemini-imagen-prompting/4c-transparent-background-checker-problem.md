@@ -4,7 +4,7 @@ angle: 4c
 title: "Transparent Background Support in Gemini / Imagen — The 'Checker Pattern' Problem"
 status: draft
 research_value: high
-date_compiled: 2026-04-19
+date_compiled: 2026-04-21
 primary_models_covered:
   - imagen-3
   - imagen-4.0-generate-001
@@ -20,6 +20,8 @@ comparison_models:
   - rembg (post-process)
 tags: [transparency, alpha-channel, rgba, checkerboard, background-removal, triangulation-matting, difference-matting, nano-banana, imagen, gemini, prompting-workaround]
 ---
+
+> **Updated 2026-04-21:** The transparency limitations described here remain unchanged as of April 2026. No Google image model produces real RGBA output. The two-pass difference-matting workflow (Examples 1+5) and Gemini 3 Flash + Code Execution (Example 6) are still the only practical Google-family paths to alpha. For native alpha without post-processing, route to `gpt-image-1` (OpenAI) or Recraft V3. All Imagen 4.0 variants are deprecated (EOL June 30, 2026); `gemini-2.5-flash-image` is the Google-recommended replacement but shares the same RGB-only limitation. Programmatic image-gen via the Gemini Developer API requires a billed project — free API keys return HTTP 429 on image endpoints.
 
 # 4c — Transparent Background Support in Gemini / Imagen
 

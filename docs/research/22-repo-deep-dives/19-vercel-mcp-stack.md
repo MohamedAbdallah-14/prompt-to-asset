@@ -46,6 +46,16 @@ convergent pattern for remote MCPs. Three artifacts codify it:
 1. **`vercel/mcp-handler`** (formerly `@vercel/mcp-adapter`) — the *library*. Exports
    `createMcpHandler`, `withMcpAuth`, `protectedResourceHandler`. Apache-2.0. npm:
    `mcp-handler@1.1.0`, ~228.5K weekly downloads, 580★.
+
+> **Updated 2026-04-21:** `mcp-handler@1.1.0` confirmed as the latest version
+> as of April 2026 (last published approximately March 2026). The package name
+> `mcp-handler` (not `@vercel/mcp-adapter`) is canonical; the legacy
+> `@vercel/mcp-adapter` still resolves on npm but is deprecated. No version
+> bump since 1.1.0 — the API surface (`createMcpHandler`, `withMcpAuth`,
+> `protectedResourceHandler`, `metadataCorsOptionsRequestHandler`) is stable.
+> A security audit issue (#146) was filed against the package; check the npm
+> audit report before deploying. The `@modelcontextprotocol/sdk@1.26.0` peer
+> floor is unchanged.
 2. **`vercel-labs/mcp-for-next.js`** — the *minimal* starter: one route, no auth, no UI,
    no persistence. Ships with a Deploy-to-Vercel button. 352★, MIT (via Vercel examples
    bucket; no root `LICENSE` file but the official Vercel template listing is MIT).

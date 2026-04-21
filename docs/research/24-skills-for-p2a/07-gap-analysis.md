@@ -4,6 +4,16 @@ category: skills-for-p2a
 date: 2026-04-21
 ---
 
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+>
+> **Additional corrections (2026-04-21):**
+> - **DALL-E 3 retiring May 12, 2026.** Migrate to `gpt-image-1.5` (current, 20% cheaper than gpt-image-1, stronger brand logo preservation in edits).
+> - **Recraft V3 → V4.** All references to Recraft V3 for native SVG should use V4 Vector or V4 Pro Vector (released February 2026).
+> - **Ideogram transparency:** The transparent generation endpoint is `/ideogram-v3/generate-transparent` (dedicated endpoint), NOT `style: "transparent"` on the standard generate endpoint.
+> - **Midjourney V8 Alpha** launched March 17, 2026. No official public API still. V8 sref codes differ from V7; regenerate style bundles against V8.
+> - **Claude model references:** claude-sonnet-4-20250514 / claude-opus-4-20250514 retire June 15, 2026. Use claude-sonnet-4-6 / claude-opus-4-6.
+> - **MCP spec 2025-11-25** is Latest Stable (released November 25, 2025). No breaking changes to tool schemas.
+
 # P2A Skills Gap Analysis
 
 ## Executive Summary
@@ -64,7 +74,7 @@ Skill lists free-first order but doesn't explain trade-offs:
 - **Pollinations**: zero signup, instant, RGB-only. No rate limit documented.
 - **HF Inference**: free `HF_TOKEN`, queue varies, undocumented limits.
 - **Stable Horde**: anonymous queue, communal workers, slowest.
-- **Nano Banana (Google AI Studio)**: ~1,500 images/day free, best quality of the four. Requires Google account + API key setup (~2 min).
+- **Nano Banana (Google AI Studio)**: paid only as of Dec 2025 ($0.039/img for Gemini Flash Image / Nano Banana; $0.134/img for Gemini Pro Image / Nano Banana Pro). The "~1,500 images/day free" quota was withdrawn in December 2025 and the partial restoration (~500 RPD free as of Feb 2026) applies only to Gemini 2.5 Flash Image text-multimodal; **image generation endpoints remain paid**. For free interactive use, route users to the AI Studio web UI (https://aistudio.google.com) via `external_prompt_only` + `asset_ingest_external`.
 
 Skill gives no speed/quality/friction ranking, no rate limit warnings, no escalation strategy when a free path fails.
 

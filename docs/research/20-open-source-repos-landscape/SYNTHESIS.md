@@ -4,6 +4,7 @@ title: "Open-Source Repos Landscape — Category Index & Synthesis"
 slug: 20-open-source-repos-landscape
 role: category-indexer
 date: 2026-04-19
+last_updated: 2026-04-21
 angles_covered:
   - 20a — Prompt-Enhancement OSS Repos for Image Generation
   - 20b — Open-Source Full-Stack Asset Generators ("one prompt → real asset")
@@ -24,6 +25,8 @@ tags:
 status: final
 ---
 
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # 20 — Open-Source Repos Landscape: Category Index
 
 ## Category Executive Summary
@@ -37,10 +40,12 @@ picture is consistent and has a clear bottom line: **the asset-correctness layer
 empty, every other layer is mature enough to stand on**. Fifteen findings:
 
 1. **No OSS project today ships the tri-surface** (web UI + hosted remote MCP + cross-IDE
-   skill pack) for AI-driven logo/icon/asset generation. `Nutlope/logocreator` (6.8k★)
-   owns the web UX but has no MCP; `mcpware/logoloom`, `arekhalpern/mcp-logo-gen`, and
+   skill pack) for AI-driven logo/icon/asset generation. `Nutlope/logocreator` (~5.3k★ as
+   of 2026-04-21) owns the web UX but has no MCP; `mcpware/logoloom`, `arekhalpern/mcp-logo-gen`, and
    `niels-oz/icon-generator-mcp` own slivers of the MCP surface but have no website,
    single-provider coverage, and no prompt-research layer (20e).
+
+   > **Updated 2026-04-21:** The 6.8k★ figure for logocreator cited earlier appears to have been a peak or a mis-reading; current confirmed count is ~5.3k★ (April 2026). The project remains active with open issues.
 
 2. **One SOTA open prompt rewriter exists and it is not asset-aware**. Tencent's
    `Hunyuan-PromptEnhancer` (~3.7k★, Apache-2.0) is the only widely-available model
@@ -105,6 +110,8 @@ empty, every other layer is mature enough to stand on**. Fifteen findings:
     the same JSON that drives the UI drives the server, and a mature serverless ecosystem
     (`runpod-workers/worker-comfyui`, `replicate/cog-comfyui`, Modal, ComfyDeploy,
     ComfyICU) turns any workflow into a per-second-billed API (20d).
+
+    > **Updated 2026-04-21:** ComfyUI has grown to ~108.5k★ (as of 2026-04-13, star-history.com) — roughly double the ~55k figure from earlier in this research cycle. This cements it as the dominant open-weight execution runtime with no credible OSS challenger. ComfyUI-Manager is now at v4.1 and is officially integrated into the core ComfyUI codebase.
 
 12. **Native RGBA generation via LayerDiffuse beats post-hoc matting for the transparency
     use case**. `huchenlei/ComfyUI-layerdiffuse` and `yolain/ComfyUI-Easy-Use`'s
@@ -236,6 +243,8 @@ run offline. **Our resolution:** ship both — a Fooocus-style ~100M-parameter f
 rewriter (re-implemented to avoid Fooocus's CC-BY-NC-4.0 weights) and a Claude/GPT/Gemini
 rewriter for the paid tier — routed by user tier and budget.
 
+> **Updated 2026-04-21:** Fooocus itself is now LTS-only (bug fixes, last feature release v2.5.5 Aug 2025). The "Fooocus-style rewriter" approach remains valid — re-implement the positive-word + no-repeat logits processor from scratch (the algorithm is not CC-BY-NC-4.0, only the model weights are). The ostris/ai-toolkit and kohya_ss are the current recommended LoRA training stacks; ostris/ai-toolkit now covers Flux.2 and a dozen+ model architectures.
+
 **Controversy 2 — Post-hoc matting vs. native RGBA generation.** 20b's reference
 implementations (`fabriziosalmi/brandkit`, `eyenpi/sticker-generator`, `zhangyu1818/appicon-forge`)
 pipe everything through `rembg`/BRIA RMBG *after* generation, accepting the fringing,
@@ -345,10 +354,11 @@ Consolidated from the five angles (numbered for traceability):
 - `adieyal/sd-dynamic-prompts` DSL syntax (MIT) for the deterministic template layer.
 
 **Execution layer (when we need open-weight models).**
-- `comfyanonymous/ComfyUI` + `Comfy-Org/ComfyUI-Manager` (14.3k★, GPL) via serverless
-  wrappers (not forked into our repo to avoid GPL contamination).
+- `comfyanonymous/ComfyUI` / `Comfy-Org/ComfyUI` (~108.5k★ as of 2026-04-13, GPL) via serverless
+  wrappers (not forked into our repo to avoid GPL contamination). ComfyUI-Manager v4.1 is now
+  integrated into core — use `comfy-cli` for headless node install.
 - `huchenlei/ComfyUI-layerdiffuse` (native RGBA) — the correct answer to the Gemini
-  "weird boxes" bug.
+  "weird boxes" bug. Last active maintenance Feb 2025; open issues tracked through 2025.
 - `yolain/ComfyUI-Easy-Use` (`easy layerDiffusion` node) for the shortest transparent
   pipeline.
 - `rgthree/rgthree-comfy` "Context" nodes for programmable workflow mutation.
@@ -356,10 +366,12 @@ Consolidated from the five angles (numbered for traceability):
 - Serverless: `runpod-workers/worker-comfyui` or `replicate/cog-comfyui` with
   `workflow_json` input.
 
+> **Updated 2026-04-21 — LoRA training stack:** `ostris/ai-toolkit` is as of April 2026 the recommended Flux LoRA trainer (supports Flux.1, Flux.2, Wan, Lumina2, Z-Image + 10+ architectures; GUI + CLI). `kohya_ss` remains valid for SDXL and Flux.1 on consumer hardware (sd-scripts v0.9.1). IP-Adapter: the original `tencent-ailab/IP-Adapter` repo is effectively unmaintained (last commit Jan 2024). For Flux, use InstantX's FLUX.1-dev IP-Adapter or `comfyorg/comfyui-ipadapter`.
+
 **Post-processing layer.**
-- `danielgatis/rembg` (22k★) — default background removal.
+- `danielgatis/rembg` (22.5k★ as of 2026-04-21, v2.0.75) — default background removal, actively maintained with monthly releases.
 - `Bria-AI/RMBG-2.0` — SOTA matting (CC-BY-NC-4.0 model ⇒ commercial via Bria/fal/Replicate
-  endpoints, **not** embedded).
+  endpoints, **not** embedded). ComfyUI node: `1038lab/ComfyUI-RMBG` v3.0.0 (2026-01-01).
 - `visioncortex/vtracer` (Rust, full-color SVG) — vectorization fallback.
 - `akabekobeko/npm-icon-gen` + `onderceylan/pwa-asset-generator` +
   `ionic-team/capacitor-assets` + `guillempuche/appicons` — platform-spec resizers.
@@ -454,7 +466,7 @@ cross-IDE delivery. Every individual piece is OSS. The *stitch* is not.
 - `promptslab/Promptify` — <https://github.com/promptslab/Promptify> (~4.6k★, Apache-2.0)
 - `thunlp/OpenPrompt` — <https://github.com/thunlp/OpenPrompt> (~4.8k★, Apache-2.0)
 - `adieyal/sd-dynamic-prompts` — <https://github.com/adieyal/sd-dynamic-prompts> (~2.3k★, MIT)
-- `lllyasviel/Fooocus` (expansion.py) — <https://github.com/lllyasviel/Fooocus> (~48k★, GPL-3.0; model CC-BY-NC-4.0)
+- `lllyasviel/Fooocus` (expansion.py) — <https://github.com/lllyasviel/Fooocus> (~48k★, GPL-3.0; model CC-BY-NC-4.0) — **LTS-only as of 2025; last feature release v2.5.5 Aug 2025**
 - `Gustavosta/MagicPrompt-Stable-Diffusion` — <https://huggingface.co/Gustavosta/MagicPrompt-Stable-Diffusion>
 - `roborovski/superprompt-v1` — <https://huggingface.co/roborovski/superprompt-v1>
 - `alibaba-pai/pai-bloom-1b1-text2prompt-sd-v2` (BeautifulPrompt) — <https://huggingface.co/alibaba-pai/pai-bloom-1b1-text2prompt-sd-v2>
@@ -478,8 +490,8 @@ cross-IDE delivery. Every individual piece is OSS. The *stitch* is not.
 - `iamdanwi/brand-forge` — <https://github.com/iamdanwi/brand-forge>
 - `dembrandt/dembrandt` — <https://github.com/dembrandt/dembrandt>
 - `leebr27/marque` — <https://github.com/leebr27/marque>
-- `danielgatis/rembg` — <https://github.com/danielgatis/rembg> (22,491★)
-- `Bria-AI/RMBG-2.0` — <https://github.com/Bria-AI/RMBG-2.0>
+- `danielgatis/rembg` — <https://github.com/danielgatis/rembg> (22,500+★ as of 2026-04-21; v2.0.75 released 2026-04-08)
+- `Bria-AI/RMBG-2.0` — <https://github.com/Bria-AI/RMBG-2.0> (CC-BY-NC-4.0; ComfyUI node: 1038lab/ComfyUI-RMBG v3.0.0)
 - Polotno — <https://github.com/polotno-project>
 - `@vercel/og` + Satori — <https://github.com/vercel/satori>
 - `piaoyinghuang/brand-consistency-ai-skill` — <https://github.com/piaoyinghuang/brand-consistency-ai-skill>
@@ -504,8 +516,8 @@ cross-IDE delivery. Every individual piece is OSS. The *stitch* is not.
 
 ### ComfyUI ecosystem (20d)
 
-- `comfyanonymous/ComfyUI` — <https://github.com/comfyanonymous/ComfyUI> (~55k★)
-- `Comfy-Org/ComfyUI-Manager` — <https://github.com/Comfy-Org/ComfyUI-Manager> (~14.3k★)
+- `comfyanonymous/ComfyUI` / `Comfy-Org/ComfyUI` — <https://github.com/Comfy-Org/ComfyUI> (~108.5k★ as of 2026-04-13)
+- `Comfy-Org/ComfyUI-Manager` — <https://github.com/Comfy-Org/ComfyUI-Manager> (~14.3k★; v4.1, 2026-03-25; now integrated into core)
 - `registry.comfy.org` — <https://registry.comfy.org/>
 - `Comfy-Org/desktop` (Electron) — <https://github.com/Comfy-Org/desktop>
 - `ltdrdata/ComfyUI-Impact-Pack` — <https://github.com/ltdrdata/ComfyUI-Impact-Pack> (~3k★)

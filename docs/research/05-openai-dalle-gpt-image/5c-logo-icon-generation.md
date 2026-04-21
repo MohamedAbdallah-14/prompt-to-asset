@@ -291,9 +291,11 @@ The constraint `"no inner details finer than 1/32 of the image width"` is the si
 | Output sizes                     | 1024², 1024×1792, 1792×1024 | 1024², 1536×1024, 1024×1536    | Same three sizes                |
 | In-image world knowledge         | Limited                     | Good                           | Best                           |
 | API availability                 | Deprecated 2026-05-12       | Generally available            | Generally available (recommended) |
-| Price per image (1024², high)    | $0.04–0.08                  | ~$0.17                         | ~$0.19 (tokens-based)          |
+| Price per image (1024², high)    | $0.04–0.08                  | ~$0.17                         | ~$0.133 (tokens-based)         |
 
 Sources: [1][6][9][10][13][14]
+
+> **Updated 2026-04-21:** gpt-image-1.5 pricing for 1024² high corrected from ~$0.19 to **~$0.133** per image (official OpenAI pricing page, Apr 2026). The ~$0.19 figure originally derived from gpt-image-1 token math; gpt-image-1.5 output tokens are priced ~20% lower, yielding $0.133 for high quality. A **gpt-image-2** model is in ChatGPT-side gray testing as of April 2026 (LM Arena codenames: maskingtape-alpha / gaffertape-alpha) but has not been officially released to the API as of April 21, 2026. The recommended current production model remains `gpt-image-1.5`.
 
 ### Community-tool landscape (2025–2026)
 

@@ -30,19 +30,23 @@ Reported results on MT-Bench: 85% cost reduction while maintaining 95% of GPT-4 
 
 ## Concrete Routing for Prompt Enhancement
 
+> **Updated 2026-04-21:** Claude Opus 4.7 was released April 16, 2026 at the same $5/$25 MTok price as Opus 4.6. However, Opus 4.7 uses a new tokenizer that may produce ~1–1.35x more tokens for the same input — effective cost could be up to 35% higher per request despite identical rate card pricing. For the prompt enhancement tier-3 slot, Opus 4.6 may therefore be lower actual cost. Test both before choosing. Haiku 4.5 and Sonnet 4.6 pricing is unchanged.
+
 The `asset_enhance_prompt` tool currently calls a single model. A three-tier routing approach:
 
 **Tier 1 — Claude Haiku 4.5** ($1/MTok in, $5/MTok out, batch: $0.50/$2.50):
 - Use for: reformatting a clear brief, extracting brand palette from hex codes, rewriting simple 1-sentence descriptions
 - Qualification signal: user brief length < 30 words AND no brand bundle attached
+- **Caching caveat:** Haiku 4.5 requires a 4,096-token minimum prefix for cache hits — if your static system prompt is shorter, you will not benefit from prompt caching on this tier. Consider Sonnet 4.6 (1,024-token minimum) for shorter prompts where caching is important.
 
 **Tier 2 — Claude Sonnet 4.6** ($3/MTok in, $15/MTok out):
 - Use for: multi-constraint briefs, brand coherence reasoning, resolving ambiguous asset type
 - Escalation trigger: Haiku returns low-confidence enhancement OR brief exceeds 30 words with brand context
 
-**Tier 3 — Claude Opus 4.6** ($5/MTok in, $25/MTok out):
+**Tier 3 — Claude Opus 4.7** ($5/MTok in, $25/MTok out, released April 16, 2026):
 - Use for: complex multi-brand system design, resolving contradictory constraints
 - Rarely needed; the prompt enhancement task is bounded enough that Sonnet handles almost all cases
+- **Tokenizer note:** Opus 4.7 uses a new tokenizer that may produce 1–1.35x more tokens than previous models, making actual per-request cost potentially higher than the rate card implies. Claude Opus 4.6 remains available and avoids this tokenizer premium.
 
 At Haiku pricing with prompt caching, a typical 500-token enhancement call costs ~$0.0005. At Sonnet it is ~$0.0015. Routing 80% of calls to Haiku yields approximately 2x cost reduction over always using Sonnet.
 

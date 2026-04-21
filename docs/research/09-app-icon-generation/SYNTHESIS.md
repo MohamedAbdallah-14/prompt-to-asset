@@ -3,7 +3,7 @@ category: 09-app-icon-generation
 title: "Category Index — App Icon Generation: iOS HIG, Android Adaptive, PWA Manifest, Safe Zones & the appicon.co-killer Pipeline"
 slug: 09-app-icon-generation-index
 indexer: category-indexer-09
-date: 2026-04-19
+date: 2026-04-21
 status: complete
 angles_indexed:
   - 9a-ios-app-icon-hig-specs
@@ -26,6 +26,8 @@ tags:
   - capacitor-assets
   - prompt-patterns
 ---
+
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
 
 # 09 — App Icon Generation: Category Index
 
@@ -71,12 +73,14 @@ Fifteen findings that matter for the `09-app-icon-generation` skill:
    OEM launcher mask shape (Pixel circle, Samsung squircle, teardrop, rounded
    square, hexagon) is required by AOSP to fully contain the 66 dp inscribed
    circle. Content in the outer 18 dp is bleed and is always cropped. ([9b])
-6. **Android monochrome is a *structural* problem, not a tonal one.** The
+6. **Android monochrome is a *structural* problem, not a tonal one — and as of Android 16 QPR2 (December 2025) it is no longer optional.** The
    launcher discards the RGB and multiplies the Material You accent color by
    the alpha channel. Gradients, drop shadows, and two-tone brandmarks
    collapse; only solid-alpha silhouettes survive. The monochrome safe zone
    (90 × 90 dp outer, 36–60 dp mark) is tighter than the adaptive safe zone
-   because the launcher adds its own tonal plate. ([9b])
+   because the launcher adds its own tonal plate.
+
+   > **Updated 2026-04-21:** Android 16 QPR2 shipped in December 2025 and made icon auto-theming mandatory. Apps without a `<monochrome>` layer get a system-generated fallback via color-filtering of the adaptive foreground — typically inferior for complex brandmarks. Google Play DDA (section 5.3) now requires developers to grant users permission to theme icons; effective October 15 2025 for existing developers. Treat the `<monochrome>` layer as required, not recommended, for any app targeting Android 13+ on the Play Store. ([9b])
 7. **The Web App Manifest has two kinds of icon, not one.** `purpose=any`
    fills the canvas edge-to-edge; `purpose=maskable` must fit its logo inside
    a circle of diameter ≈ 80 % of the canvas because Chromium, Samsung, and
@@ -167,8 +171,10 @@ The five subagents attacked complementary surfaces:
   Drop-in templates for iOS HIG, Android adaptive, PWA maskable; six
   failure modes (F1 screenshot, F2 visible mask, F3 baked depth, F4 tiny
   mark, F5 baked text, F6 illustration-dense); model ranking Recraft V3
-  > `gpt-image-1` > Flux + LoRA > Midjourney > Ideogram > DALL·E 3 >
-  Gemini 2.5 Flash Image; multi-variant via IP-Adapter / `--sref` / seed.
+  > GPT Image 1.5 > Flux + LoRA > Midjourney v7 > Ideogram 3 > DALL·E 3 >
+  Gemini 3.1 Flash Image; multi-variant via IP-Adapter / `--sref` / seed.
+
+  > **Updated 2026-04-21:** GPT Image 1.5 (released December 16, 2025) supersedes `gpt-image-1` as the primary OpenAI image model — 4× faster, 20% cheaper, stronger instruction following; same RGBA transparency path. Midjourney v7 (April 2025) added near-native SVG export and improved text fidelity. Gemini 2.5 Flash Image model was shut down January 15, 2026; replaced by Gemini 3.1 Flash Image ("Nano Banana 2"). Gemini image API has **no free tier since December 7, 2025** — use AI Studio web UI + `asset_ingest_external` for zero-cost Gemini output.
 
 **9e** governs what the model generates, **9a / 9b / 9c** govern what each
 platform accepts, and **9d** governs how raw output becomes a validated,
@@ -298,13 +304,15 @@ Rewrite the user's request before generation:
   no text, no photograph, no device silhouette, no UI chrome, no drop
   shadow."
 - **Model routing.** Clean vector / icon-set → Recraft V3. Strict
-  transparency or single-letter monogram → `gpt-image-1` `images.edit`
+  transparency or single-letter monogram → GPT Image 1.5 `images.edit`
   with full-canvas mask. Local, matched family → Flux.1 [dev] + icon LoRA
-  (strength 0.6–1.0, CFG 3.0–4.5). Avoid Gemini 2.5 Flash Image as
-  *master* but use it for "same mark, new color scheme" variants.
+  (strength 0.6–1.0, CFG 3.0–4.5). Avoid Gemini 3.1 Flash Image as
+  *master* but use it for "same mark, new color scheme" variants when the project has billing enabled; otherwise route to AI Studio web UI + `asset_ingest_external`.
+
+  > **Updated 2026-04-21:** Gemini 2.5 Flash Image shut down January 15, 2026. Current Google image model is Gemini 3.1 Flash Image. GPT Image 1.5 replaces `gpt-image-1` as the recommended OpenAI path — same `images.edit` API, faster, cheaper.
 - **Seed pinning.** Fix seed across SDXL / Flux variants; attach master as
   `--sref` / IP-Adapter-Plus / `reference_image` for MJ / Recraft /
-  `gpt-image-1` / Gemini.
+  GPT Image 1.5 / Gemini.
 
 ### 3. Split into layers — deterministic, per-platform
 
@@ -321,6 +329,8 @@ downstream adapters expect layered inputs, not pre-composited ones.
   2-stop gradient, no mark), monochrome (solid white silhouette on RGBA,
   40 % of canvas, matching foreground geometry verbatim). Respect the
   48–66 dp logomark bound and 36–60 dp monochrome bound.
+
+  > **Updated 2026-04-21:** Android 16 QPR2 (December 2025) makes the monochrome layer **required** for Play Store apps. Without it, Android 16 QPR2+ devices will auto-generate a monochrome fallback via color filtering — acceptable for simple marks, usually wrong for brandmarks with gradients or multi-element layouts. Always generate all three layers. Flag this as a hard requirement in the skill's validation gate.
 - **PWA.** `purpose=any` (edge-to-edge) and `purpose=maskable` (logo
   inside inner 80 % circle on opaque brand background); derive
   `purpose=monochrome` from the maskable alpha. Emit dark-aware
@@ -400,6 +410,9 @@ at one cycle; escalate to human after.
 - [Add preview assets — Play Console help](https://support.google.com/googleplay/android-developer/answer/9866151)
 - [Launcher3 `IconShape.java`](https://android.googlesource.com/platform/packages/apps/Launcher3/+/42a9ef0/src/com/android/launcher3/graphics/IconShape.java)
 - [Themed app icons — Chromium status](https://chromestatus.com/feature/5120331762106368)
+- [Android 16 QPR2 Beta 1 blog post](https://android-developers.googleblog.com/2025/08/android-16-qpr2-beta-1-is-here.html) — mandatory auto-themed icons announcement (August 2025)
+- [Android 16 QPR2 released](https://android-developers.googleblog.com/2025/12/android-16-qpr2-is-released.html) — December 2025 ship
+- [Android Police — Google mandates themed icon support](https://www.androidpolice.com/google-forces-android-app-developers-to-play-nice-with-themed-icons/) — Play DDA section 5.3 changes
 - [Trusted Web Activity integration guide](https://developer.chrome.com/docs/android/trusted-web-activity/integration-guide)
 - [WebAPKs — Web apps packaged for Android](https://developers.google.com/web/fundamentals/integration/webapks)
 - [Firebase AI Logic — generate images with Gemini](https://firebase.google.com/docs/ai-logic/generate-images-gemini)
@@ -447,7 +460,9 @@ at one cycle; escalate to human after.
 ### Models & Prompting (for the master-generation step)
 
 - [Recraft V3 model card](https://www.recraft.ai/docs/recraft-models/recraft-V3) + [Recraft V3 SVG on Replicate](https://replicate.com/recraft-ai/recraft-v3-svg)
-- [OpenAI community — gpt-image-1 transparent backgrounds](https://community.openai.com/t/gpt-image-1-transparent-backgrounds-with-edit-request/1240577)
+- [OpenAI — GPT Image 1.5 model page](https://developers.openai.com/api/docs/models/gpt-image-1.5) — current production OpenAI image model (released December 16, 2025)
+- [OpenAI community — gpt-image-1 transparent backgrounds](https://community.openai.com/t/gpt-image-1-transparent-backgrounds-with-edit-request/1240577) — same `images.edit` path works for GPT Image 1.5
+- [Gemini 3.1 Flash Image (Nano Banana 2) — Google DeepMind](https://deepmind.google/models/gemini-image/flash/) — current Google image model as of 2026
 - [Flux Icon Maker LoRA (Civitai)](https://civitai.com/models/722531/flux-icon-maker-psiclones-artforge-masterkit)
 - [IP-Adapter — Tencent AILab](https://github.com/tencent-ailab/IP-Adapter)
 - [BRIA RMBG 2.0](https://huggingface.co/briaai/RMBG-2.0)

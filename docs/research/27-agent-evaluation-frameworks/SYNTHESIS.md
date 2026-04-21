@@ -1,3 +1,5 @@
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Research Index: Agent Evaluation Frameworks (27)
 
 **Topic:** Systematic evaluation of AI-generated assets (logos, icons, favicons, illustrations) in a prompt-to-asset MCP server context.
@@ -27,15 +29,19 @@ Strategy for detecting silent provider model updates: baseline pinning, per-prom
 
 ## Key Takeaways
 
-1. **No existing framework evaluates image assets out of the box.** All general-purpose agent eval frameworks (AgentBench, RAGAS, LangSmith) need custom image metrics. The closest ready-to-use tool is DeepEval with its multimodal metrics.
+1. **No existing framework evaluates image assets out of the box.** All general-purpose agent eval frameworks (AgentBench, RAGAS, LangSmith) need custom image metrics. The closest ready-to-use tool is DeepEval (now v3.0) with its multimodal metrics suite (`TextToImageMetric`, `ImageCoherence`, `ImageReference`, `ImageEditing`, `ImageHelpfulness`).
 
-2. **Tier your checks by cost.** Deterministic checks (alpha, dimensions, FFT) are free and should run on every generation. VQAScore with a local model is cheap. GPT-4V-based LLM judge costs $0.02–0.05/image — run nightly, not on every PR.
+2. **Tier your checks by cost.** Deterministic checks (alpha, dimensions, FFT) are free and should run on every generation. VQAScore with a local model is cheap. GPT-4o-based LLM judge costs ~$0.01–0.03/image (GPT-4V is deprecated — use GPT-4o) — run nightly, not on every PR.
 
 3. **The golden dataset is ~44 prompts covering all asset types.** Store invariants (not reference pixels) as JSON. Version it independently from pipeline code.
 
 4. **Provider model updates are the primary regression source.** Pin explicit model version strings everywhere. Run a weekly canary with a trivially simple prompt to detect silent updates. Use Evidently AI for distribution drift over rolling production windows.
 
-5. **MCP-specific testing** uses the MCP Inspector (modelcontextprotocol/inspector) for protocol conformance and L-Qun/mcp-testing-framework for tool-call accuracy across different LLM backends. These cover the MCP transport layer; they do not evaluate asset quality.
+5. **MCP-specific testing** uses the MCP Inspector (modelcontextprotocol/inspector) for protocol conformance and L-Qun/mcp-testing-framework for tool-call accuracy across different LLM backends. These cover the MCP transport layer; they do not evaluate asset quality. **Note:** MCP Inspector has a critical RCE vulnerability (CVE-2025-49596) — use only patched versions in CI.
+
+6. **Agent benchmark leaderboard scores are unreliable.** A 2026 audit found all major benchmarks (SWE-bench, WebArena, OSWorld, GAIA, etc.) can be exploited to achieve near-perfect scores without solving tasks. SWE-bench Verified top scores have climbed from ~30% (early 2025) to ~87% (Claude Opus 4.7, April 2026) — baseline comparisons using GPT-3.5 or Claude 2 are obsolete. Use Claude 4.x / GPT-4o / Gemini 2.5 Pro as current baselines.
+
+> **Updated 2026-04-21:** Takeaways 2, 5, and 6 revised to reflect GPT-4V deprecation, MCP Inspector CVE, and current SWE-bench leaderboard reality.
 
 ---
 
@@ -45,7 +51,7 @@ Strategy for detecting silent provider model updates: baseline pinning, per-prom
 - RAGAS: https://github.com/explodinggradients/ragas
 - DeepEval: https://github.com/confident-ai/deepeval | https://deepeval.com
 - t2v_metrics (VQAScore): https://github.com/linzhiqiu/t2v_metrics
-- ImageReward: https://github.com/zai-org/ImageReward
+- ImageReward: https://github.com/THUDM/ImageReward (canonical; zai-org/ImageReward is an unofficial mirror)
 - Braintrust: https://www.braintrust.dev
 - Braintrust autoevals: https://github.com/braintrustdata/autoevals
 - Promptfoo: https://github.com/promptfoo/promptfoo

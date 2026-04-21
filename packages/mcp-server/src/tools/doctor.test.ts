@@ -49,20 +49,21 @@ describe("asset_doctor", () => {
     expect(typeof r.modes_available.api_paid).toBe("boolean");
   });
 
-  it("free-tier routes are ranked best-first (google first, stable-horde last)", async () => {
+  it("free-tier routes are ranked best-first (cloudflare first, stable-horde last)", async () => {
     const r = await doctor({});
-    expect(r.free_tier_routes[0]?.id).toBe("google");
+    expect(r.free_tier_routes[0]?.id).toBe("cloudflare");
     expect(r.free_tier_routes.at(-1)?.id).toBe("stable-horde");
     for (let i = 0; i < r.free_tier_routes.length; i++) {
       expect(r.free_tier_routes[i]?.rank).toBe(i + 1);
     }
   });
 
-  it("google route flips to live when GEMINI_API_KEY is set", async () => {
-    process.env["GEMINI_API_KEY"] = "test-key";
+  it("cloudflare route flips to live when CLOUDFLARE_API_TOKEN is set", async () => {
+    process.env["CLOUDFLARE_API_TOKEN"] = "test-token";
+    process.env["CLOUDFLARE_ACCOUNT_ID"] = "test-acct";
     const r = await doctor({});
-    const google = r.free_tier_routes.find((x) => x.id === "google");
-    expect(google?.live).toBe(true);
+    const cf = r.free_tier_routes.find((x) => x.id === "cloudflare");
+    expect(cf?.live).toBe(true);
     expect(r.modes_available.api_free).toBe(true);
   });
 
@@ -80,11 +81,11 @@ describe("asset_doctor", () => {
     expect(r.data_integrity).toHaveProperty("stats");
   });
 
-  it("what_to_try_next suggests GEMINI when nothing is configured", async () => {
+  it("what_to_try_next suggests CLOUDFLARE when nothing is configured", async () => {
     process.env["POLLINATIONS_DISABLED"] = "1";
     process.env["HORDE_DISABLED"] = "1";
     const r = await doctor({});
-    expect(r.what_to_try_next.some((s) => /GEMINI_API_KEY/.test(s))).toBe(true);
+    expect(r.what_to_try_next.some((s) => /CLOUDFLARE_API_TOKEN/.test(s))).toBe(true);
     delete process.env["POLLINATIONS_DISABLED"];
     delete process.env["HORDE_DISABLED"];
   });

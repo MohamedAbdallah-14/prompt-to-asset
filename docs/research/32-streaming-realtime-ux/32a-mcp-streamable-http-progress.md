@@ -1,11 +1,13 @@
 # 32a — MCP Streamable HTTP Transport & Progress Notifications
 
+> **Updated 2026-04-21:** The current stable MCP specification is `2025-11-25` (released November 2025), not `2025-03-26`. The `2025-03-26` spec introduced Streamable HTTP; the `2025-11-25` spec is additive and did not change the transport or progress notification wire format. A further `2026-03-15` release added mandatory RFC 8707 resource indicators for auth. All progress notification patterns described here remain valid under all three revisions.
+
 ## What It Is
 
-The MCP specification (revision 2025-03-26) replaced the old HTTP+SSE two-endpoint transport with **Streamable HTTP**: a single endpoint that accepts POST for client-to-server messages and optionally upgrades responses to SSE streams. Progress notifications are a first-class primitive in this spec, not a bolt-on.
+The MCP specification (revision 2025-03-26) replaced the old HTTP+SSE two-endpoint transport with **Streamable HTTP**: a single endpoint that accepts POST for client-to-server messages and optionally upgrades responses to SSE streams. Progress notifications are a first-class primitive in this spec, not a bolt-on. The current stable spec as of April 2026 is `2025-11-25`.
 
-Official spec: https://modelcontextprotocol.io/specification/2025-03-26/basic/transports  
-Progress spec: https://modelcontextprotocol.io/specification/2025-03-26/basic/utilities/progress
+Official spec: https://modelcontextprotocol.io/specification/2025-11-25/basic/transports  
+Progress spec: https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/progress
 
 ## How Progress Works
 
@@ -42,6 +44,8 @@ The server then emits `notifications/progress` messages over the SSE stream **be
 Rules the spec enforces: `progress` must increase monotonically; `total` and `message` are optional; notifications stop when the response is sent.
 
 ## TypeScript SDK Pattern (v1.10+)
+
+> **Updated 2026-04-21:** The SDK has progressed significantly past v1.10. As of April 2026 the npm package is at v1.20+ (`@modelcontextprotocol/sdk`). The `server.notification()` pattern shown below remains valid. Check the [npm page](https://www.npmjs.com/package/@modelcontextprotocol/sdk) for the current release.
 
 The official `@modelcontextprotocol/sdk` (v1.10+) surfaces this through `server.setRequestHandler`. Progress is sent via `server.notification()` before the handler returns:
 
@@ -109,13 +113,19 @@ Progress stages for a typical `asset_generate_*` call:
 | 95 | Validation |
 | 100 | Bundle written to disk |
 
-**Caveat**: Claude Code currently runs MCP tools via stdio. Until the host switches to Streamable HTTP, progress notifications are silently dropped. Cursor and other IDE hosts with HTTP MCP support will display them. Validate the host transport before advertising progress capability.
+> **Updated 2026-04-21:** Claude Code now supports Streamable HTTP transport in addition to stdio. HTTP is the recommended transport for remote MCP servers as of 2026; the legacy SSE transport is deprecated. If the prompt-to-asset server is registered via HTTP transport, progress notifications reach Claude Code. However, there is a known bug (GitHub issue #29688) where Claude Code may still spawn a stdio child process even when the server is configured as HTTP — verify transport in practice. Stdio transport still silently discards progress notifications.
+
+**Caveat**: Claude Code's default transport for local servers remains stdio, which silently drops progress notifications. Progress notifications are visible when the server runs via Streamable HTTP transport. Cursor and other IDE hosts with HTTP MCP support also display them. Claude Code supports HTTP transport (Streamable HTTP) for remote servers — SSE transport is now deprecated in favor of it. Validate the host transport before advertising progress capability.
 
 ## Key References
 
-- https://modelcontextprotocol.io/specification/2025-03-26/basic/transports
-- https://modelcontextprotocol.io/specification/2025-03-26/basic/utilities/progress
+- https://modelcontextprotocol.io/specification/2025-11-25/basic/transports (current stable spec)
+- https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/progress
+- https://modelcontextprotocol.io/specification/2025-03-26/basic/transports (original Streamable HTTP spec)
 - https://github.com/modelcontextprotocol/typescript-sdk
+- https://www.npmjs.com/package/@modelcontextprotocol/sdk
 - https://github.com/punkpeye/fastmcp
+- https://blog.modelcontextprotocol.io/posts/2025-11-25-first-mcp-anniversary/
+- https://blog.modelcontextprotocol.io/posts/2025-12-19-mcp-transport-future/
 - https://github.com/invariantlabs-ai/mcp-streamable-http
 - https://github.com/ferrants/mcp-streamable-http-typescript-server

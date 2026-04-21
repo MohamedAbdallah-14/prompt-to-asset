@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/model-registry.schema.json",
-  "version": "1.1.0",
-  "updated": "2026-04-20",
+  "version": "1.2.0",
+  "updated": "2026-04-21",
   "source": "docs/research/SYNTHESIS.md § Model Capability Matrix",
   "models": [
     {
@@ -38,23 +38,54 @@
       "text_encoder": "gpt-4-class",
       "native_rgba": true,
       "native_svg": false,
-      "text_ceiling_chars": 50,
+      "text_ceiling_chars": 60,
       "negative_prompt_support": "ignored",
       "ref_image_support": true,
-      "max_size": "2048x2048",
+      "max_size": "1536x1024",
       "dialect": "prose",
       "mode": "text-to-image",
       "api": "REST",
       "paste_only": false,
       "strengths": [
-        "sharper output than 1.0",
-        "better instruction-following"
+        "best text rendering of any model (LM Arena #1, ELO 1264)",
+        "native RGBA transparent backgrounds",
+        "sharper output than gpt-image-1",
+        "better instruction-following",
+        "16 reference images"
       ],
       "weaknesses": [
-        "same moderation stack"
+        "same moderation stack as gpt-image-1"
       ],
       "never_use_for": [],
-      "cost_hint": "$0.04–0.19/img (parity with 1.0)"
+      "cost_hint": "$0.009 (low) / $0.034 (medium) / $0.133 (high) per 1024² image"
+    },
+    {
+      "id": "gpt-image-1-mini",
+      "provider": "openai",
+      "family": "gpt-image",
+      "text_encoder": "gpt-4-class",
+      "native_rgba": true,
+      "native_svg": false,
+      "text_ceiling_chars": 30,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "1024x1024",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "cheapest OpenAI image model",
+        "native RGBA"
+      ],
+      "weaknesses": [
+        "lower quality than gpt-image-1/1.5",
+        "1024x1024 max"
+      ],
+      "never_use_for": [
+        "production hero images"
+      ],
+      "cost_hint": "$0.008/img (medium 1024²)"
     },
     {
       "id": "dall-e-3",
@@ -105,9 +136,10 @@
       ],
       "never_use_for": [
         "transparent background",
-        "wordmark >10 chars"
+        "wordmark >10 chars",
+        "new integrations (prefer imagen-4)"
       ],
-      "cost_hint": "$0.03/img (Vertex AI)"
+      "cost_hint": "$0.03/img (Vertex AI). No free API tier as of 2025-12. Deprecated path — prefer imagen-4 or gemini-3-*-image-preview for new integrations."
     },
     {
       "id": "imagen-4",
@@ -123,17 +155,21 @@
       "mode": "text-to-image",
       "api": "REST",
       "paste_only": false,
+      "deprecated": "2026-06-30",
+      "successor": "gemini-2.5-flash-image",
       "strengths": [
         "strongest Google photoreal"
       ],
       "weaknesses": [
-        "same transparency failure as 3"
+        "same transparency failure as 3",
+        "deprecated — EOL June 30, 2026"
       ],
       "never_use_for": [
         "transparent background",
-        "wordmark >15 chars"
+        "wordmark >15 chars",
+        "new integrations (deprecated)"
       ],
-      "cost_hint": "$0.04/img (Vertex AI)"
+      "cost_hint": "No free API tier; $0.04/img (Imagen 4), $0.02/img (Imagen 4 Fast). DEPRECATED — EOL June 30, 2026. Migrate to gemini-2.5-flash-image."
     },
     {
       "id": "gemini-3-flash-image",
@@ -166,7 +202,7 @@
       "never_use_for": [
         "transparent background"
       ],
-      "cost_hint": "free tier ~1,500/day; then $0.039/img"
+      "cost_hint": "No free API tier as of 2025-12; $0.039/img Nano Banana. AI Studio web UI is free for interactive use."
     },
     {
       "id": "gemini-3-pro-image",
@@ -187,8 +223,11 @@
         "gemini-3-pro-image-preview"
       ],
       "canonical_api_id": "gemini-3-pro-image-preview",
+      "max_reference_images": 4,
       "strengths": [
-        "higher-quality variant of nano-banana",
+        "strongest text rendering in Google family (~50 chars reliable)",
+        "multi-ref brand lock up to 4 images",
+        "high-res up to 4K",
         "Vertex AI surface"
       ],
       "weaknesses": [
@@ -197,7 +236,8 @@
       "never_use_for": [
         "transparent background"
       ],
-      "cost_hint": "free tier limited; then ~$0.12/img"
+      "cost_hint": "No free API tier as of 2025-12; Nano Banana Pro paid: $0.067/img (1K), $0.101/img (2K), $0.151/img (4K). AI Studio web UI is free for interactive use.",
+      "notes": "text_ceiling_chars set conservatively at 30; Google documents reliable rendering up to ~50 chars."
     },
     {
       "id": "sd-1.5",
@@ -558,15 +598,42 @@
       "api": "REST",
       "paste_only": false,
       "strengths": [
-        "only production model with native SVG output",
-        "style_id brand lock",
-        "controls.colors palette"
+        "native SVG output with logical groups",
+        "style_id brand lock (UUID from 5 ref images)",
+        "controls.colors palette enforcement"
       ],
       "weaknesses": [
-        "V4 removed some V3 styles"
+        "superseded by V4 for non-brand work"
       ],
       "never_use_for": [],
-      "cost_hint": "$0.04/img (direct)"
+      "cost_hint": "$0.04/img (raster), $0.08/img (vector). Keep for brand-style pipelines requiring style_id."
+    },
+    {
+      "id": "recraft-v4",
+      "provider": "recraft",
+      "family": "recraft",
+      "text_encoder": "recraft-class",
+      "native_rgba": true,
+      "native_svg": true,
+      "text_ceiling_chars": 35,
+      "negative_prompt_support": "supported",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "HuggingFace T2I Arena #1 (ELO 1172)",
+        "native SVG output (higher quality than V3)",
+        "controls.colors palette enforcement"
+      ],
+      "weaknesses": [
+        "NO style_id or predefined style support — use V3 for brand pipelines"
+      ],
+      "never_use_for": [
+        "brand-style pipelines requiring style_id (use recraft-v3)"
+      ],
+      "cost_hint": "$0.08/img (vector), $0.30/img (pro vector)"
     },
     {
       "id": "playground-v3",
@@ -799,12 +866,15 @@
       ],
       "weaknesses": [
         "rate-limited ~1 req/15s anonymous",
-        "RGB only (matte externally)"
+        "RGB only (matte externally)",
+        "as of 2026-04-21 anonymous requests silently swap models (observed fallback to 'sana' when model=flux requested); JPEG response"
       ],
       "never_use_for": [
-        "high-volume automation without POLLINATIONS_TOKEN"
+        "high-volume automation without POLLINATIONS_TOKEN",
+        "brand-critical hero art (model swap risk)"
       ],
-      "cost_hint": "free, zero-signup — ~1 req/15s anonymous"
+      "cost_hint": "free, zero-signup — ~1 req/15s anonymous (JPEG)",
+      "notes": "Anonymous pipeline may return a different backend than requested (observed 'sana' swap 2026-04-21). Pass POLLINATIONS_TOKEN for deterministic model selection."
     },
     {
       "id": "pollinations-turbo",

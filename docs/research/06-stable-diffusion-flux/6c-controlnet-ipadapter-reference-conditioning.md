@@ -44,6 +44,7 @@ For the prompt-to-asset product, these adapters unlock the hardest asset problem
 | **ControlNet — Scribble / Lineart** | SD1.5, SDXL, FLUX | Rough strokes / lineart | Concept shape | Heavy | Stable. |
 | **ControlNet — Pose (OpenPose)** | SD1.5, SDXL, FLUX | Skeleton | Human pose | Heavy | Supported in Flux Union. |
 | **ControlNet Union (Pro)** | FLUX.1-dev | One model → multiple modes (canny, tile, depth, blur, pose, lq) | Multi-modal structure | Heavy, shared | InstantX beta (Aug 2024), Shakker-Labs Pro (Aug 26, 2024). ([huggingface.co/InstantX/FLUX.1-dev-Controlnet-Union](https://huggingface.co/InstantX/FLUX.1-dev-Controlnet-Union)) |
+| **ControlNet SD3.5 Large** | SD3.5-Large | Blur, Canny, Depth | Structure / upscale | Heavy | Released by Stability AI Nov 26, 2024 ([stability.ai/news-updates/sd3-5-large-controlnets](https://stability.ai/news-updates/sd3-5-large-controlnets)). Compatible only with SD3.5-Large (8B), not Medium. |
 | **ControlNet Reference-Only** | SD1.5, SDXL | Shared self-attention w/ ref image | Style/mood (no training) | None (inference trick) | Available in A1111 + ComfyUI. |
 | **T2I-Adapter** | SD1.5, SDXL | Sparse adapter on encoder features | Structure (lightweight) | Light (~77M params) | TencentARC family; preferred when VRAM is tight. |
 | **IP-Adapter** | SD1.5, SDXL, SD3, FLUX | Decoupled cross-attn from CLIP-Image | Style / palette / composition | Light | Core building block; Tencent/cubiq repo is de-facto standard. |
@@ -194,6 +195,8 @@ When you have no adapters but do have a reference image, use A1111/ComfyUI's **R
 - For **icon families**, stack Canny (0.6) + IP-Adapter-Plus (0.4) — this is the single most reliable combination for brand systems.
 - `start_percent` / `end_percent` control when the adapter fires. Running ControlNet only during steps 0–0.5 of the denoise gives a structural lock that the later steps can refine stylistically.
 - Flux's double-stream blocks respond differently to IP-Adapter than SD UNets; expect to try weights 0.3 higher than SDXL equivalents.
+
+> **Updated 2026-04-21:** **SD 3.5 Large ControlNets** (Blur, Canny, Depth) were released by Stability AI on November 26, 2024 — only compatible with SD3.5-Large 8B, not Medium. These are now available in diffusers via `StableDiffusion3ControlNetPipeline`. **Flux.2 [klein]** (released January 2026) unifies generation and editing in one model, partially replacing the need for separate Fill / Canny / Depth tools on Flux.2 — the klein architecture can do both T2I and reference-guided edits in one checkpoint. **InvokeAI** as of early 2026 supports Flux ControlNets (XLabs + InstantX) in both Workflows and Linear UI, but Flux.2 klein LoRA/ControlNet support is still in progress (open issue). The adapter maturity gap between SDXL and Flux has narrowed significantly since mid-2025.
 
 ## Limitations and Failure Modes
 

@@ -139,22 +139,24 @@ Inpainting is the scalpel: replace a masked region while conditioning on the res
 
 ### Recipe 1 — `gpt-image-1` masked edit (fastest path, hosted)
 
-The `/v1/images/edits` endpoint accepts `image`, `prompt`, and `mask`. Per the official reference, the mask must be a same-size PNG where transparent pixels mark editable regions (note: `gpt-image-1`'s convention uses alpha-transparent = editable, which is the inverse of the SD convention — keep this straight). Use `input_fidelity: "high"` to preserve surrounding pixels aggressively.
+> **Updated 2026-04-21:** `input_fidelity` is supported only on `gpt-image-1` (not `gpt-image-1.5` and not `gpt-image-1-mini`). Default value is `"low"`; set to `"high"` for logo/face-critical edits. High fidelity consumes more image input tokens. `gpt-image-1.5` was released in late 2025 with improvements in text rendering and instruction following but does not expose `input_fidelity`.
+
+The `/v1/images/edits` endpoint accepts `image`, `prompt`, and `mask`. Per the official reference, the mask must be a same-size PNG where transparent pixels mark editable regions (note: `gpt-image-1`'s convention uses alpha-transparent = editable, which is the inverse of the SD convention — keep this straight). Use `input_fidelity="high"` to preserve surrounding pixels aggressively (gpt-image-1 only).
 
 ```python
 client.images.edit(
-    model="gpt-image-1",
+    model="gpt-image-1",           # input_fidelity only works on gpt-image-1
     image=open("logo.png", "rb"),
     mask=open("bad_letter_mask.png", "rb"),   # transparent where we want edits
     prompt="the letter 'A' in clean geometric sans-serif, same teal color as the rest of the wordmark, perfectly centered, no serifs",
     size="1024x1024",
-    input_fidelity="high",
+    input_fidelity="high",         # NOT available on gpt-image-1.5 or gpt-image-1-mini
     background="transparent",
     n=4,
 )
 ```
 
-Ship 4 variants, re-score with the scorer stack above, pick best. `gpt-image-1` is strong on text repair and weak on very fine (<32px) details.
+Ship 4 variants, re-score with the scorer stack above, pick best. `gpt-image-1` is strong on text repair and weak on very fine (<32px) details. For the 2025-era `gpt-image-1.5`, text rendering and instruction-following are improved but the `input_fidelity` parameter is absent — rely on the stronger base model quality instead.
 
 ### Recipe 2 — SD/SDXL inpainting with a dedicated inpainting checkpoint
 

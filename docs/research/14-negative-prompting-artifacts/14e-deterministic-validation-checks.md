@@ -34,7 +34,7 @@ related_angles:
 
 ## Executive Summary
 
-Even the best T2I model (Gemini 2.5 Flash Image / Nano Banana, `gpt-image-1`, Imagen 4, Flux 1.1) produces failure modes that **do not require ML to detect**. A logo asked to be transparent comes back as RGB with a white background. An iOS icon asked for 1024×1024 comes back as 1024×1024 but with a 3-pixel translucent border that iOS will reject at upload. An OG image asked to say "Ship faster" comes back saying "Shpi fasrter". An app icon asked to be "centered with empty safe zone" comes back with the mark bleeding into the 10% outer margin that Apple crops during mask application.
+Even the best T2I model (Gemini 2.5 Flash Image / Nano Banana, `gpt-image-1`, `gpt-image-1.5`, Imagen 4, FLUX.2 [pro/max]) produces failure modes that **do not require ML to detect**. A logo asked to be transparent comes back as RGB with a white background. An iOS icon asked for 1024×1024 comes back as 1024×1024 but with a 3-pixel translucent border that iOS will reject at upload. An OG image asked to say "Ship faster" comes back saying "Shpi fasrter". An app icon asked to be "centered with empty safe zone" comes back with the mark bleeding into the 10% outer margin that Apple crops during mask application.
 
 All of these are **deterministic, rule-based failures**. They should be caught by a cheap, fast, local validator **before** the asset reaches the user and before the orchestrator spends another generation call. A robust prompt-to-asset pipeline should therefore run every generated asset through a **validation gate** that produces either `PASS` or a structured `FAIL` report that can be fed back into the regenerate loop (see Integration section).
 
@@ -113,7 +113,9 @@ def check_size(img, expected, tolerance_px=0):
         f"size {w}x{h} expected {ew}x{eh}"
 ```
 
-Most modern T2I APIs let you request an exact aspect ratio but **not** exact pixel dimensions — `gpt-image-1` returns 1024, 1024×1536, 1536×1024, or 2048×2048 only; Gemini Imagen returns "closest supported". Therefore the validator should also carry a `post_resize` action: if aspect ratio is correct, resize losslessly (`PIL.Image.LANCZOS`); if aspect is wrong, regenerate.
+Most modern T2I APIs let you request an exact aspect ratio but **not** exact pixel dimensions — `gpt-image-1` returns 1024×1024, 1024×1536, 1536×1024, or 2048×2048 only; `gpt-image-1.5` outputs similar fixed sizes; Gemini Imagen returns "closest supported". Therefore the validator should also carry a `post_resize` action: if aspect ratio is correct, resize losslessly (`PIL.Image.LANCZOS`); if aspect is wrong, regenerate.
+
+> **Updated 2026-04-21:** `gpt-image-1.5` (released late 2025) follows the same discrete size scheme as `gpt-image-1`. No provider currently returns arbitrary exact pixel dimensions from a text prompt — always build a post-resize step into the pipeline.
 
 ### C5 — Safe-zone emptiness
 

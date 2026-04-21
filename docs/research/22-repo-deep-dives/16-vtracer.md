@@ -34,6 +34,8 @@ tags: [vtracer, vectorization, svg, rust, wasm]
 
 [`visioncortex/vtracer`](https://github.com/visioncortex/vtracer) is a Rust raster-to-vector converter from the Vision Cortex Research Group (researcher Sanford Pun, supervisor Chris Tsang). As of April 2026 it sits at ~5.8k stars, is **MIT-licensed**, and ships four surfaces: the `vtracer` library crate on [crates.io](https://crates.io/crates/vtracer) (0.6.x), a `vtracer` CLI under `cmdapp/`, a first-party PyO3 Python binding on [PyPI](https://pypi.org/project/vtracer/), and a `wasm-pack` webapp under `webapp/` powering the public demo at <https://www.visioncortex.org/vtracer/>. The MIT license is the single most important fact: potrace is GPL-2, autotrace is GPL-2, so `vtracer` is the only mature full-color tracer we can bundle into a commercial client, Next.js artifact, or OSS MIT distribution without license contamination. The repo is small — `visioncortex` (upstream clustering library) + `vtracer` (tracing pipeline) + `cmdapp` + `webapp`. No model weights, no ONNX, no Python runtime; a cargo-build artifact weighs ~1–2 MB and the wasm artifact ships at **134 KB** (`vtracer-wasm` 0.1.0 on npm, July 2025).
 
+> **Updated 2026-04-21:** The Rust crate on crates.io has advanced to **v0.6.5**. The PyPI Python binding is at **v0.6.15** (published March 23, 2026), indicating the Python distribution sees more frequent patch releases than the crate. The `vtracer-wasm` npm package remains at 0.1.0 as of this writing. Pin the Rust crate to `^0.6.5` in new integrations; the Python binding should be pinned to `==0.6.15` or latest `0.6.x`.
+
 ## CLI flags — what every knob actually does
 
 Reading `cmdapp/src/main.rs` and `docs.rs/vtracer::Config`, the stable surface is:
@@ -104,4 +106,12 @@ Our `vectorize` MCP tool (category 16 recommendation: "`vtracer` + `SVGO`, with 
 
 ## Decision
 
-**Adopt `vtracer` as the default vectorizer for the `vectorize` MCP tool and the browser preview — pinned to `vtracer 0.6.x` / `vtracer-wasm ^0.1.0`, MIT.** Expose our own logo/icon/illustration presets over its raw flags; always post-process with SVGO `preset-default`; keep `potrace` as an opt-in server-side 1-bit path for wordmarks (shelled out, not bundled, to preserve MIT distribution). Do not bundle autotrace, imagetracerjs, or any Go/Rust "alternatives" — none beat vtracer on color, and several would contaminate the license. The "Rust `picopsvg`" and "Go `svgtrace`" entries in the brief do not resolve to real competitors in 2026; the true choice space is vtracer vs. potrace vs. commercial (Adobe / Recraft / Vectorizer.ai), and vtracer wins on every axis that matters for an OSS, agent-native, commercial-friendly pipeline.
+> **Updated 2026-04-21:** Confirmed version status as of April 2026 — Rust
+> crate `vtracer@0.6.5` on crates.io; Python binding `vtracer==0.6.15` on PyPI
+> (published March 23, 2026 — Python binding sees more frequent patch releases
+> than the crate); `vtracer-wasm@0.1.0` on npm unchanged. The discrepancy
+> between the GitHub "latest release" tag (0.6.4) and crates.io (0.6.5) is a
+> known maintenance gap — always pin against crates.io or PyPI, not the GitHub
+> tag. MIT license unchanged. No API-breaking changes in the 0.6.x series.
+
+**Adopt `vtracer` as the default vectorizer for the `vectorize` MCP tool and the browser preview — pinned to `vtracer 0.6.5` (Rust) / `vtracer-wasm ^0.1.0` (browser) / `vtracer==0.6.15` (Python), MIT.** Expose our own logo/icon/illustration presets over its raw flags; always post-process with SVGO `preset-default`; keep `potrace` as an opt-in server-side 1-bit path for wordmarks (shelled out, not bundled, to preserve MIT distribution). Do not bundle autotrace, imagetracerjs, or any Go/Rust "alternatives" — none beat vtracer on color, and several would contaminate the license. The "Rust `picopsvg`" and "Go `svgtrace`" entries in the brief do not resolve to real competitors in 2026; the true choice space is vtracer vs. potrace vs. commercial (Adobe / Recraft / Vectorizer.ai), and vtracer wins on every axis that matters for an OSS, agent-native, commercial-friendly pipeline.

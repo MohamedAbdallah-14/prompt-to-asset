@@ -3,7 +3,7 @@ category: 17-upscaling-refinement
 kind: category-index
 title: "Category 17 — Upscaling & Refinement: Synthesis and Routing Guide"
 status: draft
-last_updated: 2026-04-19
+last_updated: 2026-04-21
 angles:
   - 17a-esrgan-swinir-hat-family
   - 17b-supir-ccsr-diffbir-refinement
@@ -43,6 +43,8 @@ tags:
   - replicate
   - runpod
 ---
+
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
 
 # Category 17 — Upscaling & Refinement
 
@@ -100,7 +102,11 @@ Synthesis of five research angles on post-generation refinement for a prompt-to-
 
 **WebGPU viability.** 17e's headline "WebGPU is viable for tiles, not whole images" contradicts the optimistic framing common in HF / transformers.js marketing. The measured numbers (10–16 s model load on M1 Max, ~0.5× local CPU throughput, 6–14× slower than CUDA) are the decisive evidence; WebGPU is a *preview* tier, not a server replacement.
 
+> **Updated 2026-04-21:** Firefox shipped WebGPU in stable in early 2026, closing the last major browser gap. The "Firefox flag" caveat in 17e is now moot for most users, though feature-detection (`navigator.gpu`) is still required for enterprise/locked-down environments.
+
 **Magnific / Clarity "creative upscale" semantics.** 17b treats creative upscale as a legitimate product mode for photography and marketing hero imagery; 17d treats the same mode as actively harmful for any brand asset. The product answer is a hard-gated `mode ∈ {faithful, balanced, creative}` parameter that the skill refuses to set to `creative` when the detected asset type is logo/icon/favicon.
+
+> **Updated 2026-04-21:** Magnific pricing is $39/month minimum (no free tier). Clarity Upscaler added Flux support in March 2025 — the Flux path is paywalled into ClarityAI.co; the OSS repo remains SD1.5-based. Topaz Gigapixel/Photo AI moved to **subscription-only** in October 2025 (perpetual licenses ended); Topaz Studio costs $399/year or $69/month. Budget-first pipelines should default to open DAT2 fine-tunes.
 
 **HAT-L vs DAT2 vs DRCT-L as the "best" transformer.** 17a's empirical ranking puts DAT2 first on flat-logo preservation and DRCT-L first on PSNR for clean photography; 17d calls DAT2 the generalist default. Community fine-tune maturity, not architecture, is the deciding factor — DAT2 has `4x-UltraSharpV2` and `4xNomos2_hq_dat2`; DRCT-L only recently gained `4xNomos2_hq_drct-l`. Worth re-evaluating in Q3 2026.
 
@@ -206,7 +212,7 @@ For pro / local-first users, a **Pinokio** installer or a link to **Upscayl** (n
 - Modal — [Scaling ComfyUI](https://modal.com/blog/scaling-comfyui) · Tolga Oğuz, [ComfyUI cold starts under 3 s on Modal](https://tolgaoguz.dev/post/comfy-workflow-api-with-modal).
 - Runpod / Introl — [Serverless GPU Platforms 2025](https://introl.com/blog/serverless-gpu-platforms-runpod-modal-beam-comparison-guide-2025).
 - Microsoft — [ONNX Runtime Web + WebGPU](https://opensource.microsoft.com/blog/2024/02/29/onnx-runtime-web-unleashes-generative-ai-in-the-browser-using-webgpu/) · [WebNN Tech Community](https://techcommunity.microsoft.com/blog/aiplatformblog/webnn-bringing-ai-inference-to-the-browser/4175003) · [WebNN.io browser compatibility](https://webnn.io/en/api-reference/browser-compatibility/api).
-- Magnific — [product](https://magnific.ai) · [API](https://magnific.ai/api) · [Scenario docs](https://docs.scenario.com/docs/image-upscale-models-magnific) · Topaz — [Gigapixel AI](https://www.topazlabs.com/gigapixel-ai) · [Photo AI](https://www.topazlabs.com/topaz-photo-ai).
+- Magnific — [product](https://magnific.ai) · [API](https://magnific.ai/api) · [Scenario docs](https://docs.scenario.com/docs/image-upscale-models-magnific) · Topaz — [Gigapixel AI](https://www.topazlabs.com/topaz-gigapixel) · [Photo AI](https://www.topazlabs.com/topaz-photo-ai) · [Topaz Labs ends perpetual licenses (CG Channel, Sep 2025)](https://www.cgchannel.com/2025/09/topaz-labs-to-end-perpetual-licenses-of-its-software/).
 - Apple — [Icon Composer](https://developer.apple.com/documentation/Xcode/creating-your-app-icon-using-icon-composer) · Bjango — [Illustrator snapping](https://bjango.com/articles/illustratorsnapping) · Icons8 — [pixel-perfect icons](https://blog.icons8.com/articles/make-pixel-perfect-icons).
 
 ### Cross-references to other categories

@@ -157,10 +157,11 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
     },
     {
       id: "google-ai-studio",
-      how: "GEMINI_API_KEY from https://aistudio.google.com/apikey (free, no credit card)",
-      quality: "Good (Gemini 3 Flash Image / Nano Banana — ~1,500 free images/day)",
-      catch: "RGB only; no transparent output — matte post-generation",
-      url: "https://aistudio.google.com/apikey"
+      how: "Paste-only free path: generate interactively in the AI Studio web UI (https://aistudio.google.com), download the PNG, then call asset_ingest_external. Programmatic image-gen via GEMINI_API_KEY requires billing as of 2025-12.",
+      quality: "Good (Gemini 3 Pro/Flash Image, Nano Banana, Imagen 4) — web UI only",
+      catch:
+        "No free API tier for image-gen as of 2025-12; an unbilled GEMINI_API_KEY hitting image endpoints returns HTTP 429 with limit:0. Paid prices: $0.039/img Nano Banana, $0.02/img Imagen 4 Fast, $0.067-$0.151/img Nano Banana 2 (1K-4K). RGB only — matte post-generation.",
+      url: "https://aistudio.google.com"
     },
     {
       id: "local-comfyui",
@@ -205,9 +206,12 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
       "After you paste, save the image locally and call asset_ingest_external to finish the pipeline."
   );
   hints.push(
-    "free api routes work WITHOUT paying: Pollinations (zero signup, HTTP GET), Stable Horde " +
-      "(anonymous queue), Hugging Face Inference (free token, no credit card), and the free tier of " +
-      "Google AI Studio (Gemini 3 Flash Image — ~1,500 images/day). These are the recommended starting " +
+    "free api routes work WITHOUT paying, ranked best-first: (1) Cloudflare Workers AI (Flux-1-Schnell, " +
+      "10k neurons/day on a free CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID), (2) Hugging Face Inference " +
+      "(SDXL/SD3/Flux-schnell on a free HF_TOKEN, no credit card), (3) Pollinations (zero signup, HTTP GET — " +
+      "silently swaps models), (4) Stable Horde (anonymous queue). Google removed Gemini/Imagen image-gen " +
+      "from the free API tier in 2025-12 — the AI Studio web UI is still free for interactive use " +
+      "(paste-only: generate, download, call asset_ingest_external). These are the recommended starting " +
       "points before you spend anything."
   );
   if (anyPaidApi) {

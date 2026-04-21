@@ -46,6 +46,8 @@ Both providers are independently enable/disable-able. Gemini requires a full Goo
 - Prometheus/Grafana monitoring stack via Docker Compose
 - Multi-transport: stdio, SSE, Streamable HTTP
 
+> **Updated 2026-04-21:** SSE transport is deprecated in the MCP specification (2025-03-26). For new deployments of this server in remote mode, use Streamable HTTP. SSE still functions but is not recommended. Claude Code added native Streamable HTTP support for remote MCP servers (announced InfoQ June 2025); this server's Streamable HTTP mode is the correct choice for Claude Code integration.
+
 ### Limitations
 
 - No background removal, vectorization, or validation pipeline

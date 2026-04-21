@@ -15,6 +15,12 @@
 
 **Image Generation CoT** (Guo et al., CVPR 2025, GitHub: ZiyuGuo99/Image-Generation-CoT) introduces PARM++, which adds a self-correction gate: the reward model scores the candidate, and only if the score falls below a threshold does the system invoke a reflection pass. This is a conditional loop, not an unconditional one.
 
+> **Updated 2026-04-21 — new convergence evidence:**
+>
+> **Autonomous loop convergence study** (Cell Patterns, 2025) — 700 SDXL+LLaVA autonomous generate→describe→regenerate trajectories, 100 iterations, all converged to a small set of conventional visual motifs (lighthouses, cathedrals). This is empirical evidence that uncapped loops homogenize output. The hard 4-iteration cap (and plateau detection) defended in this file is directly supported.
+>
+> **Multi-reward frameworks** (Flow-Multi, ICCV 2025) use 4 independent reward models (alignment, aesthetics, human preference, GenEval) to prevent overfitting to a single reward signal — relevant when the asset pipeline's VLM judge is treated as the sole stopping signal. Consider weighting tier-0 deterministic scores separately from the VLM Likert aggregate.
+
 ---
 
 ## Recommended Stopping Policy for Asset Generation
@@ -83,3 +89,5 @@ This is the correct interpretation of "best-of-N" in a sequential refinement con
 - Vision-Guided Iterative Refinement for Frontend Code (2025). [arXiv:2604.05839](https://arxiv.org/html/2604.05839v1).
 - Guo et al. (CVPR 2025). [Image Generation CoT: Reflection in Image Generation](https://github.com/ZiyuGuo99/Image-Generation-CoT).
 - EMage VLM Controlled Image Editing Pipeline. [GitHub: sohambuilds/emage](https://github.com/sohambuilds/emage).
+- Autonomous loop convergence (2025). [Autonomous language-image generation loops converge to generic visual motifs](https://www.cell.com/patterns/fulltext/S2666-3899(25)00299-5). Cell Patterns.
+- Flow-Multi (2025). [Flow-Matching Multi-Reward Framework for Text-to-Image Generation](https://pmc.ncbi.nlm.nih.gov/articles/PMC12943997/).

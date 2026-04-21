@@ -35,6 +35,9 @@ A quiet but important capability has emerged in 2024–2026: frontier LLMs write
 Three findings dominate the landscape:
 
 1. **Claude is the consensus leader on direct SVG code generation.** Across Simon Willison's [pelican-on-a-bicycle informal benchmark](https://simonwillison.net/2024/Oct/25/pelicans-on-a-bicycle/) and practitioner reports, Claude 3.5/3.7 Sonnet, Claude Sonnet 4.5, and Claude Opus 4.x consistently produce the most recognizable compositions with the cleanest, best-commented XML. Gemini 2.5/3 Pro is competitive on complex compositions; GPT-5 is strong but often more verbose and less well-structured.
+
+> **Updated 2026-04-21:** The model landscape has continued to evolve. As of April 2026, the frontier models are Claude Sonnet 4.6 / Opus 4.6, GPT-5.4, and Gemini 3.1 Pro. Willison's pelican benchmark now uses an ELO-style leaderboard (500 GPT-4.1-mini-judged matchups). Claude Opus 4.x and GPT-5.1 with high reasoning continue to hold top-tier positions. A structured benchmark (MindStudio, 2026) covering icon/logo/animation tasks found GPT-5.4 strongest on data visualizations, Claude Opus 4.6 on technical diagrams and CSS animation syntax correctness, and Gemini 3.1 Pro lagging on SVG-specific tasks despite strong general benchmarks. The model tiering table below has been updated accordingly.
+
 2. **The useful envelope is narrow but real.** LLM-direct SVG beats raster-then-trace for anything that is primarily *geometric* (logos, 24×24 line icons, favicons at ≤64 px, flowcharts, abstract marks, badges). It loses badly to diffusion models for anything requiring organic texture, complex shading, or photo-realistic reference.
 3. **Prompt constraints are the single biggest quality lever.** Specifying `viewBox="0 0 24 24"`, a fixed stroke width, `currentColor`, element count budgets, and explicit style language ("Heroicons outline style", "Lucide-style 2px stroke") moves outputs from hobbyist to production-grade. Unconstrained prompts produce overly detailed, broken-viewBox, gigantic-coordinate paths that are the dominant failure mode.
 
@@ -64,6 +67,8 @@ Approximate ranking as of mid-to-late 2025 (synthesized from Willison's posts, [
 | Mid | GPT-4o, GPT-4.1, Claude Sonnet 4, DeepSeek-R1, DeepSeek V3, Llama 3.1 405B | Bicycle usually correct; pelican is often generic bird or duck-like |
 | Lower | Llama 3.3 70B, GPT-4.1-nano/mini, Amazon Nova (especially Nova-micro), Cerebras Llama | Neither subject recognizable; geometric anarchy |
 
+> **Updated 2026-04-21:** Willison's benchmark has evolved into a formal **ELO-based leaderboard** (500 GPT-4.1-mini-judged matchups, chess ELO scoring). Claude Sonnet 4.6 and Claude Opus 4.7 continue to appear in the top tier as of early 2026. GPT-5.4 and Gemini 3.1 Pro are also tracked. The leaderboard is live on GitHub ([simonw/pelican-bicycle](https://github.com/simonw/pelican-bicycle)) and updated with each major new model release.
+
 Willison: *"I started it as a joke, but it's actually starting to become a bit useful."* The benchmark is particularly revealing because SVG comments let evaluators see failed intent — a model that writes a labeled-but-misplaced beak element is demonstrating compositional planning under a failed execution, which is a different failure mode than a model that just emits geometric noise.
 
 ### SGP-Bench (Qiu et al., ICLR 2025 Spotlight)
@@ -82,9 +87,11 @@ Follow-up work — [SGP-GenBench](https://www.emergentmind.com/topics/sgp-genben
 
 Practitioner comparisons converge on a consistent pattern:
 
-- **Claude (3.5 Sonnet → Opus 4.x)**: Best *code quality* — small, commented, semantically grouped, uses primitives (`<circle>`, `<rect>`, `<polygon>`) in preference to complex path strings, embeds `currentColor`, often volunteers accessibility attributes. Best for brand logos, icons, and editable deliverables. [Houtini comparison](https://houtini.com/how-to-make-svgs-with-claude-and-gemini-mcp/).
-- **GPT-5 / GPT-5.1 with reasoning**: Competitive on compositional planning (especially with high reasoning budget), but tends to over-detail — 40+ path commands where Claude emits 6 primitives. More verbose, less tree-shakable output. Stronger when the task is diagram/flowchart with data structure behind it.
-- **Gemini 2.5 / 3 Pro**: Strong on scene composition (the pelican is undisputed, the bicycle is geometrically correct), but output tends to embed long raw path data rather than named primitives, which is harder to edit. Best for "illustrate this" rather than "design a brand mark."
+- **Claude (3.5 Sonnet → Opus 4.x / Sonnet 4.6)**: Best *code quality* — small, commented, semantically grouped, uses primitives (`<circle>`, `<rect>`, `<polygon>`) in preference to complex path strings, embeds `currentColor`, often volunteers accessibility attributes. Best for brand logos, icons, and editable deliverables. [Houtini comparison](https://houtini.com/how-to-make-svgs-with-claude-and-gemini-mcp/).
+- **GPT-5 / GPT-5.1 / GPT-5.4 with reasoning**: Competitive on compositional planning (especially with high reasoning budget), but tends to over-detail — 40+ path commands where Claude emits 6 primitives. More verbose, less tree-shakable output. Stronger when the task is diagram/flowchart with data structure behind it. Structured benchmarks (2026) show GPT-5.4 leading on data visualization SVG accuracy.
+- **Gemini 2.5 / 3 Pro / 3.1 Pro**: Strong on scene composition (the pelican is undisputed, the bicycle is geometrically correct), but output tends to embed long raw path data rather than named primitives, which is harder to edit. Best for "illustrate this" rather than "design a brand mark." Gemini 3.1 Pro lags Claude and GPT-5.4 on SVG-specific generation tasks per 2026 structured comparisons despite strong general benchmark scores.
+
+> **Updated 2026-04-21:** The 2026 frontier (Claude 4.6, GPT-5.4, Gemini 3.1 Pro) is significantly better than the 2024 baseline across all tiers. The *relative* ranking (Claude best code quality, GPT-5 best verbose diagrams, Gemini best scene composition) has held stable, though the gap between tiers has narrowed. All three now reliably produce a parseable, rendered SVG for simple icon prompts; quality differences emerge at complexity edges (mascots, multi-object scenes, animations).
 
 ## Best-Suited Asset Types
 

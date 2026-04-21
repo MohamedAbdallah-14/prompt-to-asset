@@ -3,10 +3,12 @@ angle: 4a
 category: 04-gemini-imagen-prompting
 title: "Official Google Imagen 3/4 Prompt Guides & Capability Docs"
 research_value: high
-last_updated: 2026-04-19
+last_updated: 2026-04-21
 status: complete
 primary_sources: official-google
 ---
+
+> **Updated 2026-04-21:** Google removed image-generation from the Gemini Developer API free tier in late 2025. The Gemini API free tier now shows `limit: 0` for image generation endpoints — programmatic use requires billing. The AI Studio web UI (`https://aistudio.google.com`) still provides free interactive image generation. Additionally, all Imagen 4.0 variants (`imagen-4.0-generate-001`, `imagen-4.0-fast-generate-001`, `imagen-4.0-ultra-generate-001`) are deprecated and will be discontinued **June 30, 2026**, with migration recommended to `gemini-2.5-flash-image`. The legacy Vertex AI SDK modules (`vertexai.generative_models`, `vertexai.vision_models`) were deprecated June 24, 2025 and will be removed June 24, 2026 — use the `google-genai` package instead.
 
 # 4a — Official Google Imagen 3/4 Prompt Guides & Capability Docs
 
@@ -106,6 +108,8 @@ Aggregated from Google's per-model pages and the Gemini API reference. Resolutio
 | Prompt length | 480 input tokens (Gemini API doc) | 480 | 480 | 480 | 480 | 480 |
 | Quota (req / min / region) | varies | 200 | 100 | 75 | 150 | 30 |
 
+> **Updated 2026-04-21:** All Imagen 4.0 variants listed in this table are deprecated. Migration deadline: **June 30, 2026**. Recommended replacement: `gemini-2.5-flash-image` (itself discontinued Oct 2, 2026 — check [model versions](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions) for successor). Imagen 3.x line status: check Vertex AI deprecations page for current EOL dates.
+
 Sources: [Imagen 3 model page](https://cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/3-0-generate), [Imagen 3.0 Generate 002](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/3-0-generate-002), [Imagen 4 model page](https://cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/4-0-generate-001), [Generate images using Imagen (Gemini API)](https://ai.google.dev/gemini-api/docs/imagen), [Configure aspect ratio](https://cloud.google.com/vertex-ai/generative-ai/docs/image/configure-aspect-ratio), [Omit content using a negative prompt](https://cloud.google.com/vertex-ai/generative-ai/docs/image/omit-content-using-a-negative-prompt).
 
 ## Pricing (Vertex AI, USD per image, as of April 2026)
@@ -165,7 +169,7 @@ Sources: [Imagen 3 model page](https://cloud.google.com/vertex-ai/generative-ai/
 ## Prompt playgrounds Google ships
 
 - **Vertex AI Studio — Media** — `console.cloud.google.com/vertex-ai/studio/media/generate` lets a GCP user pick Imagen 3 or 4, set aspect ratio, person-generation and safety, enter a prompt, and download up to 4 candidates. ([Generate images using text prompts with Imagen on Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/image/generate-images))
-- **Google AI Studio** — `ai.google.dev` (or `aistudio.google.com`) provides an Imagen tab with the same `aspectRatio` / `personGeneration` / `numberOfImages` / `imageSize` knobs as the Gemini API; it is the fastest way to sanity-check a prompt without billing setup. Example prompts Google surfaces in-product lean on claymation scenes, cinematography-style shots, oil-painting references, and comic-book panels — the same taxonomy as the prompt guide. ([Generate images using Imagen (Gemini API)](https://ai.google.dev/gemini-api/docs/imagen))
+- **Google AI Studio** — `ai.google.dev` (or `aistudio.google.com`) provides an Imagen tab with the same `aspectRatio` / `personGeneration` / `numberOfImages` / `imageSize` knobs as the Gemini API; it is the fastest way to sanity-check a prompt interactively. **Note (2026-04-21):** The AI Studio web UI is still free for interactive generation, but programmatic image-gen via the Gemini Developer API requires billing — unbilled API keys return HTTP 429 with `limit: 0` on image endpoints. Example prompts Google surfaces in-product lean on claymation scenes, cinematography-style shots, oil-painting references, and comic-book panels — the same taxonomy as the prompt guide. ([Generate images using Imagen (Gemini API)](https://ai.google.dev/gemini-api/docs/imagen))
 - **Model Garden / Model Card** — `console.cloud.google.com/vertex-ai/publishers/google/model-garden/imagen-4.0-generate-preview-06-06` has a "try it" pane pre-loaded with Imagen 4. Google's prompt guide links out to this card.
 
 ## Style customization (Imagen 3 Capability model only)

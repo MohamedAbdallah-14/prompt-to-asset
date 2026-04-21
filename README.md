@@ -65,15 +65,18 @@ You end up with `AppIcon.appiconset`, Android adaptive layers (Android 13 monoch
 
 ### Free paths beyond Pollinations
 
-| Option                     | How                             | Best at                        | Catch                                     |
-| -------------------------- | ------------------------------- | ------------------------------ | ----------------------------------------- |
-| **Pollinations.ai**        | `curl` → HTTP GET. No signup.   | Flux-quality raster, instantly | ~1 req / 15s anonymous, RGB only          |
-| **Stable Horde**           | Anonymous kudos queue           | SDXL, Flux community GPUs      | Minutes of queue on the free lane         |
-| **HF Inference**           | Free read token                 | SDXL, SD3, Flux dev + schnell  | Rate-limited, cold-start latency          |
-| **Google AI Studio**       | Free `GEMINI_API_KEY`           | Nano Banana, ~1,500 images/day | No real transparency; matte externally    |
-| **Local ComfyUI**          | Community `comfyui-mcp` adapter | Full fidelity, no caps         | You bring the GPU                         |
-| **`inline_svg`**           | Host LLM emits `<svg>` in chat  | Logos, favicons, simple icons  | ≤40 paths; simple geometry                |
-| **`external_prompt_only`** | Paste into any web UI           | Whatever that UI gives you     | Manual save, then `asset_ingest_external` |
+| Option                     | How                                            | Best at                           | Catch                                                                |
+| -------------------------- | ---------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- |
+| **Cloudflare Workers AI**  | Free API token + account ID                    | Flux-1-Schnell, SDXL, DreamShaper | 10k neurons/day cap (~900 Flux-Schnell or 5k SDXL-Lightning)         |
+| **HF Inference**           | Free read token                                | SDXL, SD3, Flux dev + schnell     | Rate-limited, cold-start latency                                     |
+| **Pollinations.ai**        | `curl` → HTTP GET. No signup.                  | Flux-quality raster, instantly    | ~1 req / 15s anonymous, RGB only                                     |
+| **Stable Horde**           | Anonymous kudos queue                          | SDXL, Flux community GPUs         | Minutes of queue on the free lane                                    |
+| **Google AI Studio (UI)**  | Free interactive web UI at aistudio.google.com | Nano Banana / Nano Banana Pro     | No free API — paste-only; download PNG, call `asset_ingest_external` |
+| **Local ComfyUI**          | Community `comfyui-mcp` adapter                | Full fidelity, no caps            | You bring the GPU                                                    |
+| **`inline_svg`**           | Host LLM emits `<svg>` in chat                 | Logos, favicons, simple icons     | ≤40 paths; simple geometry                                           |
+| **`external_prompt_only`** | Paste into any web UI                          | Whatever that UI gives you        | Manual save, then `asset_ingest_external`                            |
+
+Note on Google: as of 2025-12, `gemini-3.1-flash-image-preview` (Nano Banana 2), `gemini-3-pro-image-preview` (Nano Banana Pro), `gemini-2.5-flash-image`, and `imagen-4.0-*` are all removed from the universal free API tier. An unbilled `GEMINI_API_KEY` returns HTTP 429 with `limit: 0` on image endpoints. The key still works on the free tier for text / multimodal / embeddings. Paid pricing: Nano Banana $0.039/img, Imagen 4 Fast $0.02/img, Nano Banana Pro $0.067 (1K) / $0.101 (2K) / $0.151 (4K).
 
 Run `p2a doctor` or ask your assistant for `asset_doctor()` to see what's live in your environment right now.
 
@@ -181,15 +184,15 @@ Behind the scenes:
 
 Router decisions live in [`data/routing-table.json`](./data/routing-table.json). Capability matrix in [`data/model-registry.json`](./data/model-registry.json). Every rule cites its research source.
 
-| Need                     | Primary                                                         | Fallback                                            | Never                              |
-| ------------------------ | --------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------- |
-| Transparent PNG mark     | `gpt-image-1` with `background:"transparent"`                   | Ideogram 3 Turbo `style:"transparent"` → Recraft V3 | Imagen, Gemini Flash Image, SD 1.5 |
-| Logo with 1–3 word text  | Ideogram 3 Turbo → `gpt-image-1` → Recraft V3                   | Composite SVG type over mark                        | Imagen, SD 1.5, `flux-schnell`     |
-| Logo with >3 word text   | **Never a diffusion sampler.** Mark + SVG typography composite. | —                                                   | —                                  |
-| Native SVG               | Recraft V3                                                      | `inline_svg` (host LLM authors SVG)                 | Everyone else                      |
-| Photoreal hero           | Flux Pro / Flux.2 → `gpt-image-1` → Imagen 4                    | SDXL + brand LoRA                                   | DALL·E 3                           |
-| Iterate an existing mark | `flux-kontext-pro` (edit-only)                                  | Pollinations Kontext (free)                         | —                                  |
-| Zero-key everything      | Pollinations (Flux) → `inline_svg` for simple marks             | Stable Horde → HF Inference → paste-only web UI     | —                                  |
+| Need                     | Primary                                                         | Fallback                                                             | Never                              |
+| ------------------------ | --------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------- |
+| Transparent PNG mark     | `gpt-image-1.5` with `background:"transparent"`                 | Ideogram 3 Turbo (via `/generate-transparent` endpoint) → Recraft V4 | Imagen, Gemini Flash Image, SD 1.5 |
+| Logo with 1–3 word text  | Ideogram 3 Turbo → `gpt-image-1.5` → Recraft V4                 | Composite SVG type over mark                                         | Imagen, SD 1.5, `flux-schnell`     |
+| Logo with >3 word text   | **Never a diffusion sampler.** Mark + SVG typography composite. | —                                                                    | —                                  |
+| Native SVG               | Recraft V4 (V3 for brand-style pipelines)                       | `inline_svg` (host LLM authors SVG)                                  | Everyone else                      |
+| Photoreal hero           | Flux Pro / Flux.2 → `gpt-image-1.5` → Gemini 2.5 Flash Image    | SDXL + brand LoRA                                                    | DALL·E 3, Imagen 4 (deprecated)    |
+| Iterate an existing mark | `flux-kontext-pro` (edit-only)                                  | Pollinations Kontext (free)                                          | —                                  |
+| Zero-key everything      | Pollinations (Flux) → `inline_svg` for simple marks             | Stable Horde → HF Inference → paste-only web UI                      | —                                  |
 
 The `Never` column matters. It's why `prompt-to-asset` refuses to render wordmarks past 3 words in any diffusion sampler, and why asking for a transparent PNG never goes to Imagen.
 

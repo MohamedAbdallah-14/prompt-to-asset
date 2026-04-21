@@ -9,6 +9,8 @@ Instructor provides a structured wrapper over LLM calls that enforces schema com
 **Repo**: https://github.com/567-labs/instructor (formerly instructor-ai/instructor)  
 **Site**: https://python.useinstructor.com/
 
+> **Updated 2026-04-21:** Instructor Python is at v1.14.x as of early 2026 (v1.14.5 released Jan 29, 2026). The library introduced `from_provider()` as a simpler string-based initializer — e.g., `instructor.from_provider("anthropic/claude-sonnet-4-6")` — which is now the recommended pattern alongside the traditional `from_anthropic()`. Version 1.13+ also added semantic validation capabilities and integration with OpenAI's Responses API. The model string `"claude-sonnet-4-5"` in examples below remains valid; prefer `"claude-sonnet-4-6"` or `"claude-opus-4-7"` for new code (Claude Sonnet/Opus 4.0 series retire June 15, 2026).
+
 You define a Pydantic model, pass it as `response_model`, and Instructor converts it to a tool schema or JSON mode prompt, validates the response, and retries with the validation error message appended if validation fails. The retry loop is configurable via `max_retries`.
 
 ```python
@@ -25,13 +27,13 @@ class AssetSpec(BaseModel):
 
 client = instructor.from_anthropic(Anthropic())
 spec = client.messages.create(
-    model="claude-sonnet-4-5",
+    model="claude-sonnet-4-6",  # updated from claude-sonnet-4-5
     response_model=AssetSpec,
     messages=[{"role": "user", "content": brief}]
 )
 ```
 
-Instructor supports 15+ providers including Anthropic, OpenAI, Google, Mistral, Ollama, and LiteLLM. The Anthropic integration uses tool use under the hood (since Claude's native SO is a newer addition).
+Instructor supports 15+ providers including Anthropic, OpenAI, Google, Mistral, Ollama, and LiteLLM. The Anthropic integration uses tool use under the hood by default; with Claude SO now GA, you can also use `mode=instructor.Mode.ANTHROPIC_JSON` to route through the native structured output path.
 
 **Retry mechanism**: On Pydantic `ValidationError`, Instructor appends the error to the conversation and re-requests. Empirically, 2–3 retries resolve most schema failures. This is qualitatively different from token-level enforcement: the model can still generate garbage on the first pass, but it self-corrects.
 
@@ -48,8 +50,10 @@ Instructor supports 15+ providers including Anthropic, OpenAI, Google, Mistral, 
 
 ## Instructor-JS (TypeScript)
 
-**Repo**: https://github.com/567-labs/instructor-js  
+**Repo**: https://github.com/instructor-ai/instructor-js (canonical) / https://github.com/567-labs/instructor-js (mirror)
 **NPM**: `@instructor-ai/instructor`
+
+> **Updated 2026-04-21:** The repo is maintained under both `instructor-ai/instructor-js` and `567-labs/instructor-js` on GitHub (same codebase). The npm package `@instructor-ai/instructor` remains the install target. Note that the repo for instructor-js is less actively maintained than the Python version; check the GitHub issues page for known Anthropic-integration quirks before upgrading.
 
 The TypeScript port uses Zod schemas instead of Pydantic. The pattern is identical: define a `z.object(...)`, pass it as `response_model`, get back a typed object with retries on validation failure.
 
@@ -71,7 +75,7 @@ const client = Instructor({
 });
 
 const spec = await client.chat.completions.create({
-  model: "claude-sonnet-4-5",
+  model: "claude-sonnet-4-6",  // updated from claude-sonnet-4-5
   response_model: { schema: AssetSpecSchema, name: "AssetSpec" },
   messages: [{ role: "user", content: brief }],
   max_retries: 2,
@@ -91,15 +95,17 @@ The `response_model` inference gives `spec` the type `z.infer<typeof AssetSpecSc
 
 ## Anthropic Native Structured Outputs (TS SDK)
 
-Anthropic's TS SDK now exposes `zodOutputFormat()` and `jsonSchemaOutputFormat()` helpers for the `output_config.format` field (beta, Nov 2025):
+> **Updated 2026-04-21:** Claude structured outputs are now **generally available** — the `structured-outputs-2025-11-13` beta header is no longer required and the parameter path changed from `output_format` to `output_config.format`. The SDK-level helpers (`zodOutputFormat`, `jsonSchemaOutputFormat`) continue to work; update any code that still passes the beta header string. Additionally, the SDK now automatically handles unsupported schema constraints (`minimum`, `maximum`, `minLength`, `maxLength`) by removing them from the grammar spec and re-applying them client-side after receiving the response.
+
+Anthropic's TS SDK exposes `zodOutputFormat()` and `jsonSchemaOutputFormat()` helpers for the `output_config.format` field (GA as of 2026):
 
 ```typescript
 import Anthropic, { zodOutputFormat } from "@anthropic-ai/sdk";
 import { z } from "zod";
 
-const response = await client.beta.messages.parse({
-  model: "claude-sonnet-4-5",
-  betas: ["structured-outputs-2025-11-13"],
+// No beta header needed — structured outputs are GA
+const response = await client.messages.parse({
+  model: "claude-sonnet-4-6",  // updated from claude-sonnet-4-5
   output_format: zodOutputFormat(AssetSpecSchema, "asset_spec"),
   messages: [{ role: "user", content: brief }],
 });

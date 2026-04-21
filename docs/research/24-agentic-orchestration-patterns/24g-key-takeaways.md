@@ -74,6 +74,22 @@ For prompt-to-asset `api` mode: the MCP tool should return a streaming response 
 
 ---
 
+---
+
+## 9. MCP Transport: SSE Is Gone
+
+> **Updated 2026-04-21:** SSE transport for MCP servers stopped being accepted by Claude connectors on **April 1, 2026**. All MCP infrastructure — including the prompt-to-asset MCP server and any agentic orchestration layers that communicate with it — must use **Streamable HTTP** transport. The MCP spec 2025-11-25 (latest stable) codifies this: Streamable HTTP is the standard remote transport; SSE is deprecated and effectively dead for new or existing deployments. Streamable HTTP works on serverless (Cloudflare Workers, Vercel Edge) because it uses POST requests rather than persistent connections.
+
+---
+
+## 10. Anthropic Structured Output: No Beta Header
+
+> **Updated 2026-04-21:** Anthropic's structured output API is now **GA** — no beta header (`anthropic-beta: structured-outputs-2025-11-13`) is needed. The parameter is `output_config.format` (not `output_format`, which is the old beta name and still works for a transition period). Use `output_config: { format: { type: "json_schema", schema: {...} } }`. Available on Claude Sonnet 4.5, Opus 4.5+, and all 4.6 models. Haiku 4.5 support is rolling out. This affects any orchestration layer that inspects or generates structured JSON from Claude calls — update any code that still passes the beta header.
+
+---
+
 ## Bottom Line
 
-The gap between current prompt-to-asset and these repos is not about new features — it is about making the existing pipeline **fault-tolerant, replayable, and composable**. Checkpointing (LangGraph), serialized workflow graphs (ComfyUI), typed intermediate state (diffusers modular), and a judge loop wrapping `asset_validate` (openai-agents-python) address the four most impactful gaps. None require new API keys or new models.
+The gap between current prompt-to-asset and these repos is not about new features — it is about making the existing pipeline **fault-tolerant, replayable, and composable**. Checkpointing (LangGraph v1.1.8), serialized workflow graphs (ComfyUI), typed intermediate state (diffusers modular), and a judge loop wrapping `asset_validate` (openai-agents-python) address the four most impactful gaps. None require new API keys or new models.
+
+Infrastructure note (April 2026): verify your MCP server uses Streamable HTTP transport (not SSE) and that any Claude API calls use `output_config.format` (not the beta header) for structured outputs.

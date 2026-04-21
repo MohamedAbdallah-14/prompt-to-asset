@@ -34,7 +34,7 @@ Across ~60 documented failure cases surveyed for this note, three prompt moves e
 2. **Describe the canvas, not the mask.** Prompt for "1024×1024 square canvas, solid fill, mark centered with 15% padding," not "in a rounded square" (which prompts the model to *draw* the rounded square as an outline) and not "iOS icon" (which prompts screenshots).
 3. **Forbid depth explicitly.** A negative clause — *"no drop shadow, no bevel, no gloss, no 3-D, no photorealism, no reflective highlight, no gradient vignette on the background, no text"* — is the single most effective anti-artifact lever, especially for Midjourney, Flux, and SDXL.
 
-The three model families best suited to icons as of Q1 2026 are **Recraft V3** (vector-native, genuinely understands "icon" as a design-language token), **`gpt-image-1` / GPT Image 1.5** (best text rendering and best honest RGBA transparency when asked), and **Flux.1 [dev] + icon LoRA** (highest fidelity when you need a matched set and can run locally). Gemini 2.5 Flash Image and DALL·E 3 are usable but require the most defensive prompt scaffolding.
+The three model families best suited to icons as of Q2 2026 are **Recraft V3** (vector-native, genuinely understands "icon" as a design-language token), **GPT Image 1.5** (best text rendering and best honest RGBA transparency when asked, released December 2025), and **Flux.1 [dev] + icon LoRA** (highest fidelity when you need a matched set and can run locally). Gemini 3.1 Flash Image and DALL·E 3 are usable but require the most defensive prompt scaffolding. Note: Gemini image API has no free tier as of December 2025; billing required.
 
 This document gives: platform-specific prompt templates (iOS HIG, Android Adaptive, PWA/Maskable), a taxonomy of the six most common failure modes and how to prompt them away, strategies for multi-variant and dark/light icon families, and a per-model recommendation matrix.
 
@@ -64,7 +64,7 @@ Why each clause earns its tokens:
 
 - *"1024×1024 square canvas ... no rounded corners visible"* tells the model the mask is applied later. Without this, ~40% of runs (Flux, SDXL, Gemini) paint the squircle outline as dark pixels inside the canvas.
 - *"~20% symmetric padding"* protects from HIG corner clipping and from the Android safe-zone clipping if you reuse the asset.
-- *"Recognizable as a silhouette at 20 pixels"* biases toward *one* strong shape rather than dense illustration. This one phrase, in Recraft V3 and `gpt-image-1`, measurably improves usable-rate.
+- *"Recognizable as a silhouette at 20 pixels"* biases toward *one* strong shape rather than dense illustration. This one phrase, in Recraft V3 and GPT Image 1.5 (formerly gpt-image-1), measurably improves usable-rate.
 - *"no photorealism, no 3-D, no bevel"* kills the #1 bad output: a 3-D object casting a soft shadow onto an off-white plane.
 - *"no text, no watermark, no ui chrome, no phone, no home screen"* kills the screenshot failure mode.
 
@@ -190,10 +190,10 @@ Shipping an app means producing a *family*, not a single icon: App Store 1024, i
 The master asset is generated or hand-selected first, then locked. Variants are produced by passing it as a reference:
 
 - **SDXL / Flux:** IP-Adapter-Plus with weight 0.7-0.9. Preserves shape language and color palette while allowing prompt-driven variation (e.g. "same mark, monochrome black on transparent"). IP-Adapter FaceID-variants are overkill; IP-Adapter-Plus-SDXL or the Flux IP-Adapter port is the right tool.
-- **Midjourney v6/v7:** `--sref <url> --sw 500–1000` with the master URL.
+- **Midjourney v7:** `--sref <url> --sw 500–1000` with the master URL.
 - **Recraft V3:** the native "style" feature — upload the master, select it as style reference, regenerate with a new prompt.
-- **`gpt-image-1` / GPT Image 1.5:** use the `images.edit` endpoint with the master as the input image and a mask that covers the entire canvas, plus a variant prompt. This is the cleanest API path for a consistent family.
-- **Gemini 2.5 Flash Image ("Nano Banana"):** multimodal prompt with the master as an attached image plus the variant instruction in text. Gemini is notably good at "same mark, different color scheme."
+- **GPT Image 1.5:** use the `images.edit` endpoint with the master as the input image and a mask that covers the entire canvas, plus a variant prompt. This is the cleanest API path for a consistent family.
+- **Gemini 3.1 Flash Image ("Nano Banana 2"):** multimodal prompt with the master as an attached image plus the variant instruction in text. Gemini is notably good at "same mark, different color scheme." Note: billing required as of December 2025 — no free-tier API access.
 
 ### Dark / light variant generation
 
@@ -226,17 +226,20 @@ No text. No shadow. No bevel.
 
 ## Model Recommendations
 
+> **Updated 2026-04-21:** Model landscape has shifted since Q1 2026. Key changes: GPT Image 1.5 is now the production OpenAI image model (released December 16, 2025; GPT Image 1 still available but deprecated path). Midjourney v7 (launched April 2025) added near-native SVG export and improved text fidelity — the "no transparency" and "prone to gloss" caveats still apply for icon work but the vector story improved. Gemini 2.5 Flash Image (`gemini-2.5-flash-image-preview`) was shut down January 15, 2026; the current Google model is **Gemini 3.1 Flash Image** ("Nano Banana 2"). Gemini API image generation has **no free tier** since December 7, 2025 — unbilled keys return HTTP 429 with `limit: 0`; AI Studio web UI remains free for interactive use.
+
 | Model | Best For | Notable Caveats |
 |---|---|---|
 | **Recraft V3** | First-choice for clean vector icons and whole icon sets. "Icon" is a native design-language token. Direct SVG output via the `recraft-v3-svg` model on Replicate; raster model handles squircle-friendly compositions natively. | Less good with complex pictorial metaphors. Style references can drift if the prompt underspecifies geometry. |
-| **`gpt-image-1` / GPT Image 1.5** | Best *honest* RGBA transparency when you explicitly request `"transparent background (RGBA PNG)"`. Best at rendering a single letter / monogram cleanly. Strongest at respecting negative prompts in plain English. `images.edit` with full-canvas mask is the cleanest API for family variants. | Costs more. Sometimes adds a subtle contact shadow even when told not to — specify "no contact shadow, no ground shadow, pure alpha." |
+| **GPT Image 1.5** (current OpenAI model, released Dec 2025) | Best *honest* RGBA transparency when you explicitly request `"transparent background (RGBA PNG)"`. Best at rendering a single letter / monogram cleanly. Up to 4× faster than GPT Image 1. 20% cheaper per image token. `images.edit` with full-canvas mask is the cleanest API for family variants. | Costs more than free-tier alternatives. Sometimes adds a subtle contact shadow even when told not to — specify "no contact shadow, no ground shadow, pure alpha." |
+| **`gpt-image-1`** (legacy, still available) | Still usable; same RGBA transparency path. More expensive than 1.5 and slower. | Being superseded by GPT Image 1.5; prefer 1.5 for new work. |
 | **Flux.1 [dev] + icon LoRA** | Best local / self-hosted option. With an icon-specific LoRA (e.g. "Flux Icon Maker", ArtForge MasterKit on Civitai) at strength 0.6-1.0 and CFG 3.0-4.5, produces dense icon sets with strong style consistency. | Base Flux without a LoRA leans photorealistic. Needs a post-process background removal pass for true transparency (BRIA RMBG or BiRefNet). |
-| **Midjourney v6 / v7** | Exceptional for "aesthetic" feel and mascot-style icons. `--sref` is excellent for family consistency. | No native transparency; requires matting. Prone to F2 (visible mask) and F3 (bevel/gloss) unless aggressively negative-prompted. Also prone to adding painterly texture. |
-| **Ideogram 2/3** | Best when a letterform or monogram is part of the mark. Typography is reliably crisp. | Less strong on pure pictographic marks. |
-| **DALL·E 3 (ChatGPT)** | Good for conceptual exploration. Good at following "flat vector" when spelled out. | No RGBA in the ChatGPT UI path; API gives alpha via `gpt-image-1`. Prone to F4 (tiny mark) without explicit sizing. |
-| **Gemini 2.5 Flash Image ("Nano Banana")** | Fast, cheap, excellent at "same mark, new color scheme" when master is attached. | The most prone model to F1 (screenshot failure) and F2 (visible mask). Requires the most defensive prompting; strip the word *app* entirely and say *logomark/symbol* instead. Known "checkered box" transparency problems — prefer Imagen 3/4 for transparency. |
+| **Midjourney v7** (launched April 2025) | Exceptional for "aesthetic" feel and mascot-style icons. `--sref` is excellent for family consistency. v7 added near-native SVG export, improved text fidelity, and handles up to 10 distinct subject interactions without color bleeding. | Still no native alpha transparency; requires matting. Prone to F2 (visible mask) and F3 (bevel/gloss) unless aggressively negative-prompted. |
+| **Ideogram 3 / Ideogram 3 Turbo** | Best when a letterform or monogram is part of the mark. Typography is reliably crisp. Turbo tier ($0.03/image) is cost-effective for rapid iteration and exploration. Style References (up to 3 reference images) help with family consistency. | Less strong on pure pictographic marks. |
+| **DALL·E 3 (ChatGPT)** | Good for conceptual exploration. Good at following "flat vector" when spelled out. | No RGBA in the ChatGPT UI path; API gives alpha via GPT Image 1.5. Prone to F4 (tiny mark) without explicit sizing. |
+| **Gemini 3.1 Flash Image** ("Nano Banana 2", current Google model as of Feb 2026) | Fast iteration, excellent at "same mark, new color scheme" when master is attached. | **No free API tier since Dec 7 2025 — billing required.** The most prone model to F1 (screenshot failure) and F2 (visible mask). Requires the most defensive prompting; strip the word *app* entirely and say *logomark/symbol* instead. Known "checkered box" transparency problems — prefer GPT Image 1.5 for transparency. Use AI Studio web UI for free interactive generation; round-trip via `asset_ingest_external`. |
 
-A practical stack for a production icon set: **Recraft V3** for the master and the App Store 1024, **`gpt-image-1`** (edits API) for family variants needing exact transparency, and **BRIA RMBG / BiRefNet** as a universal matting backstop when a model fails to give clean alpha.
+A practical stack for a production icon set: **Recraft V3** for the master and the App Store 1024, **GPT Image 1.5** (edits API) for family variants needing exact transparency, and **BRIA RMBG / BiRefNet** as a universal matting backstop when a model fails to give clean alpha.
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/paste-targets.schema.json",
-  "version": "1.1.0",
-  "updated": "2026-04-20",
+  "version": "1.2.0",
+  "updated": "2026-04-21",
   "source": "docs/research/07-midjourney-ideogram-recraft/, docs/research/04-gemini-imagen-prompting/, docs/research/05-openai-dalle-gpt-image/, docs/research/06-stable-diffusion-flux/",
   "description": "Mapping from model id → human-facing UIs where a user can paste the rewritten prompt and generate. Used by external_prompt_only mode.",
   "models": {
@@ -33,45 +33,59 @@
     ],
     "imagen-4": [
       {
-        "name": "Google AI Studio (Imagen 4)",
+        "name": "Google AI Studio (Imagen 4) — DEPRECATED, EOL June 30 2026",
         "url": "https://aistudio.google.com/prompts/new_chat",
-        "notes": "No transparent-background support. Ask for 'solid pure white background' and matte afterwards via asset_remove_background."
+        "notes": "DEPRECATED — EOL June 30, 2026. Migrate to gemini-2.5-flash-image. Free interactive web UI only (API requires billing). No transparent-background support; ask for 'solid pure white background' and matte via asset_remove_background."
       },
       {
-        "name": "Vertex AI Studio",
+        "name": "Vertex AI Studio — DEPRECATED",
         "url": "https://console.cloud.google.com/vertex-ai/studio/vision",
-        "notes": "Requires GCP project. Same transparency limitation as AI Studio."
+        "notes": "DEPRECATED — EOL June 30, 2026. Requires a billed GCP project. Same transparency limitation."
       }
     ],
     "imagen-3": [
       {
-        "name": "Google AI Studio (Imagen 3)",
+        "name": "Google AI Studio (Imagen 3) — FREE interactive web UI only",
         "url": "https://aistudio.google.com/prompts/new_chat",
-        "notes": "Same checkerboard-as-RGB problem as Imagen 4. Matte externally."
+        "notes": "Free interactive web UI only — API requires billing since 2025-12. Same checkerboard-as-RGB problem as Imagen 4. Matte externally."
       }
     ],
     "gemini-3-flash-image": [
       {
-        "name": "Google AI Studio (Nano Banana)",
+        "name": "Google AI Studio (Nano Banana) — FREE interactive web UI only",
         "url": "https://aistudio.google.com",
-        "notes": "The Gemini 2.5 / 3 Flash Image model is nicknamed 'Nano Banana' in the community. Strong multimodal-edit (attach reference images, up to 3); no transparent output — matte afterwards via asset_remove_background."
+        "notes": "Free interactive web UI only — API requires billing since 2025-12 (paid $0.039/img). The Gemini 2.5 / 3 Flash Image model is nicknamed 'Nano Banana' in the community. Strong multimodal-edit (attach reference images, up to 3); no transparent output — matte afterwards via asset_remove_background. Text ceiling ~3 words (garbles past that)."
       },
       {
         "name": "Gemini app",
         "url": "https://gemini.google.com",
-        "notes": "Consumer-facing Gemini web/app. Accepts prompt + reference images."
+        "notes": "Free consumer-facing Gemini web/app. Accepts prompt + reference images."
       }
     ],
     "gemini-3-pro-image": [
       {
-        "name": "Vertex AI Studio (Nano Banana Pro)",
-        "url": "https://console.cloud.google.com/vertex-ai/studio/vision",
-        "notes": "The Pro variant of Nano Banana — higher aesthetic than the Flash tier. Still no transparent output; matte externally."
+        "name": "Google AI Studio (Nano Banana Pro) — FREE interactive web UI only",
+        "url": "https://aistudio.google.com",
+        "notes": "Free interactive web UI only — API requires billing since 2025-12 (paid $0.067-$0.151/img at 1K-4K). The Pro variant of Nano Banana with higher aesthetic than the Flash tier. Selectable as gemini-3-pro-image-preview when available in your region. Text ceiling ~50 chars (better than Flash). Still no transparent output; matte externally."
       },
       {
-        "name": "Google AI Studio",
+        "name": "Vertex AI Studio (Nano Banana Pro)",
+        "url": "https://console.cloud.google.com/vertex-ai/studio/vision",
+        "notes": "Requires a billed GCP project. Same transparency limitation as AI Studio."
+      }
+    ],
+    "gemini-3-pro-image-preview": [
+      {
+        "name": "Google AI Studio (Nano Banana Pro preview) — FREE interactive web UI only",
         "url": "https://aistudio.google.com",
-        "notes": "Selectable as gemini-3-pro-image-preview when available in your region."
+        "notes": "Same surface as gemini-3-pro-image. Free interactive web UI only; API requires billing (paid $0.067-$0.151/img at 1K-4K). Text ceiling ~50 chars per Google. No transparent output — matte externally."
+      }
+    ],
+    "nano-banana-pro": [
+      {
+        "name": "Google AI Studio (Nano Banana Pro) — FREE interactive web UI only",
+        "url": "https://aistudio.google.com",
+        "notes": "Alias for gemini-3-pro-image-preview. Free interactive web UI only; API requires billing. No transparent output; matte externally."
       }
     ],
     "sdxl": [
@@ -240,12 +254,19 @@
       {
         "name": "Midjourney web",
         "url": "https://www.midjourney.com/app",
-        "notes": "Paste prompt; append --ar 1:1 --style raw --v 7. Use --sref / --cref / --mref for brand consistency."
+        "notes": "v7 is the current production default (since June 2025). Paste prompt; append --ar 1:1 --style raw --v 7. Use --sref / --cref / --mref for brand consistency."
       },
       {
         "name": "Discord /imagine",
         "url": "https://discord.com/channels/662267976984297473",
         "notes": "Legacy surface. /imagine prompt <prose> --ar 1:1 --v 7"
+      }
+    ],
+    "midjourney-v8-alpha": [
+      {
+        "name": "Midjourney web (v8 Alpha)",
+        "url": "https://www.midjourney.com/app",
+        "notes": "v8 Alpha (March 2026 preview, v8.1 Alpha April 2026). Improved text accuracy (~78% vs ~52% on v7). Append --v 8. Still in alpha — not the default."
       }
     ],
     "ideogram-3": [
@@ -259,14 +280,21 @@
       {
         "name": "Ideogram web",
         "url": "https://ideogram.ai",
-        "notes": "Best-in-class wordmark rendering for 1–3 word brand text. For RGBA output set Style = Transparent (v3 feature). Consider toggling Magic Prompt OFF if you want exact control."
+        "notes": "Best-in-class wordmark rendering for 1–3 word brand text. For RGBA output use the 'Transparent' style option in the web UI. API uses the dedicated `/ideogram-v3/generate-transparent` endpoint (not a `style` param). Toggle Magic Prompt OFF for logo/icon work."
       }
     ],
     "recraft-v3": [
       {
         "name": "Recraft web",
         "url": "https://www.recraft.ai",
-        "notes": "Pick 'Vector' style for real SVG output. Brand Styles panel locks palette + style across a set."
+        "notes": "Pick 'Vector' style for real SVG output. Brand Styles panel locks palette + style via style_id. Keep V3 for brand-style pipelines — V4 dropped style_id support."
+      }
+    ],
+    "recraft-v4": [
+      {
+        "name": "Recraft web (V4)",
+        "url": "https://www.recraft.ai",
+        "notes": "HuggingFace T2I Arena #1 (ELO 1172). Pick 'Vector' style for SVG. Higher quality than V3 but NO style_id / Brand Styles — use V3 for brand-locked pipelines."
       }
     ],
     "firefly-3": [
@@ -280,7 +308,7 @@
       {
         "name": "Pollinations (Flux backend)",
         "url": "https://pollinations.ai",
-        "notes": "Zero-key, HTTP GET. Example: curl -o out.png 'https://image.pollinations.ai/prompt/<urlencoded>?model=flux&width=1024&height=1024&nologo=true'. ~1 req/15s anonymous; RGB only (matte externally)."
+        "notes": "Zero-key, HTTP GET. Example: curl -o out.png 'https://image.pollinations.ai/prompt/<urlencoded>?model=flux&width=1024&height=1024&nologo=true'. ~1 req/15s anonymous; RGB only (matte externally). NOTE (2026-04-21): Pollinations silently swaps ?model=flux to the 'sana' backend — output quality / style is no longer pure Flux. For real Flux, prefer cf-flux-1-schnell or hf-flux-schnell."
       }
     ],
     "pollinations-turbo": [
@@ -346,11 +374,23 @@
         "notes": "Flux Dev via HF free tier. Non-commercial license — respect it."
       }
     ],
+    "cloudflare-workers-ai-playground": [
+      {
+        "name": "Cloudflare Workers AI Playground — FREE",
+        "url": "https://dash.cloudflare.com",
+        "notes": "Navigate to AI → Workers AI → Playground. Free interactive UI for all CF-hosted image models (Flux Schnell, SDXL, SDXL-Lightning, DreamShaper, Leonardo presets). 10,000 neurons/day free tier. Requires a Cloudflare account but no credit card. Prefer this as the first free interactive surface for Flux-family generations now that Pollinations silently swaps to sana."
+      },
+      {
+        "name": "Cloudflare Workers AI model catalog",
+        "url": "https://developers.cloudflare.com/workers-ai/models/",
+        "notes": "Browse all available CF image models. Each model has an in-page playground."
+      }
+    ],
     "cf-flux-1-schnell": [
       {
         "name": "Cloudflare Workers AI (Flux-1 Schnell)",
         "url": "https://developers.cloudflare.com/workers-ai/models/flux-1-schnell/",
-        "notes": "10,000 neurons/day free; ~11 neurons per image. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
+        "notes": "10,000 neurons/day free; ~11 neurons per image. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID. Interactive playground at https://dash.cloudflare.com → AI → Workers AI → Playground."
       }
     ],
     "cf-flux-2-dev": [

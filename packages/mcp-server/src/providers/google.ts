@@ -11,6 +11,20 @@ import { dummyPng } from "./openai.js";
  * WARNING: neither Imagen nor Gemini produces real RGBA; the router should not
  * send transparency-required requests here. If asked, we still generate on white
  * and let the pipeline matte post-hoc.
+ *
+ * BILLING (2025-12+): Google removed Gemini / Imagen image-generation from its
+ * universal free API tier. `gemini-3.1-flash-image-preview`,
+ * `gemini-3-pro-image-preview`, `gemini-2.5-flash-image`, and all `imagen-4.0-*`
+ * variants show "Not available" in the Free Tier column of the official pricing
+ * page. An unbilled GEMINI_API_KEY hitting these endpoints returns HTTP 429
+ * with `limit: 0` on `GenerateRequestsPerDayPerProjectPerModel-FreeTier` —
+ * a daily quota of zero, not a rate limit. Billing must be enabled on the GCP
+ * project for programmatic access. Paid prices: Nano Banana (gemini-2.5-flash-image)
+ * $0.039/img, Imagen 4 Fast $0.02/img, Nano Banana 2 $0.067/img (1K) / $0.101
+ * (2K) / $0.151 (4K). Batch API halves most of these. The AI Studio web UI
+ * (https://aistudio.google.com) remains free for interactive use — treat it
+ * as a paste-only free target and feed the downloaded PNG through
+ * asset_ingest_external.
  */
 export const GoogleProvider: Provider = {
   name: "google",
@@ -74,10 +88,18 @@ export const GoogleProvider: Provider = {
       const errText = await resp.text();
       // Redact defensively in case Google echoes back anything key-shaped
       // (older deployments that still accept ?key= would echo the URL).
+      let hint = "";
+      // 429 with limit:0 on an image endpoint is the distinctive "no free
+      // tier" signature Google started returning in Dec 2025. Flag it so the
+      // LLM host doesn't retry or blame rate-limiting.
+      if (resp.status === 429 && /limit[^0-9]*0/i.test(errText)) {
+        hint =
+          " — Gemini/Imagen image-gen has no free API tier as of 2025-12. Enable billing on the GCP project or use the free AI Studio web UI (https://aistudio.google.com) + asset_ingest_external.";
+      }
       throw new ProviderError(
         "google",
         modelId,
-        `HTTP ${resp.status}: ${redact(errText).slice(0, 500)}`
+        `HTTP ${resp.status}: ${redact(errText).slice(0, 500)}${hint}`
       );
     }
 

@@ -71,7 +71,9 @@ Compel's distinctive choice: **down-weighting is a masked blend, not a simple di
 
 Midjourney does not expose the text encoder and has no per-token weighting. Its two related features:
 
-- **Multi-prompts with `::`** — `space:: ship::0.5` tells the sampler to condition on "space" and "ship" as two independent prompts blended with weights `1` and `0.5`. Constraint: the sum of all weights **must be positive** or the job errors out. `--no red` is syntactic sugar for `:: red::-0.5`. Available on v4, Niji 4/5, 5, 5.1, 5.2, 6, 6.1 (decimal weights) and v1–3 (integers only).
+- **Multi-prompts with `::`** — `space:: ship::0.5` tells the sampler to condition on "space" and "ship" as two independent prompts blended with weights `1` and `0.5`. Constraint: the sum of all weights **must be positive** or the job errors out. `--no red` is syntactic sugar for `:: red::-0.5`. Available on v4, Niji 4/5, 5, 5.1, 5.2, 6, 6.1, **v7** (decimal weights; v7 became the default on June 17, 2025) and v1–3 (integers only). As of April 2026, v8.1 Alpha is available at `alpha.midjourney.com` (v7 remains the stable default).
+
+> **Updated 2026-04-21:** Midjourney v7 was released April 3, 2025 and became the default June 17, 2025. V8.1 Alpha launched April 14, 2026. The multi-prompt `::` weighting syntax carries over unchanged into v7. V8.1 Alpha drops support for `--q` and `--cref`/`--cw` but retains image-weight and stylize parameters.
 - **Global creativity parameters** — `--stylize N` (default 100, range 0–1000) controls how much the house aesthetic overrides literal prompt adherence; `--chaos N` (0–100) randomizes across the initial grid; `--weird N` (0–3000) injects unusual aesthetics. These are sampler-level, not token-level.
 
 For a prompt enhancer, the translation `(red:1.5)` → Midjourney is **not** `red::1.5` in isolation (that would make `red` dominant over the default-weighted rest of the prompt). It is `<original prompt>:: red::0.5` or a rewrite that keeps the prompt body at higher cumulative weight than the boosted concept.
@@ -219,7 +221,7 @@ Symptom: `--no red` combined with aggressive `red::-1.5` returns an error. Root 
 3. **Multi-token normalization default**: whether enhancers should preemptively rewrite multi-token concepts (substitute a single-token near-synonym, or apply compensating weight) to avoid F2.
 4. **Negative weights on Flux / SD3**: neither model has well-behaved negative prompting via CFG (Flux uses distillation-style guidance). What does a Compel-style masked down-weight do inside a T5 conditioning stream, and is it actually useful?
 5. **LoRA weight + attention weight interaction**: nobody has published a clean spec for whether compound syntaxes like `<lora:x:0.8>` combined with `(trigger_word:1.3)` in the prompt body compose linearly, multiplicatively, or unpredictably. Current behavior varies per loader.
-6. **Midjourney mapping**: given the hard "sum must be positive" constraint, the ideal way to port a long A1111 prompt with several boosted terms to Midjourney's `::`-split form is an open problem — naive per-term rewriting overshoots weight budgets.
+6. **Midjourney mapping**: given the hard "sum must be positive" constraint, the ideal way to port a long A1111 prompt with several boosted terms to Midjourney's `::`-split form is an open problem — naive per-term rewriting overshoots weight budgets. Note (2026-04-21): v7 and v8.1 Alpha do not change the `::` weighting semantics, so this gap remains open.
 
 ## Citations
 

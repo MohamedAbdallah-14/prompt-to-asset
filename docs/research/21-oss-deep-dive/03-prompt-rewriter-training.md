@@ -171,7 +171,7 @@ CLIPScore, which is exactly what TRL's `DDPOTrainer` or `GRPOTrainer` expects.
 
 ## RL libraries
 
-**Hugging Face TRL v1.0** (shipped early 2026) is the obvious foundation. It
+**Hugging Face TRL v1.0** (released April 12, 2026) is the obvious foundation. It
 unifies SFT, reward-model training, DPO, PPO, **GRPO** (what Hunyuan uses), RLOO,
 and **DDPOTrainer** — the last is Black et al.'s *Denoising Diffusion Policy
 Optimization* wired to the `diffusers` library, which directly fine-tunes SD
@@ -181,6 +181,8 @@ weights on an arbitrary scalar reward function. For our purpose (training a
 pipeline rolling out images. RL4LMs (older) is feature-complete but less active;
 trlX is deprecated; Anthropic's internal stack is not released. TRL is the right
 bet.
+
+> **Updated 2026-04-21:** TRL v1.0 officially released April 12, 2026. GRPOTrainer is now part of the stable API (not experimental). The v1.0 release also formalizes a CLI and config system; ORPO and KTO are separated into experimental. The production path is `SFTTrainer → GRPOTrainer` as recommended above.
 
 ## Five asset-specific reward signals to combine
 

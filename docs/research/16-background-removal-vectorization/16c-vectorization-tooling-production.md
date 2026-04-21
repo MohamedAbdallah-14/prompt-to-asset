@@ -36,11 +36,13 @@ The headline findings:
 - **Segment-then-trace beats trace-then-clean every time.** Running BiRefNet/RMBG to produce a clean matte before tracing removes background speckle at the source, so the tracer's `filter_speckle` / `turdsize` can stay conservative and preserve legitimate fine detail.
 - **SVGO with a tuned `preset-default` + `floatPrecision: 2`** is the right post-trace cleanup default. It typically reclaims 40–70% of file size without visible regression on logos and icons.
 
+> **Updated 2026-04-21:** SVGO **v4.0.0** was released (current version 4.0.1 as of April 2026). Breaking change: `removeViewBox` and `removeTitle` are **no longer enabled by default** in `preset-default`. Previous config that relied on `overrides: { removeViewBox: false }` to suppress the plugin is now a no-op — the suppression is no longer needed. Config written for SVGO v3 that explicitly set `removeViewBox: false` in overrides should be cleaned up. Migration guide at [svgo.dev/docs/migrations/migration-from-v3-to-v4/](https://svgo.dev/docs/migrations/migration-from-v3-to-v4/).
+
 ## Tool Fit Table
 
 | Tool | Best For | Language / Runtime | Color? | Wasm? | License | Maintenance (2024–2026) | Throughput (rough) | Recommendation |
 |------|----------|--------------------|--------|-------|---------|-------------------------|--------------------|----------------|
-| **vtracer** | Multi-color logos, illustrations, photographic-ish art | Rust (native + wasm) | ✅ full color | ✅ `vtracer-wasm` npm, first-party | MIT | Active; release in 2025, pushes in 2026 | ~50–200 ms for 1024² on M-series native; ~300–900 ms in browser wasm | **Production default for color** |
+| **vtracer** | Multi-color logos, illustrations, photographic-ish art | Rust (native + wasm) | ✅ full color | ✅ `vectortracer` npm (wasm bindings); `@neplex/vectorizer` (native Node) | MIT | Active; pushes in 2025–2026 | ~50–200 ms for 1024² on M-series native; ~300–900 ms in browser wasm | **Production default for color** |
 | **potrace** | 1-bit shapes: logos, silhouettes, favicon glyphs | C, Python bindings (`pypotrace`), Ruby (`potracer`) | ❌ single color per pass | ⚠️ community ports only (`potrace-wasm`, emscripten forks) | GPL v2 | Stable, low-churn (the reference implementation) | ~20–80 ms for 1024² 1-bit on native | **Canonical for masked shapes** |
 | **imagetracerjs** | Pure-browser, no-build, posterized color output | JavaScript | ✅ color via quantization | ✅ (it *is* JS) | Unlicense | Last updated Nov 2023; stable but inactive | Slow — JS means 1–5 s for 1024² | Fallback for ultra-lightweight browser embeds |
 | **autotrace** | Centerline tracing (line art, signatures, stroke-based logos) | C | ✅ color, limited | ⚠️ no official wasm | GPL v2 | Active; v0.31.10 Jan 2024, ImageMagick 7 + CVE fixes | ~100–400 ms native | Niche: centerline / stroke recovery |
@@ -61,9 +63,11 @@ Notes on the numbers: throughput figures are rough order-of-magnitude from repo 
 
 Browser-side vectorization is strategically important for a prompt-to-asset website: it eliminates server round-trips on potentially large PNGs, keeps user images private (nothing leaves the tab), and removes a per-request cost center.
 
-### vtracer-wasm (first-party, production-ready)
+### vtracer wasm (first-party bindings)
 
-- npm package [`vtracer-wasm`](https://www.npmjs.com/package/vtracer-wasm), published July 2025, maintained by visioncortex. Companion package [`vectortracer`](https://www.npmjs.com/package/vectortracer) predates it and exposes the lower-level wasm bindings.
+> **Updated 2026-04-21:** The npm package specifically named `vtracer-wasm` could not be confirmed on the npm registry as of April 2026. The established first-party wasm package is [`vectortracer`](https://www.npmjs.com/package/vectortracer) (maintained by visioncortex, provides Wasm bindings to the vtracer Rust library). A community package `vtracer-color` exists but is stale (last published 2023). Verify the exact current package name at [npmjs.com/search?q=vtracer](https://www.npmjs.com/search?q=vtracer) before installing. The guidance below applies to whatever package currently ships the official wasm build — use the `vectortracer` package until `vtracer-wasm` is confirmed.
+
+- npm package [`vectortracer`](https://www.npmjs.com/package/vectortracer) — wasm bindings to visioncortex's vtracer Rust library. The community also references `@neplex/vectorizer` as a native Node.js binding alternative.
 - Produced directly from the Rust crate via `wasm-pack`, so the Rust and wasm builds share a single algorithm implementation — no drift.
 - API surface mirrors the CLI: pass an `ImageData` (or `Uint8Array` RGBA), a `Config` object with `color_precision`, `filter_speckle`, etc., and receive an SVG string back.
 - Webworker-compatible (per the `vectortracer` package metadata), which is mandatory: tracing a 1024² image synchronously on the main thread will jank the UI for hundreds of milliseconds.
@@ -260,7 +264,9 @@ The `-threshold 50%` cutoff is the one lever that actually matters here. For thi
 **3. Post-trace cleanup with SVGO.** Config that preserves quality while still compressing:
 
 ```js
-// svgo.config.js
+// svgo.config.js (compatible with SVGO v4)
+// Note: removeViewBox and removeTitle are disabled by default in SVGO v4.
+// The `removeViewBox: false` override from v3 configs is no longer needed.
 export default {
   floatPrecision: 2,
   multipass: true,
@@ -269,7 +275,7 @@ export default {
       name: "preset-default",
       params: {
         overrides: {
-          removeViewBox: false,
+          // removeViewBox is already false by default in v4 — no override needed
           cleanupIds: { preserve: [] },
           removeHiddenElems: true,
           convertPathData: { floatPrecision: 2, transformPrecision: 3 },
@@ -285,7 +291,9 @@ export default {
 
 Run with `svgo -c svgo.config.js out.svg -o out.min.svg`. Expect 40–70% size reduction.
 
-Keep `removeViewBox: false` (SVGO's default flips this off for good reason — without `viewBox`, the SVG is not responsive). Keep `mergePaths.force: false` — forcing merges across different fills causes subtle color bleeds.
+> **Updated 2026-04-21:** SVGO v4 changed `removeViewBox` to be **disabled by default** in `preset-default`. Old v3 configs that had `overrides: { removeViewBox: false }` are safe but the override is now redundant — remove it to avoid confusion. The `removeTitle` plugin is also now disabled by default in v4. Install `svgo@4` for new projects.
+
+Keep `mergePaths.force: false` — forcing merges across different fills causes subtle color bleeds.
 
 ### Quality gates (automate these)
 
@@ -329,13 +337,14 @@ A condensed list for wiring vectorization into a Claude/Codex/Gemini skill or a 
 - vtracer repo — [github.com/visioncortex/vtracer](https://github.com/visioncortex/vtracer) — Rust + wasm, MIT, ~5.8k stars, active through 2026.
 - vtracer Rust config — [docs.rs/vtracer Config](https://docs.rs/vtracer/latest/vtracer/struct.Config.html)
 - vtracer docs — [visioncortex.org/vtracer-docs](https://www.visioncortex.org/vtracer-docs)
-- `vtracer-wasm` npm — [npmjs.com/package/vtracer-wasm](https://www.npmjs.com/package/vtracer-wasm) (published 2025-07-25)
-- `vectortracer` npm (older wasm bindings) — [npmjs.com/package/vectortracer](https://www.npmjs.com/package/vectortracer)
+- `vectortracer` npm (first-party wasm bindings) — [npmjs.com/package/vectortracer](https://www.npmjs.com/package/vectortracer) — verify this is still the canonical package before pinning
+- `@neplex/vectorizer` npm (native Node bindings, alternative) — [npmjs.com/@neplex/vectorizer](https://www.npmjs.com/@neplex/vectorizer)
 - potrace official man page — [potrace.sourceforge.net/potrace.1.html](https://potrace.sourceforge.net/potrace.1.html)
 - potrace homepage — [potrace.sourceforge.net](https://potrace.sourceforge.net/)
 - imagetracerjs repo — [github.com/jankovicsandras/imagetracerjs](https://github.com/jankovicsandras/imagetracerjs) (~1.5k stars, Unlicense)
 - imagetracerjs options — [options.md on GitHub](https://github.com/jankovicsandras/imagetracerjs/blob/master/options.md)
-- autotrace repo — [github.com/autotrace/autotrace](https://github.com/autotrace/autotrace) (v0.31.10, Jan 2024)
+- autotrace repo — [github.com/autotrace/autotrace](https://github.com/autotrace/autotrace) (v0.31.1 as of March 2026)
+- SVGO v4 migration guide — [svgo.dev/docs/migrations/migration-from-v3-to-v4/](https://svgo.dev/docs/migrations/migration-from-v3-to-v4/) — **important for upgrading configs**
 - SVGO preset-default docs — [svgo.dev/docs/preset-default](https://svgo.dev/docs/preset-default)
 - SVGO plugin list — [svgo.dev/docs/plugins](https://svgo.dev/docs/plugins)
 

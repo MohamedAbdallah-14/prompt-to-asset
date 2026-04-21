@@ -2,6 +2,8 @@
 
 **Focus:** Fire multiple model calls in parallel, return the first result that passes validation. fal.ai queue mechanics, Promise.race patterns, cancellation, and cost control.
 
+> **Updated 2026-04-21:** fal.ai Queue API mechanics verified — no material API changes since the original research. OpenRouter routing clarified: parallel race is not natively supported (sequential fallback only); parallel dispatch requires issuing concurrent HTTP requests directly. New models relevant to async race patterns: Flux.2 [klein] (Apache 2.0, Jan 2026, sub-second on local GPU — race leg that may resolve before API calls even return from queue). FLUX.1 Kontext [pro] (May 29, 2025) and [dev] (June 26, 2025) added as race candidates for instruction-based image editing tasks.
+
 ---
 
 ## The Pattern
@@ -87,7 +89,9 @@ The main risk in an async race is paying for N model calls when only 1 result is
 
 **Mitigation:** Use `start_timeout` on fal.ai to bound the total wall-clock window. If the best model completes in 12 seconds and the `start_timeout` is 15 seconds, slower runners that haven't started by then are dropped automatically.
 
-For OpenRouter: model fallbacks are sequential by default. OpenRouter does not expose a true parallel-race API — you must issue concurrent requests yourself and use the `models[]` array only for sequential fallback.
+For OpenRouter: model fallbacks are sequential by default. OpenRouter does not expose a true parallel-race API — you must issue concurrent requests yourself and use the `models[]` array only for sequential fallback. OpenRouter's Auto Exacto re-evaluates providers every 5 minutes across throughput, tool-call telemetry, and benchmark scores (on by default for requests with tools) — but this is provider-level load balancing, not model-level parallel racing.
+
+> **Updated 2026-04-21:** OpenRouter confirmation: `models[]` array is sequential fallback only. Parallel racing across different models requires explicit concurrent HTTP requests. The Auto Router (powered by Not Diamond) selects a single model per request — it does not dispatch to multiple models simultaneously. For true parallel race behavior, use fal.ai Queue API directly or issue concurrent OpenAI/Anthropic/BFL API calls and implement `Promise.any` / `asyncio.wait(FIRST_COMPLETED)` in your own orchestrator.
 
 ---
 
@@ -107,11 +111,15 @@ The race only works if validation is fast enough to not negate the parallelism b
 
 A more sophisticated variant: route different asset sub-types to domain-specialized models in parallel, then merge results. Example for a full app icon bundle:
 
-- **Mark generation:** `recraft-v3` (vector specialist)
-- **Background fill / color palette:** `flux-pro` (photorealistic scene specialist)
+- **Mark generation:** `recraft-v4` (vector specialist, Feb 2026 SOTA for native SVG)
+- **Background fill / color palette:** `flux.2-dev` or `flux.2-max` (photorealistic scene specialist)
 - **Composite + platform export:** deterministic pipeline
 
-These three steps are partially parallelizable: start `recraft-v3` and `flux-pro` in parallel; merge when both complete. This is not a race (you need both results) but a parallel async dependency graph — the standard `Promise.all` / `asyncio.gather` pattern.
+These three steps are partially parallelizable: start `recraft-v4` and `flux.2-dev` in parallel; merge when both complete. This is not a race (you need both results) but a parallel async dependency graph — the standard `Promise.all` / `asyncio.gather` pattern.
+
+**FLUX.1 Kontext [pro/dev] as a race leg for editing tasks:** For instruction-based image editing (e.g., "change the icon background color to match brand palette"), FLUX.1 Kontext [pro] (May 29, 2025) and [dev] (June 26, 2025, open-weights, 12B) are strong candidates for a race against a prompt-only diffusion model. Kontext excels at local edits preserving subject identity — useful for logo-on-background compositing and platform-specific adaptations.
+
+> **Updated 2026-04-21:** `recraft-v3` updated to `recraft-v4` (Feb 2026). `flux-pro` updated to `flux.2-dev` / `flux.2-max`. FLUX.1 Kontext added as an editing-task race candidate. Flux.2 [klein] (Apache 2.0, Jan 2026, ~13GB VRAM) is a compelling local race leg: sub-second on RTX 3090 means a local [klein] leg can race against a remote API call and often win on latency for simple briefs. Implement as a `Promise.any` between the local [klein] result and the remote API result; validate both with tier-0 checks and return whichever passes first.
 
 ---
 
@@ -136,8 +144,13 @@ These three steps are partially parallelizable: start `recraft-v3` and `flux-pro
 
 **Sources:**
 - https://fal.ai/docs/model-apis/model-endpoints/queue
+- https://fal.ai/docs/documentation/model-apis/inference/queue
 - https://fal.ai/learn/devs/gen-ai-performance-optimization
 - https://openrouter.ai/docs/guides/routing/model-fallbacks
 - https://openrouter.ai/docs/guides/features/model-routing
 - https://www.geeksforgeeks.org/system-design/how-to-fix-a-race-condition-in-an-async-architecture/
 - https://fal.ai/docs/examples/video-generation/deploy-multi-gpu-inference
+- https://bfl.ai/announcements/flux-1-kontext (FLUX.1 Kontext [pro] release, May 29, 2025)
+- https://bfl.ai/announcements/flux-1-kontext-dev (FLUX.1 Kontext [dev] open weights, June 26, 2025)
+- https://github.com/black-forest-labs/flux2 (Flux.2 [klein] repo)
+- https://bfl.ai/blog/flux2-klein-towards-interactive-visual-intelligence

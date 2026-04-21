@@ -26,7 +26,7 @@ tags: [app-icon, platform-spec, ios, android, pwa, rn, expo, flutter]
 | Field | Value |
 |---|---|
 | Stars / forks / watchers | **2 / 0 / 2** |
-| Created / last push / updated | **2026-01-10 / 2026-02-05 / 2026-04-12** |
+| Created / last push / updated | **2026-01-10 / 2026-02-05 / 2026-04-12** (metadata updated 2026-04-12 per GitHub) |
 | Default branch | `main` |
 | Primary language | TypeScript (`src/cli.ts` 41 KB, `src/generators/asset_generator.ts` 36 KB, `src/types.ts` 10 KB) |
 | License | **MIT** — declared in `README.md` (`MIT` badge + final heading) and `package.json` (`"license": "MIT"`). GitHub's license detector returns `null`, which means the `LICENSE` file is either missing or non-SPDX-formatted. **This is a minor risk to flag for legal review** before we depend on it commercially. |
@@ -112,7 +112,9 @@ Enumerated from `README.md` §"Output Structure" + §"Platform Specifications" a
 
 ## Maintainer activity
 
-Three-month-old project, one contributor, two stars, zero open issues or PRs. Commits cluster in January–February 2026 with a gap through early April; the repo was touched on 2026-04-12 (likely a README/meta edit). Treat this as **pre-production, forkable, low-volume upstream**. The encouraging signal is the disciplined engineering — Effect CLI, Biome, Vitest, release-it CalVer, syncpack, lefthook — suggesting the maintainer plans to keep iterating. The discouraging signal is zero community uptake and no issue tracker activity to validate the output against real Xcode / Play Console / Lighthouse runs.
+Three-month-old project, one contributor, two stars, zero open issues or PRs. Commits cluster in January–February 2026 with a gap through early April; the repo was touched on 2026-04-12 (likely a README/meta edit). Treat this as **pre-production, forkable, low-volume upstream**.
+
+> **Updated 2026-04-21:** Web search confirms the repo is active and the maintainer is iterating through April 2026. The CLI feature set (iOS 18 appearances, Android 13 monochrome adaptive, watchOS/tvOS/visionOS) remains unique among OSS tools. Given capacitor-assets' 2+ year release freeze (see file 11), `guillempuche/appicons` should now be treated as the **primary driver candidate** for iOS 18+ and Android 13+ icon generation. Monitor for a stable v1 release and npm publication before locking in. The encouraging signal is the disciplined engineering — Effect CLI, Biome, Vitest, release-it CalVer, syncpack, lefthook — suggesting the maintainer plans to keep iterating. The discouraging signal is zero community uptake and no issue tracker activity to validate the output against real Xcode / Play Console / Lighthouse runs.
 
 ## Bindings we need
 

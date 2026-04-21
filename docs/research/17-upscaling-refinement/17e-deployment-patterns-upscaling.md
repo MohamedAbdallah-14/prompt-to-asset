@@ -120,8 +120,10 @@ The story "run Real-ESRGAN in the browser" is true but nuanced. What actually wo
 **WebNN is the promising middle ground:**
 
 - Chrome 122+ exposes WebNN with DirectML/CoreML backends; Safari 18+ on macOS supports CoreML Neural Engine via `MLComputeUnitsAll`. Ops for classic conv-based upscalers (Real-ESRGAN, SwinIR blocks) are largely covered.[^webnn-compat][^webnn-techcom]
-- **DirectML was officially deprecated in May 2025**; Windows WebNN now routes through Windows ML / OpenVINO. Any shipping WebNN plan needs to target post-deprecation execution providers.[^webnn-compat]
+- **DirectML status clarification (Updated 2026-04-21):** DirectML entered **sustained engineering** at Microsoft Build 2025 — it is supported but receives no new feature development. New feature work has moved to WinML / Windows ML. On Windows, Chrome's WebNN backend continues to use DirectML as the default (with Windows ML on Win 11 24H2+ as a secondary option). The W3C WebNN spec reached Candidate Recommendation in January 2026, covering 95 ops across CoreML, Windows ML/DirectML, and ONNX Runtime WebNN EP. Any shipping WebNN plan should target the ONNX Runtime Web path to be portable across the evolving Windows backends.[^webnn-compat]
 - On iOS, CoreML backend is disabled by default in WebNN; the fallback is TFLite+XNNPACK, which is fine for small filters but not ideal for 4× SR.
+
+> **Updated 2026-04-21:** Firefox has now shipped WebGPU support in stable (no longer flag-only), meaning `navigator.gpu` is available across Chrome, Edge, Firefox, and Safari as of early 2026. The feature-detect is still required (some devices and enterprise policies disable it), but the "Firefox workaround" fallback is less critical than in 2024. WebNN is also maturing rapidly — the spec reached Candidate Recommendation in January 2026.
 
 **Practical rule for the prompt-to-asset product:**
 
@@ -150,7 +152,7 @@ Dynamic axes are critical: fixed-shape exports are painful because upscaler inpu
 - **CoreML:** `coremltools.convert(onnx_model, ...)` for Apple Silicon / iOS. Works cleanly for Real-ESRGAN (conv-heavy). Transformer-heavy models like SwinIR sometimes need manual op shims.
 - **TensorRT:** `trtexec --onnx=real_esrgan_x4.onnx --fp16 --saveEngine=real_esrgan_x4.engine`. Significant speedups for SwinIR/HAT variants — the AniSD upscale suite documents "significant speed uplifts" when using TRT over vanilla PyTorch.[^anisd]
 - **ONNX Runtime Web:** keep the ONNX as-is, optionally quantize to int8 for WASM EP or leave FP16 for WebGPU EP. `onnxruntime-web` ships the WebGPU EP as a first-class backend since mid-2024.[^ms-ortweb]
-- **ncnn + Vulkan:** conversion via `onnx2ncnn` → `.param` + `.bin`. This is the path that ships inside **Upscayl** (44k+ GitHub stars) for cross-platform desktop deployment; ncnn+Vulkan is what makes AGPL-licensed Real-ESRGAN work on Windows/macOS/Linux from a single binary drop.[^upscayl]
+- **ncnn + Vulkan:** conversion via `onnx2ncnn` → `.param` + `.bin`. This is the path that ships inside **Upscayl** (~43–44k GitHub stars as of early 2026, latest v2.15.0) for cross-platform desktop deployment; ncnn+Vulkan is what makes AGPL-licensed Real-ESRGAN work on Windows/macOS/Linux from a single binary drop.[^upscayl]
 
 **Pretrained ONNX availability (save yourself the export):**
 
@@ -202,6 +204,8 @@ class Upscaler:
 ```
 
 With CPU pre-hydration (patch `torch.cuda.is_available` to `False` during snapshot creation, then un-patch after), cold starts drop to <3 s.[^modal-3s]
+
+> **Updated 2026-04-21:** Modal introduced **GPU memory snapshots** in 2025 (alpha opt-in via `enable_memory_snapshot=True`). These capture full GPU state including model weights in VRAM and CUDA kernels, achieving up to 10× faster cold starts on some workloads — sub-1-second is possible. Standard cold starts without snapshots are 2–4 s. Modal reached unicorn status ($1.1B valuation, September 2025 Series B).
 
 Cost: **1 A10G at ~$1.10/h ≈ $0.018/min idle** for warm pool. Worth it if sessions-per-day × generations > ~5,000 — below that, Pattern A is cheaper.
 
@@ -258,7 +262,9 @@ At 10k/day, a **dedicated always-on A10G is the cheapest** if utilization is rea
 [^rocca-swinir]: `rocca/swin-ir-onnx` on Hugging Face. https://huggingface.co/rocca/swin-ir-onnx
 [^anisd]: `Sirosky/Upscale-Hub` — *AniSD Release notes* (TensorRT speed-ups for SwinIR variants). https://github.com/Sirosky/Upscale-Hub/releases/tag/AniSD
 [^upscayl]: `upscayl/upscayl` (44k+ stars) and `upscayl/upscayl-ncnn` (ncnn+Vulkan backend). https://github.com/upscayl/upscayl and https://github.com/upscayl/upscayl-ncnn
-[^webnn-compat]: WebNN.io — *Browser Compatibility* (Chrome, Safari, Edge; DirectML deprecation May 2025). https://webnn.io/en/api-reference/browser-compatibility/api
+[^webnn-compat]: WebNN.io — *Browser Compatibility* (Chrome, Safari, Edge). https://webnn.io/en/api-reference/browser-compatibility/api · Note (2026-04-21): DirectML is in *sustained engineering* (not fully deprecated) — Windows WebNN uses DirectML with WinML on Win 11 24H2+ as an option. W3C WebNN spec reached Candidate Recommendation January 2026.
 [^webnn-techcom]: Microsoft Tech Community — *WebNN: Bringing AI Inference to the Browser*. https://techcommunity.microsoft.com/blog/aiplatformblog/webnn-bringing-ai-inference-to-the-browser/4175003
+[^webgpu-allbrowsers]: VideoCardz — *WebGPU is now supported by all major browsers*. https://videocardz.com/newz/webgpu-is-now-supported-by-all-major-browsers (Firefox stable, early 2026).
+[^modal-unicorn]: Modal Series B ($1.1B valuation, September 2025) — GPU memory snapshots (alpha, up to 10× cold-start reduction). https://modal.com/pricing
 [^pinokio]: XDA Developers — *Pinokio makes installing ComfyUI a breeze*. https://xda-developers.com/pinokio-how-to
 [^comfy-portable]: ComfyUI docs — *ComfyUI (portable) Windows*. http://docs.comfy.org/installation/comfyui_portable_windows

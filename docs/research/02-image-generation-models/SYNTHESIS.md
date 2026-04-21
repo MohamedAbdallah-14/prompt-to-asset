@@ -9,6 +9,8 @@ angles_indexed:
   - 2e-imagen-technical-reports
 ---
 
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # Category 02 — Image Generation Models
 
 ## Scope
@@ -57,7 +59,7 @@ How the underlying *model families* that power modern text-to-image (T2I) system
 ## Controversies / Disagreements
 
 - **Is gpt-image-1 a pure AR model or a Transfusion-style hybrid?** OpenAI says "natively multimodal" but has not disclosed the decoder (see `2b §Open Questions`). Externally this matters because matching its text fidelity in open weights requires knowing whether to copy Emu3 (pure-AR) or Transfusion (AR + diffusion head).
-- **Does the "AR wins text, diffusion wins texture" split persist?** 2026 evidence (GLM-Image) suggests yes for single-stack models; hybrid stacks make it moot (see `2b §Open Questions`). Flow-matching DiTs (FLUX, SD3.5) have narrowed the text gap sharply but still trail gpt-image-1.5 and GLM-Image on long-headline accuracy.
+- **Does the "AR wins text, diffusion wins texture" split persist?** 2026 evidence (GLM-Image, Qwen-Image-2.0) suggests yes for single-stack models; hybrid stacks make it moot (see `2b §Open Questions`). Flow-matching DiTs (FLUX, SD3.5) have narrowed the text gap sharply but still trail gpt-image-1.5 and GLM-Image on long-headline accuracy. Midjourney v8 Alpha (March 2026) improved text accuracy from ~52% (v7) to ~78% but FLUX still leads at 88–92% for multi-word text.
 - **Where is FLUX's quality advantage actually located — VAE, DiT, text encoder, or training data?** Ablation is not published; community attribution splits between (a) higher-channel VAE, (b) 12B parameter count, (c) T5-XXL + CLIP-L + rectified flow, and (d) training curation. Angle 2d leans toward "architecture plus parameters"; angle 2c toward "rectified flow straight paths". Both may be right.
 - **Are closed flagships (Imagen 4, Midjourney v7) secretly rectified-flow too?** Imagen 3's report describes latent diffusion; Imagen 4 has no tech report. Several community post-mortems "hint at rectified-flow-like parameterizations without naming them" (see `2c §Market signals`). Unresolved; relevant for anyone reverse-engineering closed models.
 - **Which benchmark to trust — GenEval, HRS-Bench, T2I-CompBench, LMArena, human-rated pairwise Elo?** Imagen 3's report uses Elo with 99% CI across five axes and 366k ratings (see `2e §4.2`); LMArena uses community voting; GenEval is automated. They disagree on ordering (Imagen 3 vs. FLUX vs. gpt-image-1 flip depending on axis). No canonical answer.
@@ -82,7 +84,7 @@ How the underlying *model families* that power modern text-to-image (T2I) system
 
 The router should dispatch on **task shape** before **vendor preference**:
 
-1. **Asset contains exact in-image text (headlines, UI labels, posters, logos with wordmarks)?** → AR/hybrid first: `gpt-image-1.5` > Gemini 3 Pro Image (Nano Banana Pro) > Ideogram 3 > GLM-Image > FLUX.1 Pro. Avoid pure diffusion (SDXL, SD 1.5) unless fallback-only; typography accuracy is ~50% range (see `2b §3`).
+1. **Asset contains exact in-image text (headlines, UI labels, posters, logos with wordmarks)?** → AR/hybrid first: `gpt-image-1.5` > Gemini 3 Pro Image (Nano Banana Pro) > Ideogram 3 / 3 Turbo > GLM-Image > FLUX.1 Pro. Avoid pure diffusion (SDXL, SD 1.5) unless fallback-only; typography accuracy is ~50% range (see `2b §3`). > **Updated 2026-04-21:** DALL-E 3 is deprecated May 12, 2026 — do not route to it. Use `gpt-image-1` or `gpt-image-1.5`.
 2. **Photoreal texture, portrait, fashion, product shot?** → Flow-matching DiT: FLUX.1 Pro ≈ Imagen 4 Ultra > SD3.5 Large > SDXL. Keep diffusion defaults (see `2d §Asset-generation quality implications`).
 3. **Needs reference images, character/style consistency, multi-turn editing, or subject preservation?** → Gemini 2.5 Flash Image ("Nano Banana") for cheap iteration; Gemini 3 Pro Image or FLUX.1 Kontext for premium. **Do not route to Imagen `generate` SKUs** — they are text-in only (see `2e §5.3`, `2e §10`).
 4. **Tight latency / on-device / cost-bounded (≤ $0.02/image)?** → SANA / SANA-Sprint, FLUX-schnell, SD3.5 Turbo, Imagen 4 Fast, or gpt-image-1 low-quality. All are ≤ 1s at 1024² (see `2c §Productionization`).
@@ -96,7 +98,7 @@ The router should dispatch on **task shape** before **vendor preference**:
 - **SD3 / SD3.5.** MM-DiT with three text encoders (CLIP-L + CLIP-G + T5-XXL). Feed the T5-XXL branch the full paragraph-scale prompt; feed CLIP branches the "short tag" version. Logit-normal timestep sampler — low-noise regions are rich in detail, high-noise in layout (see `2c §7`, `2d §MM-DiT`). SD3.5 Turbo is 4-step distilled; enhance prompts *more* aggressively.
 - **FLUX.1 dev/pro/schnell.** Distilled-CFG head (`FluxGuidance`) — treat "guidance" as a scalar 2.5–5.0, not SDXL's 7.5. RoPE → robust aspect-ratio generalization, prefer non-square aspects freely. Schnell is 4-step; dev is multi-step; pro is API-only. Kontext variant for editing (see `2d §FLUX.1`, `2c §2025-2026 follow-ups`).
 - **SANA / SANA-Sprint.** Gemma text encoder accepts *in-context human instructions* ("Generate an image of…"); use imperative framing. 32× VAE is aggressive — small text is especially risky (see `2c §Productionization`).
-- **gpt-image-1 / gpt-image-1.5.** Per-token pricing ($0.02/$0.07/$0.19 low/medium/high). Best-in-class in-image text; loses to FLUX on photoreal skin. Native world knowledge — prompts can reference real people/objects/brands without template expansion. C2PA metadata attached. No direct CFG knob (see `2b §Model specifics`).
+- **gpt-image-1 / gpt-image-1.5.** Per-token pricing ($0.02/$0.07/$0.19 low/medium/high). Best-in-class in-image text (~98% word accuracy on 1-5 word headlines); loses to FLUX on photoreal skin. Native world knowledge — prompts can reference real people/objects/brands without template expansion. C2PA metadata attached. No direct CFG knob (see `2b §Model specifics`). > **Updated 2026-04-21:** DALL-E 3 is deprecated by OpenAI on **May 12, 2026**; do not route to `dall-e-3` in new code. The replacement is `gpt-image-1` (API, April 2025) / `gpt-image-1.5` (December 2025).
 - **Gemini 2.5 Flash Image (Nano Banana).** MoE transformer, NOT diffusion. 1 image = 1,290 output tokens = ~$0.039 (see `2e §6.1`). Max 3 input images, up to 10 output images per prompt, temperature 0.0–2.0. For editing, leverage *conversation context* — it's the same mechanism as text reasoning. Expose `safetySetting`, `personGeneration` (default `allow_adult` for commercial), `includeRaiReason`.
 - **Gemini 3 Pro Image (Nano Banana Pro).** Up to 14 reference images (5 as character refs), 1K/2K/4K, multilingual localization, Google-Search grounding. Tier-dependent visible sparkle watermark: on for Free/Pro, off for Ultra / AI Studio / Vertex enterprise (see `2e §8.1`).
 - **Imagen 3 / Imagen 4.** Latent diffusion, text-in-only on `generate` SKUs. Imagen 3 `capability-001` SKU is the editing/customization one (image-input capable); Imagen 4 has none — edits must go through Gemini Native Image. Imagen supports six non-English prompt languages in preview (see `2e §5.2`, `2e §9.3`).
@@ -140,7 +142,9 @@ The router should dispatch on **task shape** before **vendor preference**:
 - Xie et al. 2024, *SANA*, arXiv:2410.10629; Chen et al. 2025, *SANA-Sprint*, arXiv:2503.09641.
 - Liu et al. 2023, *InstaFlow*, arXiv:2309.06380.
 - Li et al. 2024, *On the Scalability of Diffusion-based T2I*, arXiv:2404.02883.
-- Xiao et al. 2024, *OmniGen*, arXiv:2409.11340.
+- Xiao et al. 2024, *OmniGen*, arXiv:2409.11340 (CVPR 2025); *OmniGen2*, arXiv:2506.18871 (June 2025).
+- HiDream.ai, *HiDream-I1*, April 2025 (open-source, 17B sparse DiT, MoE); tech report arXiv:2505.22705.
+- Qwen Team / Alibaba, *Qwen-Image* (20B MMDiT, arXiv:2508.02324, August 2025); *Qwen-Image-2.0* (7B, February 2026).
 - ICLR 2026 Blogposts Track, *From U-Nets to DiTs*.
 
 ### Autoregressive / transformer T2I

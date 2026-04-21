@@ -102,6 +102,8 @@ collection.add(images=[img_bytes], ids=["ref-1"], metadatas=[{"brand_id": "acme"
 
 Chroma is simpler to stand up than LanceDB but lacks LanceDB's columnar storage optimizations for large image collections. Use Chroma for prototyping and bundles with <10,000 style references; LanceDB for production scale.
 
+> **Updated 2026-04-21:** The Chroma Rust-core rewrite is **fully shipped** as of Chroma 1.x (currently 1.5.x, latest stable as of February 2026), delivering the advertised ~4× write throughput improvement and enabling true multithreading. The rewrite is no longer "settling" — Chroma 1.x is the stable production line with active development. The multimodal OpenCLIP embedding function remains fully supported; an official runnable multimodal retrieval example (text-to-image, image-to-image) was added to the Chroma cookbook in February 2026.
+
 ---
 
 ## CLIP limitations that matter for brand retrieval

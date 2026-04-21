@@ -1,6 +1,6 @@
 ---
 name: logo
-description: Generate a production-grade logo (primary brand mark). Returns RGBA PNG master + SVG vector + monochrome variant. Route by text-length; never render wordmarks past 3 words in a diffusion sampler.
+description: Generate a production-grade logo (primary brand mark). Returns RGBA PNG master + SVG vector + monochrome variant. Route by text-length; never render wordmarks past 3 words in a diffusion sampler (except strong-text models: gpt-image-1, gpt-image-1.5, ideogram-3[-turbo], gemini-3-pro-image-preview / Nano Banana Pro, where up to ~3 words / ~20 chars renders reliably — include the wordmark in double quotes in the prompt).
 trigger_phrases: [generate a logo, make a logo, design a logo, brand mark, logo for my app]
 ---
 
@@ -10,7 +10,7 @@ trigger_phrases: [generate a logo, make a logo, design a logo, brand mark, logo 
 - **Master:** 1024×1024 RGBA PNG, transparent background, subject centered in 80% safe zone
 - **Vector:** SVG, ≤200 paths, fixed viewBox, SVGO optimized
 - **Monochrome:** 1-color mono variant (auto-derived via luminance threshold or separate generation)
-- **No wordmark past 3 words in diffusion output** — composite SVG type
+- **No wordmark past 3 words in diffusion output** — composite SVG type (except strong-text models: gpt-image-1, gpt-image-1.5, ideogram-3[-turbo], gemini-3-pro-image-preview / Nano Banana Pro, where up to ~3 words / ~20 chars renders reliably — include the wordmark in double quotes in the prompt)
 
 ## Routing by intent
 | text in mark? | vector needed? | primary | fallback |

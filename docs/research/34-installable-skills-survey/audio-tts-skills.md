@@ -11,6 +11,8 @@ scope: "Claude Code, Cursor, Codex, Windsurf, Gemini CLI"
 
 Research into the full landscape of installable audio/TTS/voice skills for AI coding assistants as of April 2026. Covers official ElevenLabs products, community skills, multi-provider plugins, and music generation tools.
 
+> **Updated 2026-04-21:** ElevenLabs Eleven v3 (`eleven_v3`) is now the flagship TTS model, supporting 70+ languages with Audio Tags ([whispers], [sighs], [shouts]) for expressive delivery and a 68% reduction in errors on complex text. The `eleven_flash_v2_5` model costs 0.5 credits/character (effectively 20,000 characters/month on the free 10k credit plan, not 10,000). Free tier still has no commercial usage rights. The ElevenLabs MCP server is MCP spec 2025-11-25 compliant; SSE transport is deprecated but backward-compatible until 30 June 2026.
+
 ---
 
 ## 1. elevenlabs/elevenlabs-mcp (1,300 stars) — Official MCP Server

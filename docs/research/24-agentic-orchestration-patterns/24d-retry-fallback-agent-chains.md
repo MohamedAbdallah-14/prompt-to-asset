@@ -63,6 +63,8 @@ else:
 - Circuit breakers need tuning per provider. Imagen's free tier has aggressive quota resets; a 10-second cooldown is appropriate. Enterprise-tier providers may warrant a longer 5-minute cooldown to avoid repeated quota checks.
 - Do not implement circuit breakers with in-memory state when the MCP server is multi-process or serverless. Use an external store (Redis, DynamoDB) or accept that each process has independent circuit state.
 
+> **Updated 2026-04-21:** The OpenAI Assistants API is being deprecated mid-2026. Retry logic that calls Assistants API endpoints should be migrated to the Agents SDK. The Agents SDK works with any Chat Completions-compatible endpoint, so existing fallback chains to non-OpenAI providers still apply without changes. MCP transport note: SSE transport officially stopped being accepted by Claude connectors on April 1, 2026; any MCP-based retry/fallback infrastructure must use Streamable HTTP transport now.
+
 ## References
 
 - [Retries, fallbacks, and circuit breakers in LLM apps — Portkey AI](https://portkey.ai/blog/retries-fallbacks-and-circuit-breakers-in-llm-apps/)

@@ -112,12 +112,19 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
   };
 
   // Free-tier routes, ranked best-first (same order as CLI doctor).
+  // NOTE 2026-04-21: Google removed Gemini / Imagen image-gen from its free API
+  // tier in Dec 2025. `gemini-3.1-flash-image-preview`, `gemini-3-pro-image-preview`,
+  // `gemini-2.5-flash-image` and `imagen-4.0-*` all show "Not available" in the
+  // Free Tier column of the official pricing page and return HTTP 429 with
+  // `limit: 0` on unbilled projects. AI Studio web UI remains free for
+  // interactive generation — see paste_only_providers below. Cloudflare Workers
+  // AI is now the top-ranked free API route.
   const freeRanked: Array<{ rank: number; id: string; live: boolean; note: string }> = [
     {
       rank: 1,
-      id: "google",
-      live: Boolean(avail["google"]),
-      note: "Google AI Studio free tier — Gemini 3 Flash Image (Nano Banana), ~1,500 images/day. GEMINI_API_KEY — no credit card."
+      id: "cloudflare",
+      live: Boolean(avail["cloudflare"]),
+      note: "Cloudflare Workers AI — Flux-1-Schnell + SDXL, 10k neurons/day free. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
     },
     {
       rank: 2,
@@ -127,18 +134,12 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
     },
     {
       rank: 3,
-      id: "cloudflare",
-      live: Boolean(avail["cloudflare"]),
-      note: "Cloudflare Workers AI — 10k neurons/day free. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
+      id: "pollinations",
+      live: Boolean(avail["pollinations"]),
+      note: "Pollinations — zero signup, rate-limited (~1 req/15s anonymous). Silently swaps models per request."
     },
     {
       rank: 4,
-      id: "pollinations",
-      live: Boolean(avail["pollinations"]),
-      note: "Pollinations — zero signup, rate-limited (~1 req/15s anonymous)."
-    },
-    {
-      rank: 5,
       id: "stable-horde",
       live: Boolean(avail.horde),
       note: "Stable Horde — community GPUs, anonymous queue can be long."
@@ -149,6 +150,7 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
   // when the ApiAvailability shape gains new fields.
   const paid: DoctorResult["paid_providers"] = [
     { id: "openai", key_set: avail.openai, note: paidHint("openai") },
+    { id: "google", key_set: Boolean(avail["google"]), note: paidHint("google") },
     { id: "ideogram", key_set: avail.ideogram, note: paidHint("ideogram") },
     { id: "recraft", key_set: avail.recraft, note: paidHint("recraft") },
     { id: "flux", key_set: avail.flux, note: paidHint("flux") },
@@ -174,8 +176,12 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
   };
 
   const anyPaid = paid.some((p) => p.key_set);
+  // Google is intentionally excluded from the free-route count: as of
+  // 2026-04-21 its image API has no free tier (see note above freeRanked).
+  // An unbilled GEMINI_API_KEY returns 429 with limit:0, so treating it as
+  // "live free" misleads the host LLM into picking a route that cannot run.
   const anyFree = Boolean(
-    avail.google || avail.huggingface || avail.cloudflare || avail.pollinations || avail.horde
+    avail.huggingface || avail.cloudflare || avail.pollinations || avail.horde
   );
 
   const modes_available = {
@@ -190,18 +196,23 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
   const what_to_try_next: string[] = [];
   if (!anyPaid && !anyFree) {
     what_to_try_next.push(
-      "You are offline from every free route. Grab a free GEMINI_API_KEY at https://aistudio.google.com/apikey (no credit card) and `export GEMINI_API_KEY=...`."
+      "No free or paid API routes are live. Zero-key paths still work: ask the LLM for `inline_svg mode` on a logo/favicon/icon, or use `external_prompt_only` to paste into https://aistudio.google.com (free web UI) and then call asset_ingest_external."
     );
     what_to_try_next.push(
-      'Or use inline_svg for logos/favicons/icons — zero network, no key. Ask the LLM: "generate an app icon, inline_svg mode".'
+      "For a free programmatic route, the best single unlock is Cloudflare Workers AI: sign up at https://dash.cloudflare.com → Workers AI → create an API token, then `export CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=...`. Flux-1-Schnell, 10k neurons/day free, no credit card."
     );
   } else if (!anyPaid) {
     what_to_try_next.push(
       "Fully operational on free tier. Ask the LLM: `generate a favicon for my app, inline_svg mode`."
     );
-    if (!avail.google) {
+    if (!avail.cloudflare) {
       what_to_try_next.push(
-        "For hero/OG images, `export GEMINI_API_KEY=...` unlocks Nano Banana (~1.5k free images/day)."
+        "For hero/illustration output, Cloudflare Workers AI is the best free programmatic route (Flux-1-Schnell, 10k neurons/day). Set CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID from https://dash.cloudflare.com."
+      );
+    }
+    if (avail["google"]) {
+      what_to_try_next.push(
+        "GEMINI_API_KEY is set, but Gemini/Imagen image-gen has no free API tier (removed 2025-12). The key still works for text/multimodal on the free tier. For image-gen, enable billing on the GCP project ($0.039/img Nano Banana, $0.02/img Imagen 4 Fast) or use the free AI Studio web UI: https://aistudio.google.com → generate → download → call asset_ingest_external."
       );
     }
   } else {
@@ -239,6 +250,8 @@ function paidHint(name: string): string {
   switch (name) {
     case "openai":
       return "gpt-image-1 / gpt-image-1.5 / dall-e-3 — best transparent PNG + text rendering";
+    case "google":
+      return "Gemini 3 Flash Image (Nano Banana) / Imagen 4 — billing required on the GCP project; no API free tier as of 2025-12. Nano Banana $0.039/img, Imagen 4 Fast $0.02/img. AI Studio web UI (https://aistudio.google.com) is free but paste-only.";
     case "ideogram":
       return "Ideogram 3 / 3 Turbo — best-in-class wordmark rendering";
     case "recraft":
@@ -269,6 +282,8 @@ function pasteHint(name: string): string {
       return "https://firefly.adobe.com — commercial indemnity; enterprise IMS OAuth only";
     case "krea":
       return "https://www.krea.ai — realtime canvas; no stable API";
+    case "google-aistudio":
+      return "https://aistudio.google.com — free interactive UI for Gemini/Imagen image-gen. Download the PNG, then call asset_ingest_external.";
     default:
       return "";
   }

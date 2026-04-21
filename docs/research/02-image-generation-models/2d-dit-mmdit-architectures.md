@@ -98,7 +98,7 @@ The "MM-DiT + parallel blocks" recipe from FLUX has since been adopted by HiDrea
 - **Training:** multi-task from scratch on a curated X2I ("anything to image") dataset. Knowledge transfer across tasks is explicit — editing improves from co-training on pose estimation, etc.
 - **Implication:** DiT's native sequence-of-tokens interface is what makes this possible. U-Nets cannot ingest arbitrary interleaved text+image histories without external cross-attention plumbing; a DiT can treat them all as one flat sequence with appropriate positional encoding.
 
-OmniGen2 (2025) continues this direction with an MM-DiT backbone, and the "unified T2I + edit + ref" pattern now shows up in GPT-Image, FLUX Fill/Redux, and HunyuanImage 3.0[^8].
+**OmniGen2** (June 16, 2025, arXiv:2506.18871) continues this direction with a dual-pathway design (3B text model + 4B image generation model, ~7B total), decoupled image tokenizer, and Qwen-VL-2.5 as the vision-language backbone. It supports precise local editing via natural language, multi-reference composition, and runs at ~17 GB VRAM. The "unified T2I + edit + ref" pattern now shows up in GPT-Image, FLUX Fill/Redux, Qwen-Image-Edit, and HunyuanImage 3.0[^8].
 
 ## Adjacent solutions
 
@@ -112,7 +112,7 @@ OmniGen2 (2025) continues this direction with an MM-DiT backbone, and the "unifi
 
 The architecture choice has concrete, non-cosmetic impact on production asset pipelines:
 
-1. **Typography and text rendering.** MM-DiT's bidirectional joint attention is the main driver of legible in-image text. SD3, FLUX.1, and Qwen-Image all substantially outperform SDXL and even DALL-E 3 on typography benchmarks — not because the text encoder is bigger (PixArt-α already used T5-XXL) but because the image tokens can attend back into the text tokens.[^4][^8]
+1. **Typography and text rendering.** MM-DiT's bidirectional joint attention is the main driver of legible in-image text. SD3, FLUX.1, and Qwen-Image all substantially outperform SDXL and even DALL-E 3 / gpt-image-1 (for diffusion-side models) on typography benchmarks — not because the text encoder is bigger (PixArt-α already used T5-XXL) but because the image tokens can attend back into the text tokens. > **Updated 2026-04-21:** DALL-E 3 is being deprecated May 12, 2026; the correct OpenAI reference for current typography comparisons is **gpt-image-1 / gpt-image-1.5**, which as a hybrid AR/diffusion model actually *leads* the field on short-headline word accuracy (~98%), outperforming pure diffusion MM-DiT models.[^4][^8]
 2. **Long-prompt adherence.** With T5-XXL (up to 512 tokens) and transformer-depth-limited attention, MM-DiT models retain semantic detail in paragraph-length prompts where CLIP-based U-Nets silently truncate at 77 tokens.[^2][^4]
 3. **Aspect ratio and resolution flexibility.** RoPE-based DiTs (FLUX, Lumina, SANA) generate coherent images across 512² to 2K+ with one checkpoint; U-Nets typically need a resolution-specific refiner pass (SDXL refiner, Stable Cascade).[^8]
 4. **Editing and controllability.** Unified DiTs (OmniGen, FLUX Fill/Redux, Qwen-Image-Edit) do reference-guided generation, subject preservation, and pose/depth conditioning from a single checkpoint without LoRA or ControlNet training — a major simplification for asset-factory pipelines.
@@ -121,8 +121,12 @@ The architecture choice has concrete, non-cosmetic impact on production asset pi
 
 ## Market and competitor signals
 
-- **Open weights frontier (2024–2025):** FLUX.1-Dev (non-commercial, 12B), FLUX.1-Pro (API-only), SD 3.5 Large (8B, MM-DiT), Hunyuan-DiT, Qwen-Image (28.85B MMDiT, Apache 2.0), HiDream-I1. Every frontier open model is MM-DiT. U-Net-based frontier models have effectively ceased.[^8]
-- **Closed commercial:** GPT-Image (OpenAI), Midjourney v7, Ideogram 3, Imagen 4 — architectures undocumented, but leaked signals and inference behavior (long-prompt adherence, typography) are consistent with MM-DiT-style backbones.
+- **Open weights frontier (2024–2026):** FLUX.1-Dev (non-commercial, 12B), FLUX.1-Pro / FLUX1.1 [pro] / FLUX1.1 [pro] Ultra (API-only; Ultra adds 4 MP output, image conditioning), FLUX.1 Tools (Fill, Redux, Canny, Depth — Nov 2024), FLUX.1 Kontext [pro/max] (API, May 2025) + [dev] (open weights, June 2025), SD 3.5 Large (8B, MM-DiT, Oct 2024), HiDream-I1 (17B sparse MoE DiT, open, April 2025), Qwen-Image (20B MMDiT, open, Aug 2025) + Qwen-Image-2.0 (7B, Feb 2026). Every frontier open model is MM-DiT or sparse-MoE-DiT. U-Net-based frontier models have effectively ceased.[^8]
+
+> **Updated 2026-04-21:** HiDream-I1 (April 2025, tech report arXiv:2505.22705) is a 17B sparse DiT with dynamic MoE — open-sourced. Qwen-Image (August 2025, arXiv:2508.02324) is Alibaba's 20B MMDiT open-weights release; Qwen-Image-2.0 (February 2026, 7B) significantly reduces parameter count while improving benchmarks. OmniGen2 (June 2025, arXiv:2506.18871) is a 7B dual-pathway successor to OmniGen with unified generation+editing.
+- **Closed commercial:** GPT-Image / gpt-image-1.5 (OpenAI; DALL-E 3 deprecated May 2026), Midjourney v7 (default since June 2025) / v8 Alpha (March 2026 preview), Ideogram 3 / 3 Turbo (March 2025), Imagen 4 — architectures undocumented, but leaked signals and inference behavior (long-prompt adherence, typography) are consistent with MM-DiT-style or hybrid AR+diffusion backbones.
+
+> **Updated 2026-04-21:** Midjourney v7 became the default in June 2025; v8 Alpha (entirely new GPU-native codebase, 5× faster, native 2K) launched March 2026 with v8.1 Alpha on April 14, 2026. DALL-E 3 is deprecated May 12, 2026 — superseded by **gpt-image-1** (April 2025) and **gpt-image-1.5** (December 2025). Qwen-Image (Alibaba, August 2025, 20B MMDiT) is now open-weights; **Qwen-Image-2.0** (February 2026, 7B) adds native 2K and unified generation+editing.
 - **Inference scale-out:** FLUX.1-schnell's 4-step distillation and SANA's linear attention define the two axes of production cost reduction — step count and per-step FLOPs. Every serious deployment picks a point on that frontier.
 - **Capability gap still open:** editing determinism, identity preservation across multi-turn edits, and 3D-consistent multi-view generation are areas where current MM-DiT checkpoints are still weak; OmniGen2 and FLUX Fill are early moves in this direction.
 

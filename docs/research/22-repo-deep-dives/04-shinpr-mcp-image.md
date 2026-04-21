@@ -26,6 +26,8 @@ tags: [mcp, image, prompt-optimizer, subject-context-style]
 
 TypeScript MCP server, ~100★, 0 forks, 24 tagged releases (latest `v0.10.0` as of 2026). Node 22+. **MIT** license (commercially clean). Published to npm as [`mcp-image`](https://www.npmjs.com/package/mcp-image), invoked via `npx -y mcp-image`. Top dependencies: `@modelcontextprotocol/sdk` (stdio transport + server primitives), `@google/generative-ai`, Zod. Notable shape: one npm package ships **both** a stdio MCP server **and** an installable Agent Skill (`npx mcp-image skills install --path <dir>` drops a `SKILL.md` into `~/.cursor/skills` / `~/.codex/skills` / `~/.claude/skills`) — the only repo in the image-MCP cohort doing this.
 
+> **Updated 2026-04-21:** Confirmed last npm update was April 3, 2026. Status: **actively maintained**. v0.10.0 is current. No breaking changes in the tool schema observed. Adoption decision unchanged.
+
 ## 2. Transport, tool schema, tools exposed
 
 **Transport: stdio only.** `src/server-main.ts` connects `StdioServerTransport` directly — no Streamable HTTP / SSE, no auth. Install recipes for Cursor/Codex/Claude Code all configure `command: "npx", args: ["-y", "mcp-image"]`. Same shape as LogoLoom, `mcp-logo-gen`, `niels-oz/icon-generator-mcp`: local spawn, env-var API key, no HTTP, no OAuth. This is the "existing logo-MCP" pattern from [20e](../20-open-source-repos-landscape/20e-agent-native-webapps-and-gap-analysis.md), not the Figma/Linear/Gamma hosted one.

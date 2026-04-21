@@ -41,6 +41,8 @@ A third practical path — **raster → potrace / vtracer** — is still the def
 
 For our prompt-to-asset + MCP skill, the implication is that **we should prefer Chat2SVG-style LLM-first pipelines for logos/icons/favicons** (clean editable SVG), fall back to **StarVector for image→SVG** (photograph-to-SVG), and expose **potrace/vtracer as a last-resort raster→SVG path** — with explicit warnings about topology quality. The optimization-based DiffVG line is academically important but currently too slow/unedit­able to ship as a user-facing skill.
 
+> **Updated 2026-04-21:** Chat2SVG code is now publicly released at [github.com/kingnobro/Chat2SVG](https://github.com/kingnobro/Chat2SVG) (official repo confirmed at CVPR 2025 publication). The earlier note "code promised at CVPR 2025; expect community reproductions" is now resolved — the official codebase including a web demo is available. StarVector remains fully open (CVPR 2025 confirmed accept, HF models actively downloaded).
+
 ## Paper chronology
 
 | Year | Paper | Venue | Contribution (1-line) | arXiv | Repo / Model |
@@ -204,7 +206,7 @@ Actively usable today (verified repo/HF presence):
 - **SVGCraft** — [github.com/ayanban011/svgcraft](https://github.com/ayanban011/svgcraft). Workshop-grade code, works but less polished.
 - **VectorPainter** — [github.com/hjc-owo/VectorPainter](https://github.com/hjc-owo/VectorPainter). Released March 2025.
 - **StarVector** — [github.com/joanrod/star-vector](https://github.com/joanrod/star-vector); HF models [`starvector/starvector-1b-im2svg`](https://huggingface.co/starvector/starvector-1b-im2svg) and [`starvector/starvector-8b-im2svg`](https://huggingface.co/starvector/starvector-8b-im2svg). **Single highest-leverage OSS drop in this list** — one `from_pretrained` call and you can vectorize images in the browser via a transformers.js port.
-- **Chat2SVG** — project page [chat2svg.github.io](https://chat2svg.github.io/), code promised at CVPR 2025; expect community reproductions via PyTorch-SVGRender pattern.
+- **Chat2SVG** — project page [chat2svg.github.io](https://chat2svg.github.io/), code officially released at [github.com/kingnobro/Chat2SVG](https://github.com/kingnobro/Chat2SVG) (CVPR 2025 open access). Web demo available. Anthropic API support added March 2025. *(Updated 2026-04-21: code confirmed released, earlier "expected community reproductions" note is now obsolete.)*
 - **LayerDiffuse** — [github.com/layerdiffusion/LayerDiffuse](https://github.com/layerdiffusion/LayerDiffuse). Shipped with A1111 / Forge / ComfyUI. The single most mature repo in the list.
 
 Not fully open:

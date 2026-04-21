@@ -2,6 +2,8 @@
 
 **Focus:** Generate N variants simultaneously from one or more models, score with a VLM judge, return the highest-scoring result. Research basis, practical implementation, and cost math.
 
+> **Updated 2026-04-21:** Model pricing in examples updated to reflect April 2026 actuals. Cross-model BoN example updated: Recraft V4 replaces V3; Ideogram transparent endpoint corrected; gpt-image-1-mini added as a fourth cross-model candidate. VLM judge table prices rechecked — figures remain directionally accurate.
+
 ---
 
 ## Research Basis: Best-of-N Sampling in LLMs
@@ -53,15 +55,17 @@ For the asset pipeline, Gemini Flash or Claude Haiku with a structured JSON rubr
 
 Scenario: `logo-with-text-1-3-words`, generating N=3 variants with `ideogram-3-turbo` then scoring with GPT-4o mini.
 
+> **Updated 2026-04-21:** Ideogram V3 Turbo pricing dropped to **$0.03/image** (Turbo tier) as of 2026. The cost math below is corrected from the original $0.08 figure.
+
 ```
-Generation: 3 × $0.08 = $0.24
+Generation: 3 × $0.03 = $0.09
 VLM scoring: 3 × $0.001 = $0.003
-Total: $0.243 vs $0.08 for single generation
+Total: $0.093 vs $0.03 for single generation
 ```
 
 Cost multiplier: 3×. Quality improvement from BoN-3: empirically, ~15–25% reduction in "asset fails validation" rate based on LLM BoN literature extrapolated to image generation.
 
-If the downstream cost of a validation failure is a full re-generation call ($0.08) plus user friction, BoN-3 may be cost-neutral or positive even at 3× generation cost — if the VLM judge is well-calibrated.
+If the downstream cost of a validation failure is a full re-generation call ($0.03) plus user friction, BoN-3 may be cost-neutral or positive even at 3× generation cost — if the VLM judge is well-calibrated.
 
 Break-even analysis: BoN-N is cost-positive when:
 ```
@@ -77,13 +81,16 @@ For high-stakes brand assets (app icons, logo masters), BoN-3 or BoN-4 is justif
 A more powerful variant: generate one variant per candidate model, score all, pick the winner. This is a model selection oracle approximation.
 
 Example for `transparent_mark`:
-- Variant A: `gpt-image-1` with `background: "transparent"`
-- Variant B: `ideogram-3-turbo` with `style: "transparent"`
-- Variant C: `recraft-v3` SVG rasterized
+- Variant A: `gpt-image-1` with `background: "transparent"` ($0.034–0.133/image)
+- Variant B: `ideogram-3-turbo`, endpoint `/ideogram-v3/generate-transparent`, `rendering_speed: "TURBO"` ($0.03/image)
+- Variant C: `recraft-v4` SVG rasterized ($0.08 vector / $0.30 pro vector)
+- Variant D (optional): `gpt-image-1-mini` with `background: "transparent"` (~$0.008/image, lower fidelity)
 
-Score all three. Pick the winner. This costs 3× generation but selects the best model for this specific brief — useful when your routing confidence is low (brief is ambiguous or atypical).
+Score all. Pick the winner. Cross-model BoN costs N× generation but selects the best model for this specific brief — useful when your routing confidence is low (brief is ambiguous or atypical).
 
-**Caveat:** Cross-model BoN requires API keys for all three providers. It is a `api` mode feature only.
+> **Updated 2026-04-21:** Variant B corrected from `style: "transparent"` (deprecated draft parameter) to the `/ideogram-v3/generate-transparent` endpoint with `rendering_speed: "TURBO"`. Variant C updated from `recraft-v3` to `recraft-v4` (SOTA for native SVG as of Feb 2026; no `style_id` support — if brand-style reference is required, keep `recraft-v3` in the cross-model set). Variant D added: `gpt-image-1-mini` is a valid budget candidate for cross-model BoN when cost is a primary constraint.
+
+**Caveat:** Cross-model BoN requires API keys for all providers. It is an `api` mode feature only. Note that Recraft V4 Pro Vector ($0.30/image) makes it the most expensive leg in the cross-model set — only include it when SVG fidelity is the discriminating quality axis.
 
 ---
 

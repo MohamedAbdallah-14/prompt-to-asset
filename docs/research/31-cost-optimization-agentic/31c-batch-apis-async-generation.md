@@ -58,19 +58,27 @@ const batch = await anthropic.beta.messages.batches.create({ requests: batchRequ
 - 50% cost discount on all supported endpoints
 - Does NOT consume standard rate limit tokens (separate pool)
 
-**Critically for this project: `/v1/images/generations` and `/v1/images/edits` are explicitly supported endpoints.** This means gpt-image-1 generation can be batched.
+> **Updated 2026-04-21:** As of March 22, 2026, **GPT Image 1.5 is OpenAI's current flagship image model**; GPT Image 1 is labeled "previous generation." The Batch API supports both: `gpt-image-1`, `gpt-image-1-mini`, `gpt-image-1.5`, and `chatgpt-image-latest`. For new integrations, prefer `gpt-image-1.5`. GPT Image 1 remains available for batch (useful for its advanced inpainting/editing capabilities).
 
-**gpt-image-1 batch pricing:**
-- Standard: ~$0.04/image (1024×1024, standard quality)
-- Batch: ~$0.02/image
+**Critically for this project: `/v1/images/generations` and `/v1/images/edits` are explicitly supported endpoints.** Image generation can be batched for all current OpenAI image models.
 
-For an icon pack of 20 variants at batch price: $0.40 vs $0.80. At scale (1,000 icon packs/month): $400 vs $800.
+**Image generation batch pricing (April 2026):**
+
+| Model | Standard (1024×1024 medium) | Batch (50% off) |
+|---|---|---|
+| gpt-image-1 | ~$0.042/image | ~$0.021/image |
+| gpt-image-1-mini | ~$0.011/image | ~$0.006/image |
+| gpt-image-1.5 | ~$0.034/image (medium) | ~$0.017/image |
+
+> **Note:** The SYNTHESIS.md figure of "$0.04/image standard" for gpt-image-1 was approximate; the confirmed rate is ~$0.042/image medium quality. High quality is ~$0.167/image. Batch halves the token rates, not always exactly half per image due to the token-based billing model.
+
+For an icon pack of 20 variants (gpt-image-1 medium, batch): ~$0.42 vs $0.84 standard. For gpt-image-1.5 medium batch: ~$0.34 per 20 variants.
 
 **Implementation:**
 ```jsonl
 {"custom_id": "req-001", "method": "POST", "url": "/v1/images/generations",
- "body": {"model": "gpt-image-1", "prompt": "...", "n": 1,
-          "size": "1024x1024", "background": "transparent"}}
+ "body": {"model": "gpt-image-1.5", "prompt": "...", "n": 1,
+          "size": "1024x1024", "quality": "medium"}}
 ```
 
 Upload as JSONL to the Files API, then create the batch:

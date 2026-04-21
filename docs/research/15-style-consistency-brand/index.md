@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 15 — Style Consistency Brand
 
 Machine-readable brand bundles (DTCG tokens + style reference images + LoRA / `--sref` / `style_id` handle + `do_not[]`) injected at every call; K-means + ΔE2000 palette validation.

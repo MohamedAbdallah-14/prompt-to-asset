@@ -33,6 +33,8 @@ installs** on LobeHub. Seven versions shipped in a nine-day burst
 review icon generation"). Unpacked size 107.7 KB / 45 files — tiny by
 MCP-server standards.
 
+> **Updated 2026-04-21:** As of April 2026 the repo has been effectively unmaintained for ~8 months (last release 2025-08-16). Star count and npm download figures remain at research-time lows. No community forks or PRs observed. Classification: **abandoned-beta**. Confirm status before any dependency decision.
+
 ## Transport and distribution
 
 **stdio-only**, `bin/mcp-server.js` invoked via `npm install -g
@@ -160,7 +162,7 @@ left to the user or agent.
   Streamable HTTP + OAuth. Users cannot try the tool without installing
   Node and editing a JSON config.
 - **Single-author, single-week, pre-1.0.** Seven releases in nine days then
-  silence since 2025-08-16; 1 star; effectively unmaintained.
+  silence since 2025-08-16 (~8 months as of Apr 2026); 1 star; effectively unmaintained.
 
 ## Comparison to the other icon/logo MCPs
 

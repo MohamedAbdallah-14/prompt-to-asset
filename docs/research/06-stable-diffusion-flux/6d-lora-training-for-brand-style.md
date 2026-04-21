@@ -50,8 +50,8 @@ Practical heuristic for T2I style work: **start with LoRA + DoRA at r=16**; fall
 
 | Tool | Models | Hardware floor | Strengths | Weaknesses |
 |---|---|---|---|---|
-| **ostris/ai-toolkit** | Flux.1 dev/schnell, Flux.2 dev, SDXL, SD3.5, Wan 2.1 video | 24 GB VRAM (12 GB with quant for Flux) | De facto Flux standard; clean YAML configs; active dev; good defaults | Younger codebase than kohya; fewer optimizers |
-| **kohya-ss/sd-scripts** | SD1.5, SD2, SDXL, SD3, Flux (experimental) | 8–12 GB (SDXL LoRA with xformers) | Mature; every knob exposed; bmaltais GUI; supports LoKr/LoHA via `--network_module=lycoris.kohya` | Config sprawl; Flux support lags ostris |
+| **ostris/ai-toolkit** | Flux.1 dev/schnell, Flux.2 dev, SDXL, SD3.5 (LoRA at 8-bit on 24 GB), Wan 2.1 video, Qwen-Image | 24 GB VRAM (12 GB with quant for Flux) | De facto Flux standard; clean YAML configs; active dev; good defaults; web UI included | Younger codebase than kohya; fewer optimizers |
+| **kohya-ss/sd-scripts** | SD1.5, SD2, SDXL, SD3, SD3.5, Flux (production, merged from sd3 branch into main) | 8–12 GB (SDXL LoRA with xformers) | Mature; every knob exposed; bmaltais GUI; supports LoKr/LoHA via `--network_module=lycoris.kohya`; Flux training via `flux_train_network.py` | Config sprawl; Flux support now in main but less documented than ostris |
 | **Hugging Face diffusers + PEFT** | All diffusers-supported | 8 GB+ | Pythonic; easy to embed in pipelines; PEFT native DoRA/LoKr | Less optimized than kohya for disk/VRAM |
 | **Replicate `ostris/flux-dev-lora-trainer`** | Flux.1 dev | Cloud (A100/H100) | $2–4 per train; auto-captioning; outputs safetensors | Closed pipeline; rank/step defaults fixed unless you fork |
 | **fal.ai `flux-lora-fast-training`** | Flux.1 dev | Cloud | ~5 min trains; API-first; good for product integration | $3–6 per run; fewer knobs |
@@ -119,7 +119,9 @@ Training the LoRA is half the job. "Style lock" = reliably reproducing the brand
 3. **Multi-LoRA stacks.** Stack a brand-style LoRA with a format LoRA (e.g., "iOS app icon shape") at weights 1.0 / 0.7. Verify there is no rank-collision by testing each individually first.
 4. **Block-weight merging (SDXL).** `lora-block-weight` lets you attenuate specific UNet blocks. Style is concentrated in mid/up blocks; content is in down blocks. Zero out down blocks of the style LoRA to avoid subject contamination.
 5. **DoRA for cleaner blending.** Multiple stacked DoRA adapters interfere less than stacked LoRAs because the magnitude vector is dimension-wise rather than shared, so per-channel saturation is smoother.
-6. **Negative prompts on SDXL** (Flux ignores CFG-style negatives since it uses guidance distillation, though `flux-dev` does honor a weak negative via guidance_scale tricks). For SDXL brand locks: `"photograph, 3d render, realistic, gradient, watermark, text"` depending on what the base model likes to insert.
+6. **Negative prompts on SDXL** (Flux does not support negative prompts — the entire Flux family uses guidance distillation with no unconditional branch). Community workarounds exist: ComfyUI `FluxPseudoNegativePrompt` node rewrites negatives as affirmative antonyms; "true CFG" via double forward pass + dynamic thresholding is possible but costs ~2× inference time and is not exposed by any commercial endpoint. For Flux, convert all negatives to affirmative descriptions. For SDXL brand locks: `"photograph, 3d render, realistic, gradient, watermark, text"` depending on what the base model likes to insert.
+
+> **Updated 2026-04-21:** The claim that Flux.1 [dev] "honors a weak negative via guidance_scale tricks" is misleading. Flux.1 [dev]'s guidance distillation means there is no unconditional branch to apply a negative to. The `guidance_scale` parameter is a conditioning scalar on the distilled model, not an extrapolation coefficient. Raising guidance_scale does not "hear" a negative prompt — it just makes the model follow the positive prompt more literally. Community CFG-restore experiments (Forge distillation CFG, inverse-cosine remapping) can partially re-enable true CFG but at 2× inference cost and reduced quality; none are available on commercial endpoints.
 7. **Seed sweeps for QA.** For every brand LoRA, generate a 16-prompt × 4-seed matrix covering asset categories (icon, illustration, logo mark, OG header). Visually audit before shipping.
 8. **Temperature / guidance.** SDXL: CFG 5–7 for style LoRAs. Flux.1 dev: guidance 3.0–4.0 is the sweet spot; higher than 5 saturates the style and hurts prompt adherence.
 
@@ -138,6 +140,8 @@ For multi-brand services, keep the base model shared and hot-swap adapters (`dif
   - *Trigger token ignored*: rank too low, or trigger token not rare (collided with CLIP embedding). Re-pick trigger.
   - *Checkerboard / artifact on transparent bg*: base model issue, not LoRA. Route to a transparent-native model (e.g. LayerDiffusion for SDXL) or post-process via rembg.
   - *Flat icons come out "3D-ish"*: Flux base model tilts toward photorealism; either train with higher rank and more examples, or switch to SDXL base which is more permissive of flat/vector aesthetics.
+
+> **Updated 2026-04-21:** **kohya-ss/sd-scripts** Flux support is no longer experimental — the `sd3` branch was merged into `main`, and Flux training via `flux_train_network.py` is production-grade in 2025/2026. **ostris/ai-toolkit** added SD3.5 LoRA training support (8-bit on 24 GB GPU, October 2024) and continues to add models (Wan 2.1 video, Qwen-Image). The ai-toolkit web UI is now bundled, reducing the setup friction. **Stability AI** raised ~$80M in mid-2024 and stabilized financially; the API and DreamStudio remain operational as of April 2026, though two endpoints were discontinued in July 2025 (SD1.6 API path; users should migrate to SDXL or SD3.5). **Replicate** Flux LoRA trainer and **fal.ai** fast training remain the recommended $2–6 cloud paths for Flux LoRAs.
 
 ## Compute & Cost Table (as of Q1 2026)
 

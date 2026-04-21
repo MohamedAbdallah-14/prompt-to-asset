@@ -3,6 +3,8 @@
 **Research date:** 2026-04-20  
 **Context:** prompt-to-asset generates production-grade software assets (logos, app icons, OG images, etc.). This document surveys installable skills and MCP servers that could push those generated assets into Figma, Penpot, Canva, or Creative Cloud — completing the "generate → design-file" loop.
 
+> **Updated 2026-04-21:** Figma now offers a **remote MCP server** at `https://mcp.figma.com/mcp` (no Figma desktop app required). This supersedes the plugin-bridged local server documented below. The remote server is the **recommended** path per Figma docs. Write-to-canvas is in beta (free during beta; will become usage-based paid). A **Full seat** is required to write; **Dev seat** is read-only. The remote server uses Streamable HTTP transport, consistent with MCP spec 2025-11-25. `figma.createNodeFromSvgAsync` (Plugin API method for SVG → native vector nodes) is available in the plugin-bridged local server path; availability via the remote server's write-to-canvas feature is unconfirmed — check the Figma write-to-canvas docs. The Framelink community MCP (`GLips/Figma-Context-MCP`) remains read-only; the official remote server now covers both read and write for supported clients (Claude Code, Cursor, Windsurf, VS Code, Codex).
+
 ---
 
 ## 1. The Official Figma MCP Server (`figma/mcp-server-guide`)
@@ -12,12 +14,14 @@
 - Skills are also listed on `https://officialskills.sh/figma/skills/`
 - Distributed via the official Figma plugin (installed in Figma desktop/browser)
 
-### How It Works
-The Figma MCP is a **two-part system**:
-1. A **Figma plugin** running inside the Figma app that bridges the Plugin API to the MCP layer
-2. An **MCP server** that exposes tools to the AI agent
+> **Updated 2026-04-21:** Figma now offers two server options. The **remote server** (`https://mcp.figma.com/mcp`) is the **recommended** path — no Figma desktop app required, uses Streamable HTTP transport (MCP spec 2025-11-25 compliant). The **desktop server** (local, plugin-bridged) is the legacy path. For new integrations, target the remote server. Write-to-canvas (beta, free during beta period; will become usage-based) requires a Full Figma seat. Read-only works with Dev seat. The plugin-based local server documented below remains valid but is secondary to the remote server.
 
-The plugin must be active in the open Figma file. The MCP server communicates with it over a local socket or SSE channel.
+### How It Works
+The Figma MCP has two paths:
+1. **Remote server** (recommended): `https://mcp.figma.com/mcp` — Streamable HTTP, no plugin required, works with any MCP-compatible client
+2. **Desktop server** (legacy): A **Figma plugin** running inside the Figma app bridges the Plugin API to the MCP layer; the MCP server communicates with it over a local socket or SSE channel
+
+The plugin must be active in the open Figma file when using the desktop path. The remote server connects directly without this requirement.
 
 ### MCP Tools Exposed (complete list)
 
@@ -288,7 +292,8 @@ The repository lists a **Figma Plugin** skill described as covering "Design-to-c
 
 | Tool / Skill | Direction | Image Upload | Auth Required | Agent Platforms | Status |
 |---|---|---|---|---|---|
-| Figma official MCP + `figma-use` skill | Read + Write | Yes (via `createImageAsync` URL) | Figma PAT + plugin open | Claude Code, Cursor, Windsurf, Codex | Production |
+| **Figma remote MCP** (recommended) | Read + Write (beta) | Via write-to-canvas (beta) | Figma PAT; Full seat for write | Claude Code, Cursor, Windsurf, VS Code, Codex | Production (remote); write-to-canvas beta |
+| Figma desktop MCP + `figma-use` skill | Read + Write | Yes (via `createImageAsync` URL) | Figma PAT + plugin open | Claude Code, Cursor, Windsurf, Codex | Production (legacy path) |
 | `figma-generate-design` skill | Write | Via imageHash copy only | Figma PAT + plugin open | Claude Code, Cursor | Production |
 | `figma-implement-design` skill | Read → Code | N/A | Figma PAT + plugin open | Claude Code, Cursor | Production |
 | Framelink / GLips MCP | Read only | No | Figma PAT | Any MCP agent | Production, widely used |

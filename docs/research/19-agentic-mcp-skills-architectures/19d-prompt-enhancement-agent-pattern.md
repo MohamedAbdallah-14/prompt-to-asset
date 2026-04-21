@@ -48,7 +48,7 @@ The three findings that matter most for `prompt-to-asset`:
 
 1. **Asset type is the dominant routing variable, not aesthetic style.** Once the agent classifies `{logo | app-icon | favicon | hero | illustration | og-image | splash}`, almost every other parameter (size, format, transparency, model choice, post-processing pipeline) is *derivable*. Intent classification → asset-type schema → deterministic enrichment is the winning structure. Freeform "creative" prompting belongs *inside* the enrichment step, not at the top of the graph.
 2. **Transparency and vector output are routing decisions, not prompt tricks.** No amount of "transparent background, alpha channel, isolated on white, PNG with alpha" in a Gemini Imagen prompt produces a true RGBA asset, because Imagen does not emit alpha. The agent must route `needs_transparency=true` to `gpt-image-1` (which does emit alpha) or force a `rembg` / `BRIA RMBG` post-processing step. Vector requests must route to Recraft v3 SVG or a `vtracer` pipeline. Prompt-enhancement *cannot* fix a capability mismatch — but the agent layer can detect it and pick the right backend.
-3. **Validation is cheaper than regeneration, and both must live in the graph.** A small vision-LLM QA node (Claude Sonnet or GPT-4o-mini with vision) that checks `{asset spec} vs {rendered image}` for 5-7 hard criteria (correct aspect ratio, no unintended text, transparency present, palette compliance, safe-zone respected) catches ~70% of failures for <$0.003 per call, and feeds a *diff* back into a regenerate loop with a corrected prompt. Without this node the user becomes the QA harness — which is exactly the state `prompt-to-asset` is being built to fix.
+3. **Validation is cheaper than regeneration, and both must live in the graph.** A small vision-LLM QA node (Claude Sonnet 4.6 or an equivalent fast vision model) that checks `{asset spec} vs {rendered image}` for 5-7 hard criteria (correct aspect ratio, no unintended text, transparency present, palette compliance, safe-zone respected) catches ~70% of failures for <$0.003 per call, and feeds a *diff* back into a regenerate loop with a corrected prompt. Without this node the user becomes the QA harness — which is exactly the state `prompt-to-asset` is being built to fix.
 
 Output file:
 `/Users/mohamedabdallah/Work/Projects/prompt-to-asset/docs/research/19-agentic-mcp-skills-architectures/19d-prompt-enhancement-agent-pattern.md`
@@ -81,7 +81,7 @@ The first node in the graph is an intent classifier. Its job is narrow: read the
 Rather than zero-shot LLM classification alone, combine three signals in the classifier node:
 
 1. **Keyword lexicon** — cheap, deterministic, high-precision (e.g. "favicon" ⇒ `favicon` with p≈1.0).
-2. **Structured LLM classification** — use a Claude Haiku / Gemini Flash call with *constrained JSON output* against the closed enum. Hunyuan PromptEnhancer's keypoint rubric (24 fine-grained failure modes) is the precedent for using explicit structured targets rather than free-text "what do they want".
+2. **Structured LLM classification** — use a Claude Haiku 4.5 / Gemini Flash call with *constrained JSON output* against the closed enum. As of late 2025, Claude API's native structured outputs (schema-constrained generation) are GA for Sonnet 4.5 / Opus 4.5 and in beta for Haiku 4.5 — use the `output_config.format` parameter instead of prompting for JSON. Hunyuan PromptEnhancer's keypoint rubric (24 fine-grained failure modes) is the precedent for using explicit structured targets rather than free-text "what do they want".
 3. **Context sniffing** — if the user's workspace has a `package.json` with `"next"` or `"capacitor"` dependencies, or a Figma link, or attached reference images, those are strong priors: Capacitor ⇒ favor `app-icon-ios` + `app-icon-android` + `splash-screen`; Next.js ⇒ favor `favicon` + `og-image`; Figma ⇒ extract brand tokens.
 
 ### 3. Confidence & Fallback
@@ -126,7 +126,7 @@ These defaults are the same style frames SuperPrompt packages as reusable scaffo
 
 ### 3. LLM-Enriched Slots
 
-Some slots genuinely need creative interpretation and should go through a focused rewriter LLM call (Claude Haiku / Gemini Flash is enough; do not burn Opus on this):
+Some slots genuinely need creative interpretation and should go through a focused rewriter LLM call (Claude Haiku 4.5 / Gemini Flash is enough; do not burn Opus 4.7 on this):
 
 - **Concept interpretation**: "note-taking app" ⇒ {paper, notebook, pencil, quill, sparkle, idea, page fold} candidate visual nouns.
 - **Metaphor generation**: 2–3 distinct visual directions for the user to choose from before committing to full generation ("A: stylised page with folded corner, B: minimalist quill, C: abstract letter 'N' with paper-fold geometry").
@@ -172,6 +172,8 @@ Routing chooses the **best image backend** for the enriched spec. There is no un
 
 ### 1. Capability Matrix (as of Apr 2026, cross-verified with categories 04–07)
 
+> **Updated 2026-04-21:** Recraft V4 released February 2026; Ideogram 3.0 / V3 Turbo released March 2025 — both rows updated below.
+
 | Model                    | RGBA / true alpha | Vector native | Text rendering | Photorealism | Brand consistency | Cost tier |
 | ------------------------ | ----------------- | ------------- | -------------- | ------------ | ----------------- | --------- |
 | `gpt-image-1` (OpenAI)   | Yes               | No            | Very good      | Good         | Medium (ref img)  | $$        |
@@ -180,20 +182,23 @@ Routing chooses the **best image backend** for the enriched spec. There is no un
 | Flux.1 [pro]             | No                | No            | Good           | Excellent    | High with LoRA    | $$        |
 | Flux.1 [dev] + IP-Adapter| No                | No            | Medium         | Excellent    | Very high         | $         |
 | Recraft v3               | Yes               | Yes (SVG)     | Excellent      | Medium       | Very high         | $$        |
-| Ideogram 2.0             | Partial           | No            | Best-in-class  | Good         | Medium            | $         |
+| **Recraft V4** (Feb 2026)| Yes               | Yes (SVG, Pro Vector) | Better than V3 | Good–Medium | Very high | $$ |
+| Ideogram 3.0 / V3 Turbo  | Partial           | No            | ~90–95% accuracy (best-in-class) | Good | Medium | $ |
 | SDXL + ControlNet local  | No                | No            | Medium         | Good         | High              | $0        |
+
+Note: Ideogram 2.0 is superseded by Ideogram 3.0 (released March 26, 2025) and its Turbo, Balanced, Quality variants. Recraft V4 (February 2026) improves on V3 with better text accuracy, stronger SVG coherence, and a Pro Vector tier at 2048×2048. Route new work to V4; V3 remains available as a cost fallback.
 
 ### 2. Routing Rules
 
 ```
-if asset_type in {logo-primary, logo-monogram, favicon}            → Recraft v3 (SVG) as primary
-  fallback: gpt-image-1 with rembg post-process
+if asset_type in {logo-primary, logo-monogram, favicon}            → Recraft V4 (SVG / Pro Vector) as primary
+  fallback: Recraft v3 (SVG), then gpt-image-1 with rembg post-process
 if asset_type in {app-icon-ios, app-icon-android}                  → gpt-image-1 (transparent) or Flux pro
   ensure post: safe-zone crop, corner-radius mask, per-size export
-if asset_type == og-image and needs_text_overlay                   → Ideogram 2.0 or gpt-image-1
+if asset_type == og-image and needs_text_overlay                   → Ideogram 3.0 Turbo or gpt-image-1
 if asset_type == hero-image                                        → Flux.1 [pro] or Imagen 4 (photorealism)
 if asset_type in {illustration-*, sticker-emoji} and transparency  → gpt-image-1 (true alpha)
-if user supplied reference image for brand consistency             → Flux dev + IP-Adapter or Recraft with style-ref
+if user supplied reference image for brand consistency             → Flux dev + IP-Adapter or Recraft V4 with style-ref
 if cost_sensitive or offline                                       → SDXL local pipeline
 ```
 
@@ -365,7 +370,8 @@ The empirical lesson from 2025's wave of image-agent papers (PromptSculptor, Pro
 - Capacitor assets CLI — https://github.com/ionic-team/capacitor-assets
 - pwa-asset-generator — https://github.com/elegantapp/pwa-asset-generator
 - Recraft v3 — https://www.recraft.ai
-- Ideogram 2.0 — https://ideogram.ai
+- Recraft V4 (Feb 2026, ground-up rebuild with Pro Vector tier) — https://www.recraft.ai/docs/recraft-models/recraft-V4
+- Ideogram 3.0 / V3 Turbo (released March 26, 2025; supersedes 2.0) — https://ideogram.ai/features/3.0
 - Flux.1 model card — https://blackforestlabs.ai/announcing-black-forest-labs/
 - Google Imagen 4 docs — https://ai.google.dev/gemini-api/docs/imagen
 - OpenAI `gpt-image-1` docs — https://platform.openai.com/docs/guides/images

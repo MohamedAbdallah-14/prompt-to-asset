@@ -33,6 +33,8 @@ word_count_target: 2500-4000
 
 # Architectural Blueprint for a Production Asset Pipeline
 
+> **Updated 2026-04-21:** BullMQ current version is **v5.75.2** (Apr 2026, very actively maintained). No API-breaking changes in the patterns referenced below. FFmpeg **v8.1** was released March 2026 — relevant if animated asset generation (APNG, animated WebP, video splash) is added to the pipeline. The rest of the component recommendations below remain accurate.
+
 ## Executive Summary
 
 A production-grade asset generation pipeline for a prompt-enhancement product (logos, icons, illustrations, OG images) must absorb bursty, high-latency model calls (5–60 s per image), tolerate vendor failures (Gemini Imagen, OpenAI `gpt-image-1`, Flux, Recraft, Ideogram), serve assets from a global edge, and **never charge a user twice for the same pixels**. The canonical architecture is:

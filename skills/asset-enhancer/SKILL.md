@@ -24,7 +24,7 @@ Comprehensive behavior spec for producing production-grade software-development 
 
 > 1. Producing production-grade software assets is a **routing + post-processing** problem, not a prompt-engineering problem.
 > 2. The user may not have an image-model API key. The plugin must work anyway.
-> 3. There are real zero-key paths — always surface them first before asking the user to pay for anything. The `free_api.routes` block in `asset_capabilities()` enumerates Pollinations (zero-signup HTTP), Stable Horde (anonymous queue), HF Inference (free token), Google AI Studio free tier (best quality-to-$0 ratio), and local ComfyUI.
+> 3. There are real zero-key paths — always surface them first before asking the user to pay for anything. The `free_api.routes` block in `asset_capabilities()` enumerates the ranked free programmatic routes: Cloudflare Workers AI (Flux-1-Schnell + SDXL, 10k neurons/day), HF Inference (free `HF_TOKEN`), Pollinations (zero-signup HTTP), Stable Horde (anonymous queue), and local ComfyUI. **Google's Gemini / Imagen image API is NOT free anymore** — Google removed image-gen from the universal free tier in December 2025. Unbilled `GEMINI_API_KEY` → HTTP 429, `limit: 0`. The AI Studio **web UI** at https://aistudio.google.com is still free for interactive generation — treat it as a paste-only flow (`external_prompt_only` → `asset_ingest_external`).
 
 See `rules/asset-enhancer-activate.md` for the condensed always-on version. This file is the long-form spec.
 
@@ -47,7 +47,9 @@ Skip step 2 and the user gets a code block with no file. Do not skip step 2.
 
 ### 2. `external_prompt_only` — zero key, user pastes into a web UI
 
-The server returns the dialect-correct prompt + a list of paste targets with URLs in **free-first order**: Pollinations (zero-signup HTTP), HF Inference (free `HF_TOKEN`), Stable Horde (anonymous queue), Google AI Studio "Nano Banana" (free `GEMINI_API_KEY` — ~1,500 images/day), then paid UIs (Ideogram web, Recraft web, Midjourney, fal.ai Flux, BFL Playground, OpenAI Platform Playground, etc.). The user generates elsewhere, saves the image locally, and calls `asset_ingest_external({ image_path, asset_type })` to run the matte / vectorize / validate pipeline.
+The server returns the dialect-correct prompt + a list of paste targets with URLs in **free-first order**: AI Studio **web UI** (https://aistudio.google.com — free interactive Gemini / Imagen), Pollinations (zero-signup HTTP), HF Inference (free `HF_TOKEN`), Stable Horde (anonymous queue), then paid UIs (Ideogram web, Recraft web, Midjourney, fal.ai Flux, BFL Playground, OpenAI Platform Playground, etc.). The user generates elsewhere, saves the image locally, and calls `asset_ingest_external({ image_path, asset_type })` to run the matte / vectorize / validate pipeline.
+
+Note: `GEMINI_API_KEY` does NOT give free image-gen — Google removed that tier in December 2025. The free Gemini/Imagen route is the AI Studio web UI, not the API.
 
 **Good for:** any asset type. Best for `illustration`, `hero`, text-heavy logos, when the user has a Midjourney / Ideogram subscription but no API key.
 
@@ -158,8 +160,8 @@ Prompts are **never** forwarded verbatim. Rewrite per target family. See the per
 
 ### Ideogram 2 / 3 / 3 Turbo
 - Prose + quoted text strings. Best-in-class typography.
-- `style: "transparent"` for RGBA (v3 only).
-- "Magic Prompt" expands literal prompts — toggle off when you want exact control.
+- For RGBA transparency: use the dedicated `/ideogram-v3/generate-transparent` endpoint; set `rendering_speed: "TURBO"` for the Turbo tier (there is no `style: "transparent"` API parameter).
+- "Magic Prompt" expands literal prompts — toggle OFF for logo/icon/brand work.
 
 ### Recraft V2 / V3 / V4
 - Prose. `style_id` = brand lock. `controls.colors` = hex palette enforcement.

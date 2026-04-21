@@ -214,9 +214,11 @@ Concurrency-limit + retries is the cleanest way to honour OpenAI's IPM ceiling f
 |---|---|---|---|---|
 | `gpt-image-1` | $0.011 | $0.042 | $0.167 | 1536 |
 | `gpt-image-1-mini` | ~$0.005 | ~$0.018 | ~$0.07 | 1536 |
-| `gpt-image-1.5` | similar tier, up to 4× faster | — | — | 2048 |
+| `gpt-image-1.5` | $0.009 | $0.034 | $0.133 | 1536 |
 | `dall-e-3` | $0.040 (standard) / $0.080 (HD) | — | — | 1792 |
 | `dall-e-2` | $0.016 (1024²) | — | — | 1024 |
+
+> **Updated 2026-04-21:** The `gpt-image-1.5` "Max long edge" column previously listed 2048 — this was incorrect. Official API docs confirm the same three sizes as gpt-image-1: `1024×1024`, `1536×1024`, `1024×1536`, max long edge 1536 px. Pricing figures above updated to match official OpenAI pricing page (Apr 2026): low $0.009, medium $0.034, high $0.133 per 1024² image.
 
 Token-based billing backs the GPT-Image pricing: ~1K output tokens for a 1024² low → ~4.5K for high; add prompt tokens (cheap) and input-image tokens for edit mode.
 

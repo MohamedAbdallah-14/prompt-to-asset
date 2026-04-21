@@ -6,6 +6,8 @@ optimization_criterion: "Self-hosted / sovereign — no SaaS deps, open weights 
 date: 2026-04-19
 ---
 
+> **Updated 2026-04-21:** Model references updated. (1) Seedream 4 (referenced in §Layer 2 as "Qwen-Image" fallback) has been superseded by **Seedream 4.5** for CJK text; Seedream 5.0 Lite is available via BytePlus. (2) Recraft V3 escape hatch → now **Recraft V4 Vector** / **V4 Pro Vector**. (3) Vercel AI SDK `experimental_generateImage` → stable `generateImage` in AI SDK v6; update import if using AI SDK on this stack. (4) AnyText2 (Apache-2.0) confirmed still available and active as of 2026.
+
 # Combination 04 — Self-hosted, sovereign, air-gap-capable
 
 ## Thesis
@@ -183,12 +185,20 @@ internal Apache-2.0 package so the ship surface is license-clean.
 
 - **Background removal / matte**: `rembg` (MIT code) with only the
   **Apache-2.0 weights**: `u2net`, `u2netp`, `isnet-general-use`, `birefnet-general`.
+  **Critical:** `rembg`'s default session is `u2net` — to use BiRefNet you must
+  explicitly call `remove(input, session=new_session("birefnet-general"))`.
+  Calling `remove(input)` bare runs U²-Net, which is Apache-2.0 but substantially
+  lower quality on soft-edge subjects than BiRefNet.
   **BRIA RMBG-2.0 is rejected** — its RAIL-M-NC variant is non-commercial and
   shipping the commercial tier means contracting with BRIA, which is a vendor
   dependency.
 - **Vectorization**: `vtracer` (MIT) as a sidecar binary. Potrace (GPL-2) and
   autotrace (GPL-2) rejected to keep the compiled asset-pipeline container
-  MIT/Apache-clean.
+  MIT/Apache-clean. SVGO post-processing: upgrade to SVGO v4 — `removeViewBox`
+  and `removeTitle` are now disabled by default in `preset-default`; do NOT
+  pass `removeViewBox: false` as an override (it is a no-op in v4 since the
+  plugin is already disabled). To re-enable explicitly add `'removeViewBox'`
+  to the plugins array.
 - **Platform specs**: `onderceylan/pwa-asset-generator` (MIT, headless
   Chromium, PWA + iOS + Android + favicon), `akabekobeko/npm-icon-gen` (MIT,
   deterministic .ico/.icns), `ionic-team/capacitor-assets` (MIT, mobile app

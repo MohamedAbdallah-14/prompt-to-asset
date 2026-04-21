@@ -987,14 +987,20 @@ To operationalize this skill:
 ## Appendix: Comparative Costs and Model Choices
 
 **LLM-SVG (inline_svg mode):**
-- Cost: ~$0.003 per request (Claude 4 / GPT-5, 2–5K tokens).
+
+> **Updated 2026-04-21:** Claude model references updated. The Claude 4.0-series (claude-sonnet-4-20250514, claude-opus-4-20250514) retires June 15, 2026 — migrate to claude-sonnet-4-6 or claude-opus-4-6 (released February 2026). Cost estimate below uses current Claude 4.6 pricing.
+
+- Cost: ~$0.003 per request (Claude 4.6 / GPT-image-1.5 era LLM context, 2–5K tokens).
 - Time: 1–3 seconds (including validation).
 - Output: 400–2000 bytes (fully editable, resolution-independent).
 - Best for: Logos, icons, favicons, stickers (simple geometry).
 
 **Recraft V4 SVG (native vector, api mode):**
+
+> **Updated 2026-04-21:** Recraft V4 is confirmed current production model family (released February 2026). V3 is superseded. V4 ships four variants: V4 (standard raster, ~10s), V4 Vector (native SVG, ~15s), V4 Pro (2048×2048 raster, ~30s), V4 Pro Vector (high-res native SVG, ~45s). Recraft remains the only model producing real editable SVG paths without raster-to-vector tracing. V4 Pro Vector handles more complex geometry than V3.
+
 - Cost: ~$0.04 per request.
-- Time: 10–20 seconds.
+- Time: 10–20 seconds (V4 Vector); ~45s (V4 Pro Vector).
 - Output: 1–10 KB (more complex, fully editable).
 - Best for: Spot illustrations, mid-complexity marks, when LLM-SVG hits path budget or fails.
 
@@ -1029,7 +1035,9 @@ To operationalize this skill:
 - SVGMaker docs: AI-Generated SVG Precision Issues.
 - Houtini: How to Make SVGs with Claude and Gemini MCP.
 - tryopendata labs: Using Claude as a Logo Design Agency.
-- Rival.tips: Claude Opus 4.1 Minimalist Logo SVG.
+- Rival.tips: Claude Opus 4.6 Minimalist Logo SVG.
+
+> **Updated 2026-04-21:** "Claude Opus 4.1" reference above corrected to Claude Opus 4.6. Claude 4.0-series (claude-opus-4-20250514) retires June 15, 2026. Current model is claude-opus-4-6.
 
 **Tooling:**
 - [SVGO](https://github.com/svg/svgo) — SVG optimizer.

@@ -116,7 +116,9 @@ The prompt-to-asset needs to ship the same behaviour — "enhance prompt, pick m
 - **Doc:** <https://agents.md/> (stewarded by [Agentic AI Foundation](https://aaif.io/) under the Linux Foundation).
 - **Format:** plain markdown, no frontmatter, no required fields. Popular sections: overview, dev environment tips, build/test commands, code style, security, PR instructions.
 - **Nesting:** agents read the nearest `AGENTS.md` to the edited file; chat prompts override. OpenAI's own repo ships 88.
-- **Adoption (Apr 2026):** 60k+ repos; "20+ coding agents" including Codex, Copilot coding agent, Cursor, Windsurf, Jules, Amp, Factory, Aider, UiPath Autopilot, Zed (fallback list), Gemini (via config). ThoughtWorks Tech Radar Nov 2025 at "Trial". Princeton study: 28.6% median runtime and 16.6% token reduction across 124 real PRs.
+- **Adoption (Apr 2026):** 60k+ repos; adopters include Amp, Codex, Cursor, Devin, Factory, Gemini CLI, GitHub Copilot, Jules, VS Code, and others. AAIF has grown to 170+ member organisations as of April 2026, with Mazin Gilbert appointed permanent Executive Director. ThoughtWorks Tech Radar Nov 2025 at "Trial". Princeton study: 28.6% median runtime and 16.6% token reduction across 124 real PRs.
+
+> **Updated 2026-04-21:** The Linux Foundation / Agentic AI Foundation (AAIF) formation was announced December 9, 2025 — confirmed. As of April 2026, AAIF has 170+ member organizations. The original "Dec 2025" Linux Foundation stewardship date is correct. The "20+ coding agents" count has expanded — Anthropic donated MCP to AAIF simultaneously, and AGENTS.md adoption now spans 60k+ repos with the agent list above verified from the official AAIF announcement.
 - **Gotcha:** adoption is *read-only convention* — each agent decides precedence when `AGENTS.md` and its native rule file disagree.
 
 ## OSS converters and multi-agent installers

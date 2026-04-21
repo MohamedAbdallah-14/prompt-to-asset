@@ -6,6 +6,8 @@ optimization_criterion: "Hybrid — commercial APIs for hot paths + OSS for long
 date: 2026-04-19
 ---
 
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # Hybrid Stack — Commercial APIs on Hot Paths, OSS on the Long Tail
 
 ## Central Thesis
@@ -27,6 +29,8 @@ This is the only combination that beats both the pure-API stack (locked into one
 
 Only this many models deserve router slots. "Capability" ratings: ✅ strong / ⚠️ partial / ❌ absent. $/image is the vendor list price for the typical 1024² call at default quality as of 2026-04 (commercial) or amortized compute on Modal A10G / L40S (OSS). "License" is the *weights* license for OSS and the commercial-use posture for APIs. Sources: Synthesis §"Model Capability Matrix"; Category 04, 05, 06, 07; 20c; Together/fal/Replicate pricing pages.
 
+> **Updated 2026-04-21:** Capabilities matrix updates: (1) **Recraft V3 → Recraft V4** (Feb 2026) — V4 and V4 Pro ship four variants (raster, vector, pro-raster, pro-vector); pricing similar to V3 (~$0.04 raster / ~$0.08 vector); still the only model with production-grade native SVG. (2) **Seedream 3/4 → Seedream 4.5** ($0.04/image on fal/Replicate) is current stable; Seedream 5.0 Lite available via BytePlus with 14-ref support and enhanced CJK. (3) **Ideogram 3 Turbo pricing**: $0.03/image Turbo, $0.09/image Quality (not $0.02–$0.06). (4) **gpt-image-1.5** is the current primary OpenAI image model; gpt-image-1 is "previous." (5) Vercel AI SDK `experimental_generateImage` → stable `generateImage` in AI SDK v6.
+
 | Model | Transparency (native RGBA) | Text rendering (ceiling) | Reference-image conditioning | SVG-native | Speed (p50, 1024²) | $/image | License / commercial posture |
 |---|---|---|---|---|---|---|---|
 | **Imagen 4 (Vertex)** | ❌ (draws checker as RGB) | ⚠️ ≤10 chars | ⚠️ style-ref param | ❌ | ~3.5 s | ~$0.04 | Commercial OK; Google SynthID watermark on all outputs |
@@ -35,7 +39,7 @@ Only this many models deserve router slots. "Capability" ratings: ✅ strong / �
 | **Flux Pro 1.1 / Flux.2 Pro (BFL / fal / Together)** | ❌ native (needs LayerDiffuse) | ⚠️ ~15–25 chars, strongest open-weight-derived | ✅ Kontext edit; **Flux.2 accepts up to 8 brand refs** | ❌ | ~4 s | $0.04 (Flux Pro) / $0.04–$0.08 (Flux.2 via Together) | Commercial OK via hosted API; model weights non-commercial |
 | **Flux Schnell (fal realtime / Replicate)** | ❌ (LayerDiffuse variant exists) | ⚠️ ~10 chars | ⚠️ limited | ❌ | ~0.5–1.2 s (fal realtime ~5 fps) | $0.003 | **Apache-2.0 weights** — commercial-clean self-host |
 | **Ideogram 3 Turbo / Quality** | ✅ `style:"transparent"` (Turbo) | ✅ ~30–60 chars, spells reliably | ⚠️ remix/ref image | ❌ | ~3 s | $0.02–$0.06 | Commercial OK; Magic Prompt rewriter (disableable) |
-| **Recraft V3 / V4** | ✅ | ⚠️ ~20–30 chars | ✅ style refs + `style_id` | **✅ native SVG API endpoint** | ~4–8 s (raster), ~6–10 s (vector) | $0.04 (raster) / $0.08 (vector) | Commercial OK |
+| **Recraft V4** (Feb 2026, SOTA) | ✅ | ⚠️ ~20–30 chars | ✅ style refs (V4 `style_id` schema differs from V3) | **✅ native SVG API endpoint** | ~10 s (V4 raster), ~15 s (V4 vector), ~30–45 s (V4 Pro) | $0.04 (V4 raster) / $0.08 (V4 vector) / $0.25 (V4 Pro raster) / $0.30 (V4 Pro vector) | Commercial OK |
 | **FLUX.2 via Together (8-ref brand mode)** | ❌ | ⚠️ ~20 chars | ✅ **up to 8 brand refs/call** | ❌ | ~5–8 s | ~$0.06 | Commercial OK |
 | **Seedream 3 / 4 (ByteDance via fal/Replicate)** | ❌ | ✅ strong non-Latin incl. CJK | ⚠️ ref image | ❌ | ~3 s | $0.03 | Commercial OK; notable for CJK text (covers G13) |
 | **Firefly 3 (Adobe)** | ⚠️ partial | ⚠️ ~15 chars | ✅ | ❌ | ~4 s | ~$0.035 | Commercial OK + enterprise indemnity |
@@ -51,9 +55,13 @@ Three rows dominate the ratings: `gpt-image-1` on transparency + text, Ideogram 
 
 **Hot paths (commercial, ~90% of traffic, ~$0.02–$0.07/image).**
 
-1. **Transparent PNG mark, ≤3 words of text** → `gpt-image-1` with `background:"transparent"`. Ideogram 3 Turbo `style:"transparent"` as fallback. Nothing self-hosted beats the wall-clock latency + alpha fidelity, and this is the single most common request (category 13 names it "the #1 pain").
+1. **Transparent PNG mark, ≤3 words of text** → `gpt-image-1.5` with `background:"transparent"`. Ideogram 3 `/ideogram-v3/generate-transparent` dedicated endpoint as fallback (not `style:"transparent"` — that parameter does not exist; transparency is a separate endpoint). Nothing self-hosted beats the wall-clock latency + alpha fidelity, and this is the single most common request (category 13 names it "the #1 pain").
+
+> **Updated 2026-04-21:** `gpt-image-1.5` is the current primary OpenAI image model (gpt-image-1 is "previous"). gpt-image-1.5 supports `stream: true` + `partial_images: 0–3` for native streaming of partial images during generation. DALL-E 3 API shuts down May 12, 2026. Ideogram transparency: the correct API call is a dedicated POST to `/ideogram-v3/generate-transparent`, not a `style: "transparent"` param on the standard generate endpoint.
 2. **Logo or wordmark with 1–5 words of text** → Ideogram 3 Quality as primary, `gpt-image-1` as fallback. Spells reliably; Magic Prompt gets disabled via the request parameter; the plugin does its *own* rewrite first (principle #7 in the Synthesis).
-3. **Native SVG** → Recraft V3 `/v3/images/vectorize` endpoint. There is no open-weight equivalent of production quality, period. Do not simulate it with raster→vectorize on this path — that pipeline is reserved for the long-tail branch.
+3. **Native SVG** → Recraft V4 Vector (Feb 2026, $0.08/img). There is no open-weight equivalent of production quality, period. Do not simulate it with raster→vectorize on this path — that pipeline is reserved for the long-tail branch. Use Recraft V3 only when an existing V3 `style_id` must be preserved (V4 `style_id` schema is incompatible with V3).
+
+> **Updated 2026-04-21:** Recraft V4 (Feb 2026) is SOTA for native SVG/vector. V3 stays only when `style_id` from prior V3 generations is needed. V4 pricing: $0.04/img raster, $0.08/img vector, $0.25 Pro raster, $0.30 Pro vector.
 4. **Photoreal hero, OG background, marketing art** → Flux Pro 1.1 via fal or Flux.2 Pro via Together as primary, `gpt-image-1` as fallback. Together's 8-ref-image mode is the single strongest brand-consistency feature on any hosted API; if the brand bundle has ≥3 reference images and the asset is photoreal, Together wins outright.
 5. **Iterative refinement (user clicking "not quite, more X")** → Flux Schnell on fal realtime WebSocket. ~5 fps interactive rate. This is the sole place we pay for latency over quality; the user then picks a frame and we re-render once at Flux Pro quality.
 6. **OG images, README banners, social cards** → Satori + `@resvg/resvg-js` *with* a commercial API only for the background hero (if requested). Typography, headline, and layout are deterministic JSX; the hero is a `gpt-image-1` call marked as optional. OG is not a diffusion problem (Synthesis §"Favicon/web assets").
@@ -128,8 +136,8 @@ function route(
 
   if (cap.svg === "required")
     return tier === "self_hosted"
-      ? RASTER_TO_SVG_LOCAL_ROUTE()               // gpt-image-1 → BiRefNet → vtracer → SVGO
-      : RECRAFT_V3_ROUTE(bundle);                 // hot path: native SVG
+      ? RASTER_TO_SVG_LOCAL_ROUTE()               // gpt-image-1.5 → BiRefNet → vtracer → SVGO
+      : RECRAFT_V4_ROUTE(bundle);                 // hot path: native SVG (Recraft V4 Vector, Feb 2026)
 
   // 2. Transparent marks — the #1 user pain.
   if (cap.transparency === "required") {
@@ -199,7 +207,12 @@ A few non-obvious router decisions worth calling out:
 
 ## Post-Processing Chain Is Always OSS
 
-The post-processing pipeline (matte, vectorize, upscale, export, validate) is **entirely open-source in every route**. `sharp` (libvips) for bitmap, `@resvg/resvg-js` for SVG rasterization, BiRefNet / rembg / BRIA for matting, `vtracer` / `potrace` for raster-to-SVG, SVGO for cleanup, `@capacitor/assets` / `npm-icon-gen` / `pwa-asset-generator` for platform-spec export, `@vercel/og` / Satori for OG and README banners. (22-repo-deep-dives 10/11/12/15/16/20.) No commercial matting or upscaling API deserves a router slot — every one we evaluated is strictly worse than BiRefNet + DAT2 at any price point, and they add egress latency the self-hosted equivalents do not.
+The post-processing pipeline (matte, vectorize, upscale, export, validate) is **entirely open-source in every route**. `sharp` (libvips) for bitmap, `@resvg/resvg-js` for SVG rasterization, BiRefNet / rembg / BRIA for matting, `vtracer` / `potrace` for raster-to-SVG, SVGO for cleanup, `@capacitor/assets` / `npm-icon-gen` / `pwa-asset-generator` for platform-spec export, `@vercel/og` / Satori for OG and README banners.
+
+> **Updated 2026-04-21 — post-processing corrections:**
+> - **rembg session**: `rembg`'s `remove()` defaults to `u2net`, NOT BiRefNet. Always pass `session=new_session("birefnet-general")` explicitly to use BiRefNet. Calling `remove(input)` bare silently runs U²-Net — visibly lower quality on hair/glass edges.
+> - **SVGO v4**: `removeViewBox` and `removeTitle` are now **disabled by default** in `preset-default`. The old `removeViewBox: false` override idiom is a no-op in v4 — the viewBox is preserved automatically. Remove stale `removeViewBox: false` overrides from configs.
+> - **Flux `negative_prompt`**: raises `TypeError: unexpected keyword argument 'negative_prompt'` on ALL Flux variants (dev/schnell/pro/Kontext/FLUX.2) — Flux uses flow matching with CFG=1 and has no negative conditioning mechanism. Use affirmative framing in the positive prompt instead (e.g., `"pure white background"` rather than a negative-prompt field). (22-repo-deep-dives 10/11/12/15/16/20.) No commercial matting or upscaling API deserves a router slot — every one we evaluated is strictly worse than BiRefNet + DAT2 at any price point, and they add egress latency the self-hosted equivalents do not.
 
 The two exceptions where a post-processing step escapes to a commercial API:
 

@@ -304,9 +304,11 @@ actually transparent** — not a generic image-gen MCP with a nicer prompt.
   Everyone else calls a diffusion model and crosses their fingers.
 - **Activity churn.** Many Next.js + OpenAI logo clones are effectively
   abandoned inside 6–12 months. The few repos with real staying power
-  (Iconify 6k★, SVGL 5.7k★, pwa-asset-generator 3k★, rembg 22k★,
+  (Iconify 6k★, SVGL 5.7k★, pwa-asset-generator 3k★, rembg 22.5k★,
   Hunyuan-PromptEnhancer 3.6k★, `shinpr/mcp-image` 97★ but 2026-fresh) are the
   ones with narrow, well-defined scope.
+
+> **Updated 2026-04-21:** `danielgatis/rembg` is at v2.0.75 (released 2026-04-08), actively maintained with monthly releases — star count confirmed ~22.5k as of 2026-04-21. `Bria-AI/RMBG-2.0` remains CC-BY-NC-4.0; commercial use still requires Bria/fal/Replicate hosted endpoints. `Nutlope/logocreator` is at ~5.3k★ as of April 2026 (earlier figure of 6.8k appears to have been a peak or misread; project has open issues and is active). Fooocus (`lllyasviel/Fooocus`) is now LTS-only (bug fixes, last feature release v2.5.5 Aug 2025); its expansion.py prompt technique remains borrowable but do not count on the project receiving new model support.
 
 ## What our Prompt Enhancer plugin does differently
 

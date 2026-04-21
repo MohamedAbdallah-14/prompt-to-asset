@@ -6,6 +6,8 @@ optimization_criterion: "ComfyUI-native execution backbone"
 date: 2026-04-19
 ---
 
+> **Updated 2026-04-21:** (1) Recraft V3 escape hatch → **Recraft V4 Vector** / **V4 Pro Vector** (Feb 2026, SOTA; $0.08/img vector, $0.30/img Pro vector). Use V3 only if an existing V3 `style_id` is required — V4 `style_id` schema is incompatible. (2) `gpt-image-1.5` is the current primary OpenAI image model; `gpt-image-1` is "previous." (3) DALL-E 3 API shuts down May 12, 2026. (4) Flux `negative_prompt` raises TypeError on ALL Flux variants — never pass `negative_prompt` to any Flux pipeline; use affirmative positive-prompt framing. (5) `rembg` default session is `u2net` — pass `session=new_session("birefnet-general")` explicitly for BiRefNet quality. (6) SVGO v4: `removeViewBox` and `removeTitle` are disabled by default in `preset-default`; `removeViewBox: false` overrides are no-ops in v4. (7) MCP spec 2025-11-25 is Latest Stable.
+
 # Combination #9 — ComfyUI-native execution backbone
 
 ## The decision up front
@@ -376,9 +378,10 @@ over-rotating:
   `vtracer` + SVGO, outside ComfyUI. `Recraft V3 /vectorize` is the
   API fallback per SYNTHESIS rec #3.
 - **Wordmarks > 3 words or non-Latin scripts** — routed to
-  `gpt-image-1` or Ideogram 3 via the closed-API lane, then
-  recomposed with SVG type (or accepted as the final). This is the
-  acknowledged OSS gap in SYNTHESIS G13.
+  `gpt-image-1.5` or Ideogram 3 via the closed-API lane (for transparency,
+  use Ideogram's dedicated `/ideogram-v3/generate-transparent` endpoint, not
+  a `style:"transparent"` param), then recomposed with SVG type (or accepted
+  as the final). This is the acknowledged OSS gap in SYNTHESIS G13.
 
 ## Decision
 

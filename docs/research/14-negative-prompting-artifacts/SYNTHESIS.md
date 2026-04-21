@@ -2,7 +2,7 @@
 category: 14-negative-prompting-artifacts
 title: "Category Index — Negative Prompting & Artifact Avoidance for Asset Generation"
 indexer: category-indexer-14
-last_updated: 2026-04-19
+last_updated: 2026-04-21
 status: synthesis
 angles:
   - 14a: Negative prompt theory re-applied to asset generation (per model, per asset type)
@@ -31,15 +31,19 @@ primary_artifact_classes:
 word_count_target: "2000-3500"
 ---
 
+> **📅 Research snapshot as of 2026-04-19.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 14 — Negative Prompting & Artifact Avoidance
 
 ## Category Executive Summary
 
-The five research angles in this category converge on a single thesis: **a 2026 prompt-to-asset cannot treat the image generator as a black box and hand its output directly to the user.** Every frontier model — Gemini 2.5 Flash Image, `gpt-image-1`, Imagen 4, Flux.1 dev/pro, SDXL, Midjourney v7, Ideogram v3, Recraft v3 — produces high-variance, high-artifact output on production asset prompts, and the failure modes are *not random*. They are predictable fingerprints of training-data contamination (watermarks, stock-photo lighting), decoder behavior (checkerboard alpha, JPEG-in-PNG), guidance misconfiguration (oversaturation, duplicates), and architectural capability gaps (text rendering on SDXL/Flux-dev, negative prompts on distilled models). The path to "correct by default" is a multi-stage QA loop: **generate → deterministic validate → ML-score → VLM rubric → classify defect → regenerate or surgically repair → verify → loop**.
+The five research angles in this category converge on a single thesis: **a 2026 prompt-to-asset cannot treat the image generator as a black box and hand its output directly to the user.** Every frontier model — Gemini 2.5 Flash Image, `gpt-image-1`, `gpt-image-1.5`, Imagen 4, FLUX.2 [pro/max], SDXL, Midjourney v7, Ideogram v3, Recraft v3/v4 — produces high-variance, high-artifact output on production asset prompts, and the failure modes are *not random*. They are predictable fingerprints of training-data contamination (watermarks, stock-photo lighting), decoder behavior (checkerboard alpha, JPEG-in-PNG), guidance misconfiguration (oversaturation, duplicates), and architectural capability gaps (text rendering on SDXL/Flux-dev, negative prompts on distilled models). The path to "correct by default" is a multi-stage QA loop: **generate → deterministic validate → ML-score → VLM rubric → classify defect → regenerate or surgically repair → verify → loop**.
 
 Fifteen load-bearing insights across the angles:
 
-1. **Negative prompts are a sampler trick, not a model feature.** The CFG equation `ε̂ = ε_u + w(ε_c − ε_u)` (Ho & Salimans 2022) hijacks the unconditional branch `ε_u`. Only models that run real two-pass CFG at inference — SDXL, SD 1.5/3, Kolors, PixArt-Σ, Ideogram, Vertex Imagen 2/3 — honor a native negative. Guidance-distilled models (Flux.1 dev/schnell/pro, SDXL-Turbo, SD3-Turbo) and rewriter-fronted models (DALL·E 3, `gpt-image-1`, Gemini 2.5 Flash Image, Imagen 4) have **no `ε_u` to replace** — negatives are silently dropped or, worse, injected into the positive branch and *cause the artifact they name*. (14a)
+1. **Negative prompts are a sampler trick, not a universal model feature.** The CFG equation `ε̂ = ε_u + w(ε_c − ε_u)` (Ho & Salimans 2022) hijacks the unconditional branch `ε_u`. Only models that run real two-pass CFG at inference — SDXL, SD 1.5, SD3/SD3.5 (with CFG caveats), Kolors, PixArt-Σ, Ideogram v2/v3 — honor a native negative prompt. Guidance-distilled models (all Flux variants: dev/schnell/pro/Kontext/FLUX.2-pro/FLUX.2-max) and rewriter-fronted/autoregressive models (DALL·E 3, `gpt-image-1`, `gpt-image-1.5`, `gpt-image-1-mini`, Gemini 2.5 Flash Image, Imagen 3.0-generate-002+, all Imagen 4 GA models) have **no `ε_u` to replace** — negatives are silently dropped or, worse, injected into the positive branch and *cause the artifact they name*. (14a)
+
+> **Updated 2026-04-21:** Vertex Imagen support corrected — `negativePrompt` was removed from `imagen-3.0-generate-002` and later, including all Imagen 4 GA variants. The old "partial" Imagen label no longer applies. FLUX.2 [pro] and FLUX.2 [max] (2025) are confirmed no-negative-prompt. SD3.5 CFG is capped at 4–4.5 to avoid known interaction issues when combined with negative prompts.
 2. **Never tell a no-negative model what not to draw.** Black Forest Labs' own [Flux prompting guide](https://bfl.mintlify.app/guides/prompting_guide_t2i_negative) says negation "tends to backfire." Rewrite every "no X" into "what would be there instead": `no text → clean surfaces, unmarked, blank`; `no background → isolated on pure white`; `no drop shadow → flat even lighting`. This is the canonical "pink elephant" failure for T5-encoder models. (14a)
 3. **Artifact classes are stage-specific.** Misspellings emerge in the text encoder; duplicates and extra limbs crystallize in the U-Net at t≈0.4–0.6; oversaturation accumulates through the sampler under high CFG; the checkerboard is a VAE-decode artifact; watermarks and stock lighting are training-data priors; JPEG-in-PNG is a container-writer bug. Mitigation that targets the wrong stage wastes compute. (14b)
 4. **Every asset class has its own artifact menagerie.** Logos fail on photorealism, drop shadows, 3D renders, mockups, and text contamination. App icons fail on wrong-platform conventions (iOS squircle vs Material circle), text-in-icon, and safe-zone bleed. Illustrations fail on "AI-generic" aesthetic, grain, watermarks, and anatomy. Favicons fail on sub-pixel mush; OG images on crop-safety and illegible headlines. A universal negative list is strictly worse than per-asset overlays. (14a, 14b)
@@ -48,7 +52,7 @@ Fifteen load-bearing insights across the angles:
 7. **Seed sweeping is the highest-ROI primitive.** Fix the prompt, sample N seeds in parallel, score with HPSv2/v3 + PickScore + CLIP floor, pick top-1. At per-seed success rate `p=0.5`, `N=4` yields 94% fleet success; `N=8` yields 99.6%. Beyond 16 seeds, marginal gain flattens — rewrite the prompt instead. (14c)
 8. **Preference models are not interchangeable with alignment metrics.** CLIPScore captures "does it match the prompt" but is nearly blind to aesthetic quality and artifacts; PickScore/ImageReward/HPSv2 correlate with human preference 2–3× better than raw CLIP. The pipeline needs **both**: CLIP as alignment *gate*, preference model as quality *ranker*. (14d)
 9. **Every scorer has failure modes that correlate with the artifacts you're trying to reject.** LAION-Aesthetics actively *penalizes* flat vector logos (they lack bokeh and contrast variance). CLIPScore is OCR-cheatable ("no text" prompt + visible text = high score). ImageReward underrates Flux/Imagen 3+ outputs (training predates them). **Never use a single scalar on logo/icon/vector work.** (14d)
-10. **VLM-as-judge is the only scorer that can answer rubric questions** ("is the background truly transparent?", "is 'Acme' spelled correctly?", "is the subject in the iOS safe zone?"). It has documented pathologies: position bias (5–15pp), score-digit clustering at 7/8, verbosity bias, self-preference, and text-spelling hallucination. Mitigate with: strict enums instead of 1–10 scales, paired-comparison order randomization, cross-family ensemble (GPT-4o + Gemini 2.5 Pro + Claude 4.5), and forcing the VLM to consume an OCR transcription before judging text. (14d)
+10. **VLM-as-judge is the only scorer that can answer rubric questions** ("is the background truly transparent?", "is 'Acme' spelled correctly?", "is the subject in the iOS safe zone?"). It has documented pathologies: position bias (5–15pp), score-digit clustering at 7/8, verbosity bias, self-preference, and text-spelling hallucination. Mitigate with: strict enums instead of 1–10 scales, paired-comparison order randomization, cross-family ensemble (GPT-4o + Gemini 2.5 Pro + Claude Sonnet 4.x), and forcing the VLM to consume an OCR transcription before judging text. (14d)
 11. **Deterministic validators must run before ML validators.** A full Pillow + numpy + Tesseract pass on 1024×1024 is 100–400ms on CPU, zero GPU, zero API cost — and explicitly explainable (`alpha_used: frac=0.00`, `ocr_text: got="Shpi fasrter" want="Ship faster"`). ML scorers are noisy and opaque. Rule-based gates catch the 8 deterministic failure classes (mode, alpha, size, safe zone, metadata, OCR, palette, centroid) before a single GPU cycle is spent on aesthetic scoring. (14e)
 12. **Alpha validation is two checks, not one.** A PNG can be RGBA with every pixel at α=255 (fully opaque) — this is the canonical Gemini "transparent logo came back white" failure. The validator must confirm `mode == "RGBA"` **and** `(alpha < 255).sum() / alpha.size >= 0.05`. The checker-pattern sub-case (α=255 everywhere, but RGB draws a gray grid) is caught by a variance/FFT check on the outer ring. (14e, cross-ref 13c)
 13. **Text-bearing prompts must be routed, not just prompt-engineered.** SDXL and Flux-dev tokenize text as glyph-like shapes; text-capable models (Ideogram v2/v3, Recraft v3, `gpt-image-1`, Imagen 3+) produce correct spelling ~90%+ of the time on short strings. A 30-line regex router on `"that says"`, quoted strings, and `"wordmark"` reduces misspelling failures from ~40% to <5%. (14b, 14d)
@@ -71,7 +75,9 @@ Reading order for implementers: **14e → 14b → 14a → 14c → 14d**. Start w
 
 ### 1. Backend-branching is non-negotiable
 
-The single most repeated warning across 14a, 14b, 14c, 14d, and 14e: **a uniform `{prompt, negative_prompt}` dict sent to every backend is a bug**. On SDXL/SD3/Ideogram it helps; on Flux/DALL·E/`gpt-image-1`/Gemini it either raises a `TypeError` ([diffusers #9124](https://github.com/huggingface/diffusers/issues/9124)), silently drops the field, or gets "retried" by a community wrapper that merges negatives into the positive and *injects* the artifact. The enhancer's prompt builder must branch at the model boundary and select one of three strategies: (a) structured negative list + embeddings for SD-family, (b) `--no` CSV for Midjourney, (c) positive-framing prose for Flux/DALL·E/Gemini.
+The single most repeated warning across 14a, 14b, 14c, 14d, and 14e: **a uniform `{prompt, negative_prompt}` dict sent to every backend is a bug**. On SDXL/SD3/Ideogram it helps; on Flux (all variants)/DALL·E/`gpt-image-1`/`gpt-image-1.5`/Gemini/Imagen 4 it either raises a `TypeError` ([diffusers #9124](https://github.com/huggingface/diffusers/issues/9124)), silently drops the field, or gets "retried" by a community wrapper that merges negatives into the positive and *injects* the artifact. The enhancer's prompt builder must branch at the model boundary and select one of three strategies: (a) structured negative list + embeddings for SD-family (SD 1.5, SDXL, SD3/SD3.5), (b) `--no` CSV for Midjourney, (c) positive-framing prose for all Flux variants / DALL·E / gpt-image-1 / gpt-image-1.5 / Gemini / Imagen 4.
+
+> **Updated 2026-04-21:** The no-negative list now explicitly includes all FLUX.2 variants, gpt-image-1.5, and Imagen 4. The old "Vertex Imagen (partial)" entry is removed — Imagen 4 does not support negative prompts. Recraft's negative_prompt is also limited to raster modes only (not vector endpoints).
 
 ### 2. Regenerate vs. repair is driven by defect locality AND defect class
 
@@ -113,7 +119,7 @@ The single most repeated warning across 14a, 14b, 14c, 14d, and 14e: **a uniform
 
 1. **No Flux-compatible negative embeddings.** SDXL has `BadX`, `negativeXL`, `unaestheticXLv31`. Flux's T5 encoder has none — textual inversion on T5 is technically feasible but no public artifact exists. (14a open question 4.)
 2. **No per-platform evaluation set for asset artifacts.** HPSv2/v3 cover photo/anime/concept-art/painting; none cover logos, icons, UI illustrations, favicons. Building a 500-asset labelled golden set per asset type would be a high-ROI internal project and a potential public contribution.
-3. **Empirical comparison of `--no` (Midjourney) vs SDXL negatives at equivalent semantic target.** No public benchmark. Practitioner anecdote says MJ's operator is weaker per-token but no controlled data.
+3. **Empirical comparison of `--no` (Midjourney) vs SDXL negatives at equivalent semantic target.** No public benchmark. Practitioner anecdote says MJ's operator is weaker per-token but no controlled data. **New v7 caution (2025):** Midjourney v7 documentation explicitly warns that `--no` tokens are parsed **per-word independently** — `--no modern clothing` is parsed as "no modern" AND "no clothing", which can accidentally trigger a content warning. For v7, use single concrete nouns in `--no` lists (e.g., `--no text, watermark, border`) rather than adjective-noun compounds.
 4. **DALL·E 3 server-side rewriter behavior on negative intent.** The rewriter sometimes re-introduces artifacts the user tried to exclude. Nobody has published a systematic eval of rewrite drift per artifact class.
 5. **Text-repair inpainting quality across models.** Anecdotally, `gpt-image-1`'s edit endpoint and Ideogram edits beat SDXL inpainting for text. No published head-to-head CER (character error rate) comparison on logo wordmarks.
 6. **Watermark inpainting vs re-roll cost tradeoff.** 14b Tier-3 mentions "watermark inpainting" as niche ROI but doesn't cost-compare to a single reroll at current 2026 API prices.
@@ -185,7 +191,7 @@ Ship 14e's `validate_asset()` module unchanged as the first gate after every gen
 - **HARD fail** → block + regenerate with augmented prompt.
 - **MEDIUM fail** → attempt auto-fix (resize with Lanczos, re-encode); if un-fixable, regenerate.
 - **SOFT fail** → auto-fix silently, log for telemetry.
-- **Loop cap**: 3 repair attempts, 3 regeneration waves, then escalate to model swap (text → Ideogram, transparency → `gpt-image-1 background=transparent`, photoreal → Flux.1 pro).
+- **Loop cap**: 3 repair attempts, 3 regeneration waves, then escalate to model swap (text → Ideogram v3 or `gpt-image-1`/`gpt-image-1.5`, transparency → `gpt-image-1 background=transparent`, photoreal → FLUX.2 [pro] or FLUX.2 [max]).
 - **Telemetry**: log `(provider, model, asset_type, check, pass/fail)` per attempt. After 500+ generations, route by learned failure matrix (e.g., "Gemini fails `alpha_used` at 18% on transparent-logo; `gpt-image-1` at 4% → route transparent-logo to `gpt-image-1`").
 
 ### Combined three-stage acceptance gate (14d §Reference Pipeline)
@@ -196,7 +202,7 @@ Stage 1 (cheap gates): alpha inspection, CLIP floor τ₁=0.22, OCR diff, NSFW, 
 Stage 2 (scalar ensemble): 0.35·PickScore + 0.35·HPSv3 + 0.20·ImageReward
                            - 0.10·LAION penalty (photos only)
                            → keep top-K=2
-Stage 3 (VLM rubric): 2-of-3 agreement across GPT-4o + Gemini 2.5 Pro + Claude 4.5
+Stage 3 (VLM rubric): 2-of-3 agreement across GPT-4o + Gemini 2.5 Pro + Claude Sonnet 4.x
                       on per-asset-type rubric with strict enums
                       → paired-order randomization, require both orders agree on gates
 Stage 4: return top-1, or loop with repair_hints (max 3 regeneration rounds)
@@ -221,10 +227,10 @@ Stage 4: return top-1, or loop with repair_hints (max 3 regeneration rounds)
 
 - BFL, [Working Without Negative Prompts](https://bfl.mintlify.app/guides/prompting_guide_t2i_negative); HF [FLUX.1-dev #17](https://huggingface.co/black-forest-labs/FLUX.1-dev/discussions/17) (guidance-distilled); [diffusers #9124](https://github.com/huggingface/diffusers/issues/9124) (Flux `negative_prompt` TypeError); community [`pipeline_flux_with_cfg`](https://huggingface.co/black-forest-labs/FLUX.1-dev/discussions/256).
 - [AUTOMATIC1111 wiki — Negative prompt](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Negative-prompt).
-- Midjourney: [`--no`](https://docs.midjourney.com/docs/no), [multi-prompts](https://docs.midjourney.com/docs/multi-prompts).
+- Midjourney: [`--no`](https://docs.midjourney.com/hc/en-us/articles/32173351982093-No), [multi-prompts](https://docs.midjourney.com/hc/en-us/articles/32658968492557-Multi-Prompts-Weights). (URLs updated 2026-04-21 — Midjourney migrated docs to hc subdomain.)
 - Ideogram: [negative prompt](https://docs.ideogram.ai/using-ideogram/generation-settings/negative-prompt), [handling negatives](https://docs.ideogram.ai/using-ideogram/prompting-guide/4-handling-negatives), [Generate v3 API](https://developer.ideogram.ai/api-reference/api-reference/generate-v3).
-- OpenAI [Images API](https://platform.openai.com/docs/guides/images) and [`/images/edits`](https://developers.openai.com/api/reference/resources/images/methods/edit/).
-- [Vertex AI Imagen](https://cloud.google.com/vertex-ai/generative-ai/docs/image/generate-images); [Gemini 2.5 Flash Image](https://ai.google.dev/gemini-api/docs/image-generation); [Recraft v3](https://www.recraft.ai/blog/recraft-v3).
+- OpenAI [Images API](https://platform.openai.com/docs/guides/image-generation) and [`/images/edits`](https://developers.openai.com/api/reference/resources/images/methods/edit/). `gpt-image-1.5` model added late 2025; no negative_prompt parameter on any gpt-image variant.
+- [Vertex AI Imagen — Negative prompts deprecated notice](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/image/omit-content-using-a-negative-prompt); [Imagen 4 GA models](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/imagen/4-0-generate); [Gemini 2.5 Flash Image](https://ai.google.dev/gemini-api/docs/image-generation); [Recraft v3](https://www.recraft.ai/blog/recraft-v3); Recraft V4 released February 2026.
 
 ### Embeddings and post-processing models
 

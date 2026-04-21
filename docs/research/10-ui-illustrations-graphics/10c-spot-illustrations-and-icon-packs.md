@@ -236,6 +236,7 @@ For open-source pipelines (SDXL, Flux), two specific techniques help:
   reference adapter descended from CSD (Content-Style Decomposition). Feed it
   3–5 reference icons and it provides a much tighter style lock than an
   image-to-image warmstart at comparable strength.
+  > **Updated 2026-04-21:** The upstream `tencent-ailab/IP-Adapter` repo has not released a major new version (still v1/v2 checkpoint variants). ComfyUI IPAdapter Plus was set to **maintenance-only** mode as of April 14, 2025. For FLUX.2-native pipelines, prefer FLUX.2's built-in multi-reference support (≤10 refs) over external IP-Adapter adapters, which are not yet officially ported to FLUX.2.
 - **[ConsisLoRA](https://arxiv.org/html/2503.10614v1)** (2025) specifically
   addresses the content-leakage problem in style LoRAs by predicting the original
   image rather than noise and by decoupling content and style training. For icon
@@ -307,15 +308,17 @@ generator complied.
 
 ### Recraft's vector-native path
 
+> **Updated 2026-04-21:** Recraft V4 was released February 2026 and supersedes V2/V3. V4 ships four tiers: standard raster, V4 Vector (SVG, ~15 s/image), V4 Pro (2048×2048 raster), and **V4 Pro SVG** (2048×2048 native vector, ~45 s). The V4 Pro SVG model is recommended for complex icon sets requiring finer path geometry. Recraft remains the only major commercial model that produces true editable SVG from text prompts.
+
 [Recraft](https://www.recraft.ai/docs) is currently the only major commercial model
 that natively generates SVG output, and its dedicated icon mode is designed around
-this consistency problem specifically. Recraft V2's "Vector Icon Outline" style
-maintains consistent line width, corner shape, and element spacing across a batch
-of six prompts rendered together in a single "set" — critical because intra-batch
+this consistency problem specifically. Recraft V4's vector tiers (V4 Vector and V4 Pro SVG)
+maintain consistent line width, corner shape, and element spacing across a batch
+of prompts rendered together in a single "set" — critical because intra-batch
 variance is smaller than inter-batch variance.
 
 If you are shipping a pack commercially and want the shortest path to a usable
-result, start with Recraft's icon mode, use **Brand Styles** to upload 3–8 anchor
+result, start with Recraft's icon mode (use **V4 Vector** for standard icons, **V4 Pro SVG** for detail-heavy or large-format icons), use **Brand Styles** to upload 3–8 anchor
 icons, and export as SVG. You still need the normalization pipeline below to
 enforce stroke-width and viewBox compliance, but you skip vectorization entirely.
 
@@ -405,7 +408,8 @@ the pack to feel designed rather than generated.
 
 ### AI icon generation and LoRA training
 
-- Recraft — [Recraft V2 docs](https://www.recraft.ai/docs/recraft-models/recraft-V2), [vectorizing docs](https://recraft.ai/docs/using-recraft/image-editing/format-conversions-and-scaling/vectorizing), [icon generator](https://www.recraft.ai/generate/icons)
+- Recraft — [Recraft V4 docs](https://www.recraft.ai/docs/recraft-models/recraft-V4) · [V4 Pro SVG on Replicate](https://replicate.com/recraft-ai/recraft-v4-pro-svg) · [vectorizing docs](https://recraft.ai/docs/using-recraft/image-editing/format-conversions-and-scaling/vectorizing) · [icon generator](https://www.recraft.ai/generate/icons)
+  > **Updated 2026-04-21:** Recraft V2 reference above is now stale. Current model is **Recraft V4** (February 2026). V4 Pro SVG is the recommended tier for icon packs requiring fine geometry at high resolution.
 - Flux Icon Kit LoRA — [Dataloop listing](https://dataloop.ai/library/model/strangerzonehf_flux-icon-kit-lora/)
 - IconsRedmond for SDXL — [Hugging Face](https://huggingface.co/artificialguybr/IconsRedmond-IconsLoraForSDXL)
 - Modal — [Fine-tuning a FLUX.1-dev style LoRA](https://modal.com/blog/fine-tuning-flux-style-lora)

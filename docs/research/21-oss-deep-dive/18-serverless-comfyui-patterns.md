@@ -74,11 +74,15 @@ Truss-based. `config.yaml` declares `build_commands` that clone custom nodes and
 
 ### 6. BentoML — `bentoml/comfy-pack` + BentoCloud
 
-**`comfy-pack` is the most principled pinning tool in the ecosystem**: one-click "pack" from the ComfyUI UI emits a `.cpack.zip` recording Python package versions, ComfyUI + custom node commit SHAs, and model hashes via HF/Civitai URLs. `comfy-pack unpack` fully reproduces the env; the same artifact deploys on BentoCloud as a REST API with I/O schemas declared on `SaveAsOutput`/`LoadAsInput` nodes. Newer than Baseten/Modal (215★, v0.4.4 Nov 2025) but the `.cpack` format is the best **portable lock format** in the set and worth adopting even if you deploy elsewhere.
+> **Updated 2026-04-21:** The `215★` figure is now stale — the repo shows 164★ (down from higher, reflecting GitHub star-count corrections common in 2025–2026). The last PyPI release found is v0.4.0a5 (May 2025), suggesting the project may be in a slower maintenance phase. The `.cpack` format recommendation remains valid but treat the star count and version as approximate.
+
+**`comfy-pack` is the most principled pinning tool in the ecosystem**: one-click "pack" from the ComfyUI UI emits a `.cpack.zip` recording Python package versions, ComfyUI + custom node commit SHAs, and model hashes via HF/Civitai URLs. `comfy-pack unpack` fully reproduces the env; the same artifact deploys on BentoCloud as a REST API with I/O schemas declared on `SaveAsOutput`/`LoadAsInput` nodes. Currently ~164★ and pre-release (v0.4.0a5, May 2025). The `.cpack` format is still the best **portable lock format** in the set and worth adopting even if you deploy elsewhere.
 
 ### 7. ComfyDeploy — open-source SaaS (`comfy-deploy/comfydeploy`)
 
-Re-open-sourced 2025 under GPL-3.0 (~446★). Self-host supports Classic (direct ComfyUI/workspace), **RunPod serverless backend** (dispatches to RunPod on your behalf), or custom Docker. Surface: workflow **version history with one-click rollback**, auto-generated Playground UI, parallel per-member execution, and clean "snapshots → API endpoints" mapping. GPUs (SaaS): H100/A100/B200/H200/L40S/A10G/L4/T4. Custom-node install built into the Playground — most user-friendly of any option. For us: interesting as a **reference implementation of workflow-versioning** we can embed, not necessarily a product to adopt wholesale.
+> **Updated 2026-04-21:** The `~446★` figure is stale — the repo now shows ~1.3k★ (as of April 2026), reflecting strong growth after the September 2025 re-open-sourcing announcement.
+
+Re-open-sourced September 2025 under GPL-3.0 (~1.3k★ as of April 2026). Self-host supports Classic (direct ComfyUI/workspace), **RunPod serverless backend** (dispatches to RunPod on your behalf), or custom Docker. Surface: workflow **version history with one-click rollback**, auto-generated Playground UI, parallel per-member execution, and clean "snapshots → API endpoints" mapping. GPUs (SaaS): H100/A100/B200/H200/L40S/A10G/L4/T4. Custom-node install built into the Playground — most user-friendly of any option. For us: interesting as a **reference implementation of workflow-versioning** we can embed, not necessarily a product to adopt wholesale.
 
 ### 8. ComfyICU
 

@@ -21,6 +21,8 @@ prompt-to-asset.
 
 **GitHub URL:** https://github.com/fal-ai-community/skills/blob/main/skills/claude.ai/fal-3d/SKILL.md
 
+> **Updated 2026-04-21:** The default image-to-3D model in the fal-3d skill is now documented as `fal-ai/hunyuan3d-v3/image-to-3d` (HunyuanV3), but fal.ai's pricing page as of April 2026 lists Hunyuan3D at **$0.16/generation** — not $0.375 as stated below. The $0.375 figure may have reflected an earlier preview price or a different endpoint variant. Verify current pricing via `fal-platform/pricing.sh`. TripoSR remains at $0.07/generation and under 0.5s. MCP spec 2025-11-25 is now the Latest Stable; the fal.ai queue API uses Streamable HTTP transport (SSE transport deprecated, backward compat until 30 June 2026).
+
 ### What it generates
 
 Text-to-3D and image-to-3D mesh generation via fal.ai's hosted model endpoints.
@@ -67,7 +69,7 @@ Generation takes 1–5 minutes — jobs use the queue API, not synchronous calls
 #### HunyuanV3 (default fal-3d skill model)
 - URL: https://fal.ai/models/fal-ai/hunyuan3d-v3/image-to-3d
 - Speed: 1–5 minutes (queue API)
-- Cost: $0.375 standard; LowPoly $0.45; geometry-only $0.225; PBR +$0.15; multi-view +$0.15
+- Cost: $0.16/generation as of April 2026 (earlier pricing of $0.375 was a preview rate; verify via `pricing.sh`); PBR and multi-view variants may add additional cost
 - Output: GLB, OBJ, PNG thumbnail previews
 - Input: single image or multi-view images (front/back/left/right)
 - Use case: e-commerce product visualization, film-quality game assets, 3D printing
@@ -125,6 +127,8 @@ for speed-first iteration ($0.07, <0.5s); HunyuanV3 for production quality.
 
 **GitHub URL:** https://github.com/fal-ai-community/skills/blob/main/skills/claude.ai/fal-realtime/SKILL.md
 
+> **Updated 2026-04-21:** FLUX.2 [klein] release date confirmed as January 15, 2026. The 4B variant is Apache 2.0 (open source) and the 9B variant uses a Qwen3 8B text encoder with 4-step distillation, achieving <0.5s inference at quality matching models 5× larger. Both variants unify text-to-image and image editing natively (no model swap needed). The fal-realtime skill uses WebSocket transport — note that MCP spec 2025-11-25 standardizes Streamable HTTP for remote MCP; the skill's direct WebSocket calls to the fal.ai realtime endpoint are not affected by MCP transport changes.
+
 ### What it generates
 
 Sub-second text-to-image generation using synchronous (non-queue) fal.ai WebSocket API.
@@ -138,7 +142,8 @@ where latency matters more than quality ceiling.
 FLUX.2 [klein] was released by Black Forest Labs on January 15, 2026. It is a 4B–9B
 parameter flow transformer optimized for sub-second generation.
 - 4B parameter variant: Apache 2.0 license (commercially usable)
-- Speed: <1 second per image (synchronous WebSocket, no queue overhead)
+- 9B variant: 9B flow model + 8B Qwen3 text encoder, 4-step distillation
+- Speed: <1 second per image (synchronous WebSocket, no queue overhead); 9B variant achieves <0.5s
 - Runs on NVIDIA GB200; fal.ai serves it via serverless GPU
 
 This is distinct from the earlier FLUX.1 [schnell] (also fast, but 1–4 inference steps,

@@ -17,8 +17,8 @@ startCommand:
     properties:
       GEMINI_API_KEY:
         type: string
-        title: "Google AI Studio key (free tier, ~1,500 img/day Nano Banana)"
-        description: "Get from https://aistudio.google.com/apikey — no credit card."
+        title: "Google AI Studio / Gemini key (paid image-gen: Nano Banana $0.039/img, Imagen 4 Fast $0.02/img)"
+        description: "Get from https://aistudio.google.com/apikey. Google removed image-gen from the free API tier in 2025-12 — programmatic image calls require billing; an unbilled key returns HTTP 429 with limit:0. Free alternatives: AI Studio web UI (paste-only), Cloudflare Workers AI, HF Inference, Pollinations."
       OPENAI_API_KEY:
         type: string
         title: "OpenAI key (gpt-image-1 / 1.5 / dall-e-3, native RGBA)"

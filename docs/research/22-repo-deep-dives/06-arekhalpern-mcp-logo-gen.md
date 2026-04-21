@@ -39,6 +39,8 @@ is the redirected shell.
 - **Activity:** Created 2025-03-05, last substantive commit 2025-03-16 — **~13
   months stale as of 2026-04-19**, with no open PRs and effectively no
   maintenance cadence.
+
+> **Updated 2026-04-21:** Confirmed via web search that no new commits or PRs exist. The repo remains stale at ~13 months (March 2025 → April 2026). GPL-3.0 contamination risk and Ideogram v2 hard-code remain unresolved. Decision unchanged: do not adopt.
 - **Dependency pins:** `mcp==1.3.0`, `fal-client==0.5.9`, `fastapi==0.115.11`,
   `uvicorn==0.34.0`, `starlette==0.46.0`, `sse-starlette==2.2.1`, `Pillow` (for
   scaling, not in requirements.txt — implicit transitive). No Node, no TS, no

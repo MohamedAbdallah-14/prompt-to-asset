@@ -5,7 +5,10 @@ import { dummyPng } from "./openai.js";
 
 /**
  * Ideogram provider — Ideogram 2 / 3 / 3 Turbo.
- * Best-in-class in-image typography. v3 supports `style: "transparent"` for real RGBA.
+ * Best-in-class in-image typography. v3 supports native RGBA via the
+ * dedicated `/ideogram-v3/generate-transparent` endpoint.
+ *
+ * Source: docs/research/07-midjourney-ideogram-recraft/7b-ideogram-text-rendering-for-logos.md
  * See: https://developer.ideogram.ai/
  */
 export const IdeogramProvider: Provider = {
@@ -35,24 +38,31 @@ export const IdeogramProvider: Provider = {
       throw new ProviderError("ideogram", modelId, "IDEOGRAM_API_KEY not set");
     }
 
+    const useTransparentEndpoint =
+      req.transparency && (modelId === "ideogram-3-turbo" || modelId === "ideogram-3");
+
     const body: Record<string, unknown> = {
       image_request: {
         prompt: req.prompt,
         aspect_ratio: aspectFor(req.width, req.height),
         model: ideogramModelCode(modelId),
         magic_prompt_option: "OFF",
-        seed: req.seed
+        seed: req.seed,
+        ...(useTransparentEndpoint && {
+          rendering_speed: modelId === "ideogram-3-turbo" ? "TURBO" : "BALANCED"
+        })
       }
     };
 
-    if (req.transparency && modelId === "ideogram-3-turbo") {
-      (body["image_request"] as Record<string, unknown>)["style"] = "transparent";
-    }
     if (req.negative_prompt) {
       (body["image_request"] as Record<string, unknown>)["negative_prompt"] = req.negative_prompt;
     }
 
-    const resp = await fetch("https://api.ideogram.ai/generate", {
+    const endpoint = useTransparentEndpoint
+      ? "https://api.ideogram.ai/ideogram-v3/generate-transparent"
+      : "https://api.ideogram.ai/generate";
+
+    const resp = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Api-Key": CONFIG.apiKeys.ideogram,
@@ -80,7 +90,7 @@ export const IdeogramProvider: Provider = {
       model: modelId,
       seed: req.seed,
       raw_response: json,
-      native_rgba: Boolean(req.transparency && modelId === "ideogram-3-turbo"),
+      native_rgba: Boolean(useTransparentEndpoint),
       native_svg: false
     };
   }

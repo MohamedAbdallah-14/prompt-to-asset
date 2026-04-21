@@ -46,13 +46,13 @@ Secondary findings: **jimp is only defensible when you cannot ship native binari
 
 | Library | Runtime | Backend | License | Install size | Runtime speed (relative) | Formats in/out | Notes |
 |---|---|---|---|---|---|---|---|
-| **sharp** | Node.js ≥18 | libvips (native) | Apache-2.0 (lib), libvips LGPL-v3 (shipped as separate dylib) | ~38 MB node_modules / ~13 MB zipped for Lambda | **1.0× (reference)** | JPEG, PNG, WebP, AVIF, TIFF, GIF, HEIF (no HEIC by default), SVG via librsvg, raw, ICO *read only* | De-facto standard. Used by `next/image`. ~19–20M wk downloads. Prebuilt binaries for win32-x64/arm64, linux-x64/arm64/arm/musl, darwin-x64/arm64. |
+| **sharp** | Node.js ^18.17.0 or ≥20.3.0 | libvips (native) | Apache-2.0 (lib), libvips LGPL-v3 (shipped as separate dylib) | ~38 MB node_modules / ~13 MB zipped for Lambda | **1.0× (reference)** | JPEG, PNG, WebP, AVIF, TIFF, GIF, HEIF (no HEIC by default), SVG via librsvg, raw, ICO *read only* | De-facto standard. Used by `next/image`. Current stable: **v0.34.5** (v0.35.0-rc.2 available as of Apr 2026). Prebuilt binaries for win32-x64/arm64, linux-x64/arm64/arm/musl, linux-riscv64 (experimental), darwin-x64/arm64. |
 | **@napi-rs/image** | Node.js ≥14, Bun, Deno, wasm32-wasip1-threads | Rust (`image` crate + resvg + libavif-rs) | MIT | ~10–15 MB (single `.node` per target) | **~1.0–1.2× sharp** on WebP/AVIF encode on M1 Max | JPEG, PNG, BMP, ICO, WebP, AVIF, TIFF, TGA, farbfeld (R/W); DDS, EXR, PNM, SVG (R) | Smaller native binary, no system deps. **Fewer ops** than sharp (no channel math, limited resize filters). WASM build exists. |
 | **jimp** | Node, Browser, Bun, Deno, Lambda | Pure JS | MIT | ~1.5 MB | **~1/26× sharp** (2.4 vs 64.4 ops/sec; ~800 MB vs ~50 MB peak for 100-image batch) | PNG, JPEG, BMP, GIF, TIFF; WebP/AVIF via optional WASM plugins | Only correct answer for **edge runtimes** (Cloudflare Workers, Vercel Edge, browser extensions) or when native deps are banned. Maintainer cadence slowed after v1.6 (late 2024) but no CVEs. |
-| **Pillow** | CPython ≥3.9 | C (libjpeg-turbo, libwebp, libpng) | MIT-CMU (HPND) | ~3 MB wheel | **~2–3× slower than pyvips**, higher memory | JPEG, PNG, WebP, AVIF (via pillow-avif-plugin or Pillow ≥10.2 w/ libavif), GIF, ICO (R/W), ICNS (R/W), TIFF, BMP, PSD (R), PCX, TGA | **Built-in ICO + ICNS writers** (`Image.save("x.ico", sizes=[(16,16),…])` and `"x.icns"`). Huge ecosystem (matplotlib, torchvision). Windows wheels work. |
+| **Pillow** | CPython ≥3.10 | C (libjpeg-turbo, libwebp, libpng) | MIT-CMU (HPND) | ~3 MB wheel | **~2–3× slower than pyvips**, higher memory | JPEG, PNG, WebP, AVIF (built-in as of Pillow 10.2+ w/ libavif; no plugin needed), GIF, ICO (R/W), ICNS (R/W), TIFF, BMP, PSD (R), PCX, TGA | **Built-in ICO + ICNS writers** (`Image.save("x.ico", sizes=[(16,16),…])` and `"x.icns"`). Current stable: **v12.1.1** (Jan 2026; v12.x series dropped Python 3.8/3.9 support). Huge ecosystem (matplotlib, torchvision). Windows wheels work. |
 | **Pillow-SIMD** | CPython | Pillow fork with SSE4/AVX2 | same | ~3 MB | **~4–6× stock Pillow on resize/convolution**, still ~1.5–2× slower than pyvips | same as Pillow | Drop-in. x86 only. Worth it for CPU-bound resize-heavy batch jobs without libvips. |
 | **pyvips** | CPython, PyPy | libvips via cffi | MIT (binding), LGPL-3.0 (libvips) | ~1 MB + libvips system pkg (or `pyvips-binary` wheel bundling libvips) | **Fastest Python option**; ~0.18s vs Pillow-SIMD 0.36s on load/crop/shrink/sharpen/save 5000×5000 TIFF (49 MB vs 230 MB peak) | JPEG, PNG, WebP, AVIF, TIFF (incl. pyramidal, BigTIFF), HEIF, GIF, SVG via librsvg, PDF via Poppler, RAW, OpenEXR, DICOM, DZI | Best for large images / batch / streaming pipelines. Requires libvips on host unless using `pyvips-binary` (experimental). |
-| **ImageMagick 7 / `magick` CLI / Wand / gm** | CLI, Python (Wand), Node (gm) | ImageMagick C library + delegates | Apache-2.0 (rebranded 2025; historically ImageMagick License) | ~40–100 MB full install + delegates | **~4–8× slower than libvips** on common ops; ~16× memory (1.5 GB vs 94 MB on 2025 benchmark) | Everything (including PSD, DICOM, legacy RAW via delegates, PostScript via Ghostscript) | Correct fallback for **exotic formats** or one-off CLI glue. Avoid as primary in-process engine. |
+| **ImageMagick 7 / `magick` CLI / Wand / gm** | CLI, Python (Wand), Node (gm) | ImageMagick C library + delegates | Apache-2.0 (rebranded 2025; historically ImageMagick License) | ~40–100 MB full install + delegates | **~4–8× slower than libvips** on common ops; ~16× memory (1.5 GB vs 94 MB on 2025 benchmark) | Everything (including PSD, DICOM, legacy RAW via delegates, PostScript via Ghostscript) | Current stable: **v7.1.2-19** (Apr 2026). Correct fallback for **exotic formats** or one-off CLI glue. Avoid as primary in-process engine. Python binding: Wand **v0.7.0** (Feb 2026). |
 | **resvg + resvg-js + @resvg/resvg-wasm** | Rust crate, Node (napi), Browser (WASM) | Pure Rust (`tiny-skia` renderer) | MPL-2.0 (resvg), bindings Apache-2.0 | ~6–12 MB per native target, ~3 MB WASM | Fastest SVG rasterizer; 115× speedup on paris-30k after v0.34 | SVG → PNG/RGBA buffer | Deterministic, **no system fonts needed** (supports embedded + custom fonts). Does not implement full SVG 2.0 but covers icon-class SVGs. |
 | **librsvg / rsvg-convert** | C lib, CLI, Python via PyGObject | GLib + Cairo | LGPL-2.1-or-later | libvips inherits it | Fast, very compatible with Inkscape output | SVG → PNG | Used inside sharp/libvips. System dependency on Linux/macOS via Homebrew; painful on Windows (pulls GLib+Cairo+Pango). |
 | **cairo / cairosvg** | C / Python | cairo | LGPL-2.1 / MPL-1.1 | medium | ok | SVG → PNG/PDF/PS | Heavier, GLib-heavy install. Good for PDF/PS output; not needed if resvg-js is available. |
@@ -93,6 +93,8 @@ All numbers below are from primary sources cited at the end. Prefer the **ops/se
 | @napi-rs/image (WebP encode default threadpool) | 202 ops/sec | — | 1.2× vs sharp 169 on same bench |
 | jimp | 2.40 ops/sec | ~800 MB | **0.037×** (~27× slower) |
 | Squoosh (`@squoosh/lib`) | ~2.6 ops/sec | — | ~0.04× |
+
+> **Updated 2026-04-21:** `@squoosh/lib` and `@squoosh/cli` are **abandoned**. Google removed the CLI source from the squoosh repository; the npm package has not been updated for Node 18+ and fails on Node 20. The `@squoosh/lib` row above is retained for historical benchmark reference only — **do not use it in new code**. For browser-side codecs, use `jSquash` (`@jsquash/png` v3.1.1, `@jsquash/avif` v2.1.1, etc.), which is the maintained WASM fork of the same codecs. For server-side, use `sharp` (AVIF/WebP built-in via libvips/libavif).
 
 Source: [sharp performance page](https://sharp.pixelplumbing.com/performance/), [pkgpulse.com sharp-vs-jimp-2026](https://www.pkgpulse.com/blog/sharp-vs-jimp-2026), [@napi-rs/image home](https://image.napi.rs/).
 
@@ -144,6 +146,36 @@ Source: [@resvg/resvg-js CHANGELOG](https://github.com/yisibl/resvg-js/blob/main
 - ImageMagick: `MAGICK_THREAD_LIMIT`, `MAGICK_MEMORY_LIMIT`, `MAGICK_DISK_LIMIT`, and **always set `TMPDIR`** to a local fast disk.
 - @napi-rs/image: inherits libuv threadpool; benefits roughly linearly with `UV_THREADPOOL_SIZE` up to `cores`.
 
+## PNG Optimization Post-Processing
+
+> **Updated 2026-04-21:** This section was absent from the original research and represents a gap. Lossless and lossy PNG compression are distinct post-processing steps that belong after sharp's output pipeline and before writing to storage. Both tools below are Rust-native and integrate cleanly with asset pipelines.
+
+For production-grade PNG outputs, apply compression after generation:
+
+| Tool | Kind | Current version (Apr 2026) | CLI | Node / Python | Notes |
+|---|---|---|---|---|---|
+| **oxipng** | Lossless (no pixel change) | v9.1.1 | `oxipng --opt 4 *.png` | `oxipng` npm wrapper; Docker image at `ghcr.io/oxipng/oxipng` | Multithreaded Rust binary. `--opt 4` is the practical default (good compression, fast). `--opt 6` adds 2–5% savings for assets encoded once/served forever. `--strip all` removes EXIF/ICC metadata (recommended for web assets). Preferred over optipng. |
+| **pngquant** | Lossy (reduces color palette) | 2.18+ | `pngquant --quality 80 *.png` | via `node-pngquant` / subprocess | 6-color K-means quantization — essential for app icons at small sizes (favicon 16×16). Run **before** oxipng: `pngquant → oxipng` stacks both passes and can reduce a 383 KB PNG to ~70 KB. |
+
+**Recommended pipeline for asset icons:**
+```text
+sharp output (PNG)  →  pngquant --quality 75-85 --speed 1  →  oxipng --opt 4 --strip all  →  storage write
+```
+
+**For logos/OG images with alpha:** skip pngquant (palette reduction hurts gradient quality) — run oxipng only.
+
+## Text Compositing / Canvas API
+
+> **Updated 2026-04-21:** The original research omitted the Canvas/Skia layer used for compositing brand text onto generated images — a critical path for the strong-text-renderer fallback described in CLAUDE.md. Three libraries are relevant:
+
+| Library | Backend | Current version | Weekly downloads | Notes |
+|---|---|---|---|---|
+| **@napi-rs/canvas** | Skia (same as Chrome) | v0.1.98 (Apr 2026, very active) | high | Zero system deps, prebuilt NAPI binaries, Canvas API compatible. Best for in-process text compositing in Node workers. |
+| **skia-canvas** | Skia (GPU-accelerated) | v3.0.8 | ~50k | Multi-threaded, SVG output, excellent font loading. Slightly larger binary. Good choice when you need GPU paths. |
+| **node-canvas** (cairo) | Cairo/Pango | v2.11+ | ~5M | Mature; requires system cairo/Pango install which conflicts with the "no system installs" rule for MCP servers. Use only in controlled server environments. |
+
+**For the prompt-to-asset MCP server:** use `@napi-rs/canvas` (zero system deps, prebuilt) for compositing typography onto generated assets when the model cannot be trusted with brand text (all models except gpt-image-1, Ideogram 3 Turbo, and Nano Banana Pro as documented in CLAUDE.md).
+
 ## Packaging Strategy per OS
 
 The plugin has to run inside a Claude Skill, a Codex/MCP server, or a plain Node/Python CLI on macOS, Linux, and Windows, and occasionally inside a sandboxed edge environment. Packaging decisions flow from that.
@@ -152,7 +184,9 @@ The plugin has to run inside a Claude Skill, a Codex/MCP server, or a plain Node
 
 **Primary engine: `sharp` (Apache-2.0) + `@resvg/resvg-js` (MPL-2.0) + `icon-gen` or `sharp-ico` (MIT).**
 
-- `npm install sharp` pulls the right `@img/sharp-<platform>-<arch>` and `@img/sharp-libvips-<platform>-<arch>` prebuild automatically for darwin-x64, darwin-arm64, linux-x64 (gnu + musl), linux-arm64, linux-arm, win32-x64, win32-arm64 (experimental), and linux-ppc64/s390x on sharp ≥0.33. Confirmed on [sharp install docs](https://sharp.pixelplumbing.com/install/).
+- `npm install sharp` pulls the right `@img/sharp-<platform>-<arch>` and `@img/sharp-libvips-<platform>-<arch>` prebuild automatically for darwin-x64, darwin-arm64, linux-x64 (gnu + musl), linux-arm64, linux-arm, win32-x64, win32-arm64, linux-riscv64 (experimental), and linux-ppc64/s390x. Current stable: **v0.34.5**; requires **Node.js ^18.17.0 or ≥20.3.0** (Node 16 dropped). Confirmed on [sharp install docs](https://sharp.pixelplumbing.com/install/).
+
+> **Updated 2026-04-21:** Sharp v0.34 dropped Node 16 support. Projects pinned to Node 16 must upgrade before upgrading sharp. The `--build-from-source` flag is deprecated in v0.34+ (use npm v12+ instead). Sharp v0.35.0-rc.2 is available as a release candidate with BigTIFF output support and RISC-V experimental binaries.
 - **macOS**: works out of the box on x64 and arm64. If the plugin is shipped as a signed `.pkg`, the prebuilt `.node` must be included in the notarization bundle and stapled — don't rely on post-install `npm install` on first run unless the host has `node-gyp` fallback enabled.
 - **Linux**: separate `linux-x64` (glibc) and `linuxmusl-x64` (Alpine) builds. If the plugin may run in Alpine-based Docker (common for serverless), test against `node:20-alpine` explicitly.
 - **Windows**: **the single known pain point.** sharp supports Windows x64/x86/arm64 but `sharp-libvips` cannot be overridden with a globally installed libvips on Windows ([sharp#4436](https://github.com/lovell/sharp/issues/4436)). This is only a problem if the plugin author needs HEIC/HEVC or a custom libvips build; for standard JPEG/PNG/WebP/AVIF/SVG/GIF/TIFF workflows, the prebuilt `@img/sharp-libvips-win32-x64` package is sufficient. Plugins should **not** require Visual Studio build tools; they should pin to a sharp version that has a working prebuild for every target.
@@ -177,9 +211,11 @@ Rationale: resvg-js is deterministic across OS, does not need system fonts on th
 
 - Wheel strategy: the cleanest install path is the experimental `pyvips-binary` wheel (bundles libvips on manylinux, macOS, and win_amd64). When that's not available, fall back to `pip install pyvips` + a README instruction to install libvips via Homebrew (`brew install vips`), apt (`apt-get install libvips-dev`), or chocolatey (`choco install libvips`). **Plugin authors should assume `pip install pyvips` alone will fail on a clean Windows machine.**
 - Pillow has built-in ICO and ICNS writers: `Image.save("out.ico", sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])` and `Image.save("out.icns")` — these are the simplest way to produce icon packs in Python without adding more dependencies.
-- For AVIF: Pillow ≥10.2 supports AVIF when built against libavif; otherwise use `pillow-avif-plugin`.
+- For AVIF: Pillow ≥10.2 supports AVIF natively when built against libavif (no separate plugin needed on modern installs). The `pillow-avif-plugin` is legacy/fallback only.
 - Pillow-SIMD is a **drop-in** replacement for Pillow (same `PIL` namespace) but only ships x86 wheels; ship it as an optional "perf" extra, not a hard dep.
-- **Never require ImageMagick/Wand** as a hard dep — only use it when the user supplies an input format (PSD, DICOM) that nothing else handles.
+- **Never require ImageMagick/Wand** as a hard dep — only use it when the user supplies an input format (PSD, DICOM) that nothing else handles. If needed: Wand **v0.7.0** (Feb 2026) is the current release, supports Python 3.8+.
+
+> **Updated 2026-04-21:** Pillow **v12.x** (current: 12.1.1) dropped Python 3.8 and 3.9 support. If your plugin must target CPython 3.8, pin Pillow to `<12`. The quarterly release schedule means v12.2.0 is expected April 2026.
 
 ### Rust / Tauri sidecar
 
@@ -215,7 +251,7 @@ The entire pipeline compiles to a **single ~8–15 MB static binary** per `(os, 
 | MIT (jimp, Pillow, `disintegration/imaging`, `icon-gen`, `sharp-ico`, `ico`, `icns` crates) | ✅ | Simplest; attribution only. |
 | MPL-2.0 (resvg, resvg-js, `@shockpkg/icon-encoder`) | ✅ **with file-level copyleft** | If you modify MPL files, you must publish the modified file. Consumers linking unmodified binaries are fine. |
 | LGPL-2.1 / LGPL-3.0 (libvips, librsvg, GLib, cairo) | ✅ **only via dynamic linking** | Sharp mitigates by shipping libvips as a separate `.node`-loaded shared library. If you statically link (WASM, some Rust builds), the combined work becomes LGPL. |
-| ImageMagick License / Apache-2.0 (ImageMagick 7 post-2025 rebrand) | ✅ | Permissive post-rebrand, but still heavy and with many LGPL/GPL delegates; avoid statically linking. |
+| Apache-2.0 (ImageMagick 7 — rebranded 2025; v7.1.2-19 current) | ✅ | Permissive post-rebrand, but still heavy and with many LGPL/GPL delegates; avoid statically linking. |
 
 Concretely: **a closed-source plugin can ship `sharp` + `@resvg/resvg-js` + `icon-gen` with only Apache-2.0 / MPL-2.0 / MIT notices.** It must **not** statically link libvips or librsvg into its own binary.
 

@@ -22,6 +22,8 @@ tags: [mcp, logo, logoloom]
 - **License:** MIT (confirmed in `LICENSE`, 1 KB).
 - **Version / cadence:** `@mcpware/logoloom` v1.0.1, published to npm **2026-03-22**; first release 2026-03-21. Two versions total, both within one day — the repo is effectively brand new.
 - **Popularity:** 7 GitHub stars, 0 forks, 13 weekly npm downloads, 4 installs on Lobehub (at time of research). No issues, no PRs, no contributors beyond the author.
+
+> **Updated 2026-04-21:** Web search confirms the repo exists and is listed on Glama MCP directory. No evidence of additional releases beyond v1.0.1. Very early-stage, negligible community. Status: **experimental, watch for updates**. Decision unchanged.
 - **Maintainer:** `ithiria894` under the `mcpware` org, which also ships `instagram-mcp`, `claude-code-organizer`, `ui-annotator-mcp`, and `pagecast` — a personal portfolio of MCP utilities rather than a team.
 - **Footprint:** 17 files, 378 KB unpacked. The largest single file is the bundled `Inter-Bold.ttf` (334 KB) — i.e. roughly 88% of the package is a font.
 - **Runtime deps (four total):** `@modelcontextprotocol/sdk ^1.12.0`, `opentype.js ^1.3.4`, `svgo ^3.3.0`, `sharp ^0.33.0`.

@@ -28,7 +28,9 @@ primary_sources:
 
 ## Executive Summary
 
-Diffusion models generate images by learning to reverse a gradual noising process. Four papers define the modern theoretical and practical stack that every text-to-image system (Stable Diffusion, SDXL, FLUX, Imagen, DALL·E 3, Midjourney’s internals) inherits from:
+> **Updated 2026-04-21:** DALL·E 3 is scheduled for API deprecation on May 12, 2026; OpenAI’s current image model is **gpt-image-1** / **gpt-image-1.5** (released March–December 2025). Midjourney’s current default is **v7** (April 2025), with **v8 Alpha** in preview since March 2026. References to "DALL·E 3" and "Midjourney v6" throughout this document are accurate for the historical benchmarks cited but should not be read as "current flagship."
+
+Diffusion models generate images by learning to reverse a gradual noising process. Four papers define the modern theoretical and practical stack that every text-to-image system (Stable Diffusion, SDXL, FLUX, Imagen, gpt-image-1, Midjourney’s internals) inherits from:
 
 1. **DDPM** (Ho, Jain, Abbeel 2020) reframed 2015-era thermodynamic diffusion models ([Sohl-Dickstein et al.][sohl2015]) as a variational denoising objective — predict the Gaussian noise added to a latent — and showed it matched or beat GANs on CIFAR-10 (FID 3.17) and LSUN 256×256.[^ddpm]
 2. **DDIM** (Song, Meng, Ermon 2021) generalized the DDPM forward process to a non-Markovian family whose reverse step can be deterministic, enabling **10×–50× faster sampling** from an unchanged DDPM checkpoint plus meaningful latent-space interpolation.[^ddim]

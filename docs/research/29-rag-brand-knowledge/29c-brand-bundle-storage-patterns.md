@@ -97,7 +97,9 @@ Use Milvus when: managing brand bundles for hundreds of brands, requiring cross-
 
 ### ChromaDB — prototyping only
 
-ChromaDB is the lowest-friction option to stand up: `pip install chromadb`, no server config. But it lacks columnar storage, its Python multimodal support is less mature than LanceDB's, and its Rust-core rewrite (2025) is still settling. Use for local development; switch to LanceDB or Milvus for production.
+ChromaDB is the lowest-friction option to stand up: `pip install chromadb`, no server config. But it lacks columnar storage and its Python multimodal support is less mature than LanceDB's. Use for local development; switch to LanceDB or Milvus for production.
+
+> **Updated 2026-04-21:** The Rust-core rewrite that was "still settling" in early 2025 is now the stable Chroma 1.x production line (currently 1.5.x as of February 2026). It delivers ~4× write throughput over the previous Python-only implementation. The caveat about immaturity is now specifically about columnar storage and large-scale multimodal queries, not about rewrite stability.
 
 ---
 

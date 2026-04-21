@@ -79,6 +79,8 @@ with no permissions, commenting uses `workflow_run` with `pull-requests: write`.
 
 ## Sample workflow skeleton
 
+> **Updated 2026-04-21:** Example updated to use `actions/setup-node@v6` (latest major as of Apr 2026; v4 is two major versions behind) and `node-version: 22` (Node 20 reaches EOL Apr 30, 2026; Node 22 LTS is supported until Apr 2027).
+
 ```yaml
 name: pr-asset-preview
 on:
@@ -107,8 +109,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+      - uses: actions/setup-node@v6
+        with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run build
       - run: node packages/mcp-server/dist/smoke.js

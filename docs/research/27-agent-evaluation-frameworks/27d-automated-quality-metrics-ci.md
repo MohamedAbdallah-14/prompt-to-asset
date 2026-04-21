@@ -95,14 +95,19 @@ No GPU path: use `model='gpt-4o'` in t2v_metrics — costs ~$0.02 per image.
 
 ---
 
-## Tier 2: LLM-as-Judge Checks (nightly, ~$0.02–0.05/image)
+## Tier 2: LLM-as-Judge Checks (nightly, ~$0.01–0.03/image with GPT-4o)
+
+> **Updated 2026-04-21:** Cost estimate revised down — GPT-4V is deprecated; GPT-4o pricing is lower (~$0.01–0.03/image). Use `model="gpt-4o"` as the judge backend in DeepEval v3.0+.
 
 ### DeepEval TextToImageMetric
+
+> **Updated 2026-04-21:** GPT-4V is deprecated by OpenAI; DeepEval v3.0 uses GPT-4o or Claude 3.x as the judge backend. The **default threshold is now 0.5** (changed from earlier 0.5 default that docs had always shown — the 0.7 value used below is a recommended calibrated threshold, not the framework default). Calibrate against your own golden dataset.
+
 ```python
 from deepeval.metrics import TextToImageMetric
 from deepeval.test_case import LLMTestCase, MLLMImage
 
-metric = TextToImageMetric(threshold=0.70, include_reason=True)
+metric = TextToImageMetric(threshold=0.70, include_reason=True)  # 0.70 is calibrated, not the 0.5 default
 case = LLMTestCase(
     input="minimalist compass logo, flat vector, no text, transparent background",
     actual_output=str(MLLMImage(url="logo.png", local=True))

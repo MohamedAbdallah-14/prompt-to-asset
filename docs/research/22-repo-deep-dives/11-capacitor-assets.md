@@ -29,10 +29,12 @@ Capacitor apps. It reads source image(s) from an `assets/` or `resources/`
 folder, crops and resizes with `sharp`, and writes correctly-named icon and
 splash variants directly into the native iOS and Android project folders plus
 a PWA `manifest.(json|webmanifest)`. Despite a modest star count (≈579★) it
-is a **heavy-traffic npm package — ~263k weekly downloads** (npm reports
-251k–263k depending on the week), the de-facto tool inside the Capacitor
+is a **heavy-traffic npm package — ~238k weekly downloads** (npm reports
+~238k as of Apr 2026), the de-facto tool inside the Capacitor
 ecosystem. Latest release **3.0.5** (29 Mar 2024); quiet but not abandoned,
 with issues triaged through 2024.
+
+> **Updated 2026-04-21:** As of April 2026, v3.0.5 (March 2024) remains the latest release — **over 2 years without a new version**. The last GitHub commit to `main` was September 2024. The package is functionally stable but receives no active feature development. The Capacitor docs still point to this tool, and weekly downloads remain strong (~238k/week), indicating it is still widely used in the ecosystem. However, iOS 18 appearances (dark/tinted/clear) and Android 13 monochrome adaptive icons are **not** supported — for those, `guillempuche/appicons` is the current alternative. If adopting capacitor-assets for production use, pin to a commit SHA and treat it as a vendored dependency. Weekly download figure revised from the research-time ~263k to ~238k (npm Apr 2026).
 
 Under the hood it is a small TypeScript CLI plus a library surface:
 `commander` for argument parsing, `sharp` for image manipulation, `plist` and
@@ -276,3 +278,5 @@ programmatic surface the community has under-utilised. Pair with
 and `akabekobeko/npm-icon-gen` (`.ico` / `.icns`), and the AI-generated 1024²
 master mark drops cleanly into a drop-in-get-everything flow. No fork
 required; v1 integration is `npm i @capacitor/assets` + a ~200-line wrapper.
+
+> **Updated 2026-04-21:** The 2+ year release freeze (last: v3.0.5, March 2024) raises the fallback priority. Pin the adoption to the last-known-good commit SHA (September 2024) and actively maintain `guillempuche/appicons` as the primary driver for iOS 18+ and Android 13+ requirements. If `capacitor-assets` sees no new release by H2 2026, demote to the secondary fallback and promote `guillempuche/appicons` to primary across the board.

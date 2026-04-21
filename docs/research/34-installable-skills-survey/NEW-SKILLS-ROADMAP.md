@@ -6,6 +6,8 @@ title: "New Skills Roadmap — prompt-to-asset"
 date: 2026-04-20
 ---
 
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
+
 # New Skills Roadmap — prompt-to-asset
 
 This roadmap covers five new skills to build, in priority order. Each skill is absent from the current `skills/` tree and fills a gap identified in the installable-skills survey.
@@ -20,7 +22,9 @@ This roadmap covers five new skills to build, in priority order. Each skill is a
 
 **API.** Gemini 2.5 Flash Image via Google AI Studio (`gemini-2.5-flash-image`, GA as of Oct 2025). SDK: `@google/genai` npm package or `google-genai` Python.
 
-**Key requirement.** `GEMINI_API_KEY` only. Obtainable without a credit card from Google AI Studio. Free tier: ~1,500 images/day (1,290 output tokens each; free quota resets daily).
+**Key requirement.** `GEMINI_API_KEY` — requires a billed Google Cloud project as of December 2025 (free image-gen quota removed). The key is obtainable without a credit card from Google AI Studio but image-gen returns HTTP 429 `limit: 0` on unbilled projects. For zero-key image generation, use Cloudflare Workers AI (10k neurons/day free for Flux-1-Schnell + SDXL) or HF Inference (free HF_TOKEN) instead. The `GEMINI_API_KEY` works for image-gen at $0.039/img (Nano Banana 2.5 Flash / 3.1 Flash) with billing enabled.
+
+> **Updated 2026-04-21:** Nano-banana skill positioning: no longer a "free tier" skill in the zero-cost sense. Reframe it as a "low-cost Gemini" skill ($0.039–$0.067/img at 1K). The zero-key programmatic slot is now Cloudflare Workers AI (add to `asset_capabilities()` free routes if not already present). Active model: `gemini-3.1-flash-image-preview`. Dead model (do not reference): `gemini-3-pro-image-preview` (shutdown March 9, 2026).
 
 **Routing position.** Sits below `gpt-image-1`, Ideogram 3, and Recraft V3 in the quality hierarchy but above `external_prompt_only` in UX friction. Presented first when no paid API keys are configured.
 

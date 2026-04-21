@@ -23,9 +23,9 @@ tags: [logocreator, nextjs, flux, together, ui-reference]
 
 # Deep dive: Nutlope/logocreator
 
-The single most-starred OSS AI-logo generator on GitHub (6,956★, 676 forks as of
-2026-04-19), and the repo that every "I cloned Nutlope's logo creator in a weekend"
-Twitter thread points at. Built by Hassan El Mghari (`@Nutlope`) — the same author
+The most-starred OSS AI-logo generator on GitHub in this category, and the repo that every "I cloned Nutlope's logo creator in a weekend" Twitter thread points at.
+
+> **Updated 2026-04-21:** Star count has declined from the 6,956 / 676 forks peak recorded at research time (2026-04-19). Cross-referencing with web sources in April 2026 returns figures closer to ~5.3k stars / ~474 forks, consistent with a repo that launched virally and has since stagnated with no meaningful human commits since January 2025. Treat all star numbers below as approximate and directional, not exact. Built by Hassan El Mghari (`@Nutlope`) — the same author
 behind `llamatutor`, `napkins.dev`, `picprompt`, and the Together AI demo
 portfolio. It is, correctly, the reference UI for the category. It is not, as
 closer inspection shows, a reference *product* — the backend is 164 lines of
@@ -35,8 +35,8 @@ hand-written prompt template and a single `client.images.create()` call.
 
 | Metric | Value |
 |---|---|
-| Stars | **6,956** |
-| Forks | 676 |
+| Stars | **~5,300** (peak ~6,956 at launch; declining as of Apr 2026) |
+| Forks | ~474 (peak ~676) |
 | Open issues | 17 |
 | Watchers / subscribers | 34 |
 | Created | 2024-11-06 |

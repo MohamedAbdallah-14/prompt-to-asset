@@ -4,7 +4,10 @@ role: synthesis
 slug: 34-installable-skills-survey-synthesis
 title: "Installable Skills Survey — Synthesis"
 date: 2026-04-20
+last_updated: 2026-04-21
 ---
+
+> **⚠️ Status update 2026-04-21:** Google removed Gemini / Imagen image-gen from the universal free API tier in December 2025. Claims in this document about "~1,500 free images/day" or "Nano Banana free tier" now refer only to the AI Studio **web UI** (https://aistudio.google.com), which is still free for interactive generation. For **programmatic** free image-gen, prefer Cloudflare Workers AI (Flux-1-Schnell, 10k neurons/day), HF Inference (free HF_TOKEN), or Pollinations. Paid Gemini: $0.039/img Nano Banana; $0.02/img Imagen 4 Fast.
 
 # Installable Skills Survey — Synthesis
 
@@ -36,17 +39,23 @@ This pattern has one critical implication for prompt-to-asset: the existing skil
 
 The `kingbootoshi/nano-banana-2-skill` (347 stars for a single skill file) is the most-copied single skill pattern in the Claude Code ecosystem as of April 2026. The reason is structural, not quality-based.
 
-**The free tier math.** Google AI Studio's free tier covers approximately 1,500 image generations per day at zero cost with `GEMINI_API_KEY`. The key is trivially obtained — Google account, no credit card, no waitlist. By contrast:
+**The free tier math (historical, April 2026).** At the time this research was first written, Google AI Studio's free tier covered approximately 1,500 image generations per day at zero cost with `GEMINI_API_KEY`. That quota was withdrawn in December 2025 — see the banner at the top of this file. The updated picture for a zero-credit-card developer in April 2026:
 
-| Provider | Key acquisition | Free quota | Cost after quota |
+| Provider | Key acquisition | Free programmatic quota | Cost after quota |
 |---|---|---|---|
-| Google AI Studio (Gemini Flash Image) | Google account, instant | ~1,500 images/day | $0.039/image |
+| Cloudflare Workers AI (Flux-1-Schnell + SDXL) | Free account, instant | 10k neurons/day free | Paid Workers AI pricing |
+| HF Inference (SDXL / SD3 / Flux Schnell) | Free HF account | Free, rate-limited | $ per token or per-call |
+| Pollinations | None | Zero-signup, ~1 req/15s anonymous | N/A (community-hosted) |
+| Stable Horde | Anonymous queue | Free, slow | N/A (community GPUs) |
+| Google AI Studio web UI (Gemini / Imagen) | Google account | Free interactive only (paste-only via `asset_ingest_external`) | $0.039/img Nano Banana via API once billing enabled |
 | OpenAI (gpt-image-1) | Credit card required | None | $0.04–$0.19/image |
 | fal.ai (Flux.1 Pro) | Email, credit card | $1 trial credit (~5 images) | ~$0.05/image |
 | Ideogram 3 | Email | 25 free/month | Paid plan |
 | Recraft V3 | Email | 50 free/month | Paid plan |
 
-For a developer exploring prompt-to-asset for the first time, Gemini Flash Image is the only option that works immediately without a credit card. This is why skills that use it are disproportionately starred relative to their code complexity.
+The pattern that kept `kingbootoshi/nano-banana-2-skill` at 347 stars was that it was the only zero-credit-card programmatic path. Today that slot belongs to Cloudflare Workers AI; Google's free route has moved to the web UI.
+
+> **Updated 2026-04-21:** `kingbootoshi/nano-banana-2-skill` was at 347 stars as of the original research date. The free-tier slot it occupied is now held by Cloudflare Workers AI (10k neurons/day free, Flux-1-Schnell + SDXL) and HF Inference (free HF_TOKEN). The nano-banana skill remains valuable for paid-Gemini users: `gemini-3.1-flash-image-preview` is active; `gemini-3-pro-image-preview` was shut down March 9, 2026. The AAIF (Agentic AI Foundation), which governs MCP governance (including as the neutral home of the MCP spec), has grown to 170+ member organizations in under four months — Smithery is among the ecosystem participants. AAIF appointed Mazin Gilbert as its first permanent Executive Director (replacing interim director Jim Zemlin).
 
 **Quality position.** Gemini 2.5 Flash Image ("Nano Banana") held the #1 position on both the Image Edit and Text-to-Image leaderboards on LMArena with a +171 Elo lead — the largest in Arena history — on 2.5 million votes during its preview period. It is not a consolation-prize free tier model. It is one of the two best T2I models as of mid-2025, behind only Flux.1 Pro on pure photorealism and ahead of `gpt-image-1` on multi-turn editing and character consistency.
 
@@ -130,14 +139,17 @@ The `.cursor/skills/` directory exists (same SKILL.md format as Claude Code) but
 
 | Platform | Install primitive | SKILL.md support | Media skill maturity | Hooks | MCP |
 |---|---|---|---|---|---|
-| **Claude Code** | `claude plugin install` URL or local `--plugin-dir` | Native | High (official + community) | Full lifecycle (SessionStart, PreToolUse, PostToolUse) | `plugin.json.mcpServers` |
+| **Claude Code** | `claude plugin install` URL or local `--plugin-dir` | Native | High (official + community) | Full lifecycle (SessionStart, PreToolUse, PostToolUse) | `plugin.json.mcpServers`; Streamable HTTP + stdio for remote servers |
 | **OpenAI Codex** | `.agents/plugins/marketplace.json` or `/plugins` UI | Native (same format) | Medium (official `openai/skills`) | `.codex/hooks.json` (same events) | `[mcp_servers.*]` in `config.toml` |
 | **Cursor** | Deeplink badge or `.cursor/skills/` drop | `.cursor/skills/` (SKILL.md shape) | Low (rules dominate; skills underused) | Separate `hooks.json` | Settings UI |
 | **Windsurf** | `.windsurf/skills/` drop | `.windsurf/skills/` (SKILL.md shape) | Low | None | Settings UI |
-| **Gemini CLI** | `gemini extensions install <git-url>` | Via `contextFileName` glob in `gemini-extension.json` | Low | None | `mcpServers` in manifest |
+| **Gemini CLI** | `gemini extensions install <git-url>` | Via `contextFileName` glob; Agent Skills natively March 2026 | Growing — Agent Skills shipped March 2026 | None | `mcpServers` in manifest |
+| **GitHub Copilot** | `.agent.md` in repo or user profile (March 2026) | `.agent.md` skills (SKILL.md shape) | Low-Medium — MCP + custom agents GA March 2026 | None | MCP in agent mode; enterprise org allowlist |
 | **Cline** | Drop `.clinerules/*.md` | None (rules only) | Low | None | VS Code MCP settings |
 | **Zed** | PR to `zed-industries/extensions` or `settings.json` edit | None | None | None | `context_servers` in settings |
 | **v0 (Vercel)** | UI paste or BYO MCP connection | None | None (UI instructions only) | None | Hosted MCP URL |
+
+> **Updated 2026-04-21:** Two platform additions since original research. (1) **Gemini CLI** added native Agent Skills support in March 2026 — extensions now ship SKILL.md-format files alongside MCP servers in `gemini-extension.json`. (2) **GitHub Copilot** gained full MCP + Agent Skills support in the Visual Studio March 2026 update: custom agents as `.agent.md` files, agent skills as SKILL.md-format instruction sets, MCP servers in agent mode with enterprise allowlist governance. `microsoft/skills` is the official skills repo. The `vercel-labs/skills` CLI (`npx skills`) supports 19 agents including both of these.
 
 **The SKILL.md portability claim is partially true.** The file format is accepted by Claude Code, Codex, Cursor, and Windsurf. The execution path differs: Claude Code and Codex have the richest skill activation and hook systems; Cursor and Windsurf activate skills but without lifecycle hooks; Gemini CLI ingests the file body but without the frontmatter semantics. Zed and v0 do not consume SKILL.md at all.
 
@@ -146,5 +158,8 @@ The `.cursor/skills/` directory exists (same SKILL.md format as Claude Code) but
 1. Primary: `claude plugin install https://github.com/...` → writes `.claude-plugin/` + skills, hooks, MCP wiring in one step.
 2. Cursor: deeplink badge `cursor://anysphere.cursor-deeplink/mcp/install?name=prompt-to-asset&config=<base64>` installs the MCP server; `.cursor/rules/prompt-to-asset.mdc` provides always-on routing context.
 3. Codex: `.codex-plugin/plugin.json` mirrors the Claude plugin manifest.
-4. Gemini CLI: `gemini extensions install https://github.com/...` reads `gemini-extension.json` + vacuums SKILL.md files via glob.
-5. Universal: `bash <(curl -sL https://raw.githubusercontent.com/.../install.sh)` detects which IDEs are installed and writes the per-IDE adapter. Modelled on `databricks-solutions/ai-dev-kit`.
+4. Gemini CLI: `gemini extensions install https://github.com/...` reads `gemini-extension.json` + vacuums SKILL.md files via glob. Agent Skills support (SKILL.md format) is native as of March 2026.
+5. GitHub Copilot: ship a `.agent.md` + `microsoft/skills`-compatible SKILL.md bundle; MCP server URL added via Copilot agent mode settings.
+6. Universal: `npx skills add <package>` (via `vercel-labs/skills` CLI, v1.1.1, ~14.7k★ as of April 2026) discovers and installs skill packages across any of 19 supported agents including Claude Code, Cursor, Codex, Gemini CLI, and Copilot. Also: `bash <(curl -sL https://raw.githubusercontent.com/.../install.sh)` for bespoke multi-IDE detection. Skill discovery via `npx skills find` (interactive) or `skills.sh` directory (leaderboard ranked by real install counts).
+
+> **Updated 2026-04-21:** Added Copilot and Gemini CLI rows; updated vercel-labs/skills to v1.1.1 with ~14.7k stars, `npx skills find` discovery, and skills.sh as the canonical discovery directory as of January–April 2026. SSE transport for remote MCP servers is deprecated (MCP spec 2025-03-26); Streamable HTTP is the production standard. Claude Code supports both stdio (local) and Streamable HTTP (remote) transports.

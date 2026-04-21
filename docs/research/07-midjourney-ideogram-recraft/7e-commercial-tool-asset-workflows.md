@@ -34,9 +34,11 @@ word_count_target: 2000-3500
 
 ## Executive Summary
 
+> **Updated 2026-04-21:** Midjourney V8 Alpha (Mar 2026) improves speed and text rendering but remains API-less. Recraft V4 (Feb 2026) does not support `style_id` — use V3 for brand-consistent pipelines. Krea Edit launched March 2026 with regional editing. Firefly Image 5 is in Photoshop Beta as of March 2026.
+
 Professional designers and automated asset pipelines rarely rely on a single
-model. Every commercial T2I tool has a "sweet spot" — Midjourney v7 for
-aesthetic concept boards, Ideogram v3 for legible typography, Recraft for
+model. Every commercial T2I tool has a "sweet spot" — Midjourney v7/v8 for
+aesthetic concept boards, Ideogram v3 for legible typography, Recraft V3 for
 native SVG, `gpt-image-1` for transparent raster icons that respect instructions,
 Flux Pro for photoreal hero art, BRIA RMBG 2.0 for alpha matting, and vtracer
 for fast color vectorization. The best workflows string these strengths together
@@ -205,9 +207,9 @@ once wired up.
 | Stage       | Best-in-class (2026)             | Runner-up                   | Avoid for this stage |
 |-------------|----------------------------------|------------------------------|----------------------|
 | Concept art | Midjourney v7                    | Flux.1 [pro]                 | Recraft (weaker aesthetic) |
-| Text/wordmark | Ideogram v3 Quality            | `gpt-image-1`, Recraft V4    | Midjourney (still unreliable at paragraph-level text) |
+| Text/wordmark | Ideogram v3 Quality            | `gpt-image-1`, Recraft V3    | Midjourney (still unreliable at paragraph-level text) |
 | True transparency (RGBA) | `gpt-image-1` `background:"transparent"` | BRIA RMBG 2.0 post-pass | Gemini 2.5 Flash Image (checker artifact), SDXL defaults |
-| Native vector output | Recraft V4 / V4 Pro Vector | Recraft V3 Vector            | MJ, Flux, gpt-image-1 (all raster-only) |
+| Native vector output | Recraft V3 Vector (brand-style pipelines) / V4 Vector (non-branded) | Recraft V2 Vector | MJ, Flux, gpt-image-1 (all raster-only) |
 | Raster→vector post | vtracer (color) + potrace (B/W) | Illustrator Image Trace, vectorizer.ai | Unguided SD upscalers |
 | Background removal | BRIA RMBG 2.0                 | U²-Net / BiRefNet (open), Photoshop Select Subject | Hand lasso (time) |
 | Style consistency across batches | MJ v7 `--sref` + Recraft Style Transfer | IP-Adapter / LoRA (SD/Flux) | Single-shot prompts |
@@ -379,16 +381,16 @@ await exportPlatformSet(master, "./out");
 
 ## Where Each Tool Sits in the Pipeline
 
-- **Concept / aesthetic ceiling:** Midjourney v7 (when quality matters most),
+- **Concept / aesthetic ceiling:** Midjourney v7 / v8 (when quality matters most; v8 Alpha on alpha.midjourney.com since Mar 2026),
   Flux.1 [pro] (when you need an API-native option).
 - **Typography / in-image text:** Ideogram v3 Quality, with `gpt-image-1` as a
   strong runner-up for editorial/wordmark text.
 - **True transparency:** `gpt-image-1` with `background:"transparent"`, or any
   concept model piped through BRIA RMBG 2.0.
-- **Vector conversion:** Recraft Vector (native) for logos and UI iconography;
+- **Vector conversion:** Recraft V3 Vector (native, with `style_id` support) for logos and UI iconography requiring brand consistency; Recraft V4 Vector for non-branded SVG (no `style_id`);
   vtracer for self-hosted color vectorization; potrace only for pure B/W silhouettes.
-- **Style consistency across batches:** MJ `--sref` (v7 rewrite), followed by
-  Recraft Style Transfer as a normalizer.
+- **Style consistency across batches:** MJ `--sref` (v7/v8), followed by
+  Recraft V3 Style Transfer as a normalizer. Note: Recraft V4 does not support `style_id`.
 - **Final polish and export:** Illustrator for brand work, Affinity Designer
   for solo designers shipping apps, Figma for product teams embedding assets
   into a design system.

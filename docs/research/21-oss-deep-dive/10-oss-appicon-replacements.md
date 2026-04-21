@@ -89,7 +89,7 @@ Excludes `pwa-asset-generator`, `capacitor-assets`, `npm-icon-gen` (covered in [
 
 ### Libraries doing the heavy lifting (important because every tool above reduces to them)
 
-- [`itgalaxy/favicons`](https://github.com/itgalaxy/favicons) — **1,234★**, MIT, Node, powered by `sharp` since v7, covers Android homescreen + Apple touch + Windows 8 tiles + PWA manifest + maskable + iPhone 14/15 Pro and iPad Air/Mini splash. Every hosted webapp above re-skins this or writes thinner sharp code.
+- [`itgalaxy/favicons`](https://github.com/itgalaxy/favicons) — **~1,231★** (as of 2026-04), MIT, Node, powered by `sharp` since v7, covers Android homescreen + Apple touch + Windows 8 tiles + PWA manifest + maskable + iPhone 14/15 Pro and iPad Air/Mini splash. Current version v7.1.3 (April 2026); actively maintained. Every hosted webapp above re-skins this or writes thinner sharp code.
 - [`RealFaviconGenerator/realfavicongenerator`](https://github.com/RealFaviconGenerator/realfavicongenerator) — 598★, MIT. The `@realfavicongenerator/*` npm monorepo (`generate-favicon`, `image-adapter-node`, `inject-markups`, `check-favicon`, `realfavicon` CLI) lets you self-host the exact pipeline `realfavicongenerator.net` runs.
 - `@capacitor/assets`, `pwa-asset-generator`, `npm-icon-gen`, `@vite-pwa/assets-generator` — already covered in 18/20.
 

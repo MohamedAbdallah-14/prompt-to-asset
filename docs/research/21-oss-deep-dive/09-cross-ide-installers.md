@@ -84,8 +84,8 @@ Claude Desktop only — does not target Claude Code or any other surface.
 ### 2.2 Smithery CLI — `smithery-ai/cli`
 
 URL: <https://github.com/smithery-ai/cli>, docs at
-<https://smithery.ai/docs/concepts/cli>. MIT; latest v4.7.4 (Mar 2026); ~6k
-servers in the registry.
+<https://smithery.ai/docs/concepts/cli>. MIT; latest v4.7.4 (Mar 2026); 7k+
+servers in the registry (as of 2026-04).
 
 ```bash
 npm i -g @smithery/cli

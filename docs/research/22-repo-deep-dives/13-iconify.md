@@ -56,6 +56,15 @@ TypeScript (77%); the rest is Svelte, Vue, CSS. Top contributor `cyberalien`
 a solo-maintained project with a strong bus-factor concern. The ecosystem is
 split across several GitHub orgs under `iconify/`:
 
+> **Updated 2026-04-21:** The `@iconify/icon-sets` catalog now contains
+> **291,749 icons across 209 icon sets** (up from 275k+ / 200+ sets as of early
+> 2026), updated automatically three times a week. Active commits continue
+> through April 2026, including SVG + CSS components for SolidJS (March 6) and
+> React (March 4). The star count on `iconify/iconify` itself remains around
+> 6k — growth has been slow because distribution is via npm (`@iconify/utils`,
+> `@iconify/json`) rather than GitHub stars. Bus-factor concern unchanged:
+> `cyberalien` is still the sole significant committer.
+
 - `iconify/iconify` — framework, components, CSS tools, web component
 - `iconify/icon-sets` — the 200+ curated JSON icon sets (`@iconify/json`)
 - `iconify/tools` — the Node SDK for importing/cleaning/exporting sets

@@ -40,7 +40,9 @@ AFTER:  "A minimalist geometric logo for a note-taking app featuring
          scalable for app branding."
 ```
 
-### 1.2 Google Imagen 3/4 & Gemini Flash Image
+### 1.2 Google Imagen 4 & Gemini Flash Image (Nano Banana)
+
+> **Updated 2026-04-21:** Gemini 2.5 Flash Image ("Nano Banana") has a partially-restored free API tier of ~500 RPD (10 RPM) as of February 2026 — no billing required. Nano Banana Pro (Gemini 3 Pro Image Preview) remains paid-only ($0.134/img at 2K). Imagen 4 Fast is $0.02/img paid. Do NOT list Gemini/Imagen as zero-key free routes without the free-tier caveat; the free quota was slashed 50–80% in December 2025 and has only partially recovered for Flash Image.
 
 - **Grammar:** Narrative prose ≥30 words (suppresses internal rewriter).
 - **Token budget:** Unbounded prose; text-in-image ceiling 10–20 chars.
@@ -112,35 +114,45 @@ AFTER (Flux.1 prose):
    gradients. Scalable vector-ready design, recognizable at 32×32 pixels."
 ```
 
-### 1.5 Midjourney v6/v7
+### 1.5 Midjourney v7 / v8
 
-- **Grammar:** Prose + `--flags`.
+> **Updated 2026-04-21:** Midjourney V8 Alpha launched March 17, 2026 with 5× faster generation, native 2K resolution, improved text rendering (significantly better than V7), and direct text-to-video (up to 10s at 60fps). V8.1 Alpha is current as of April 2026. Midjourney still has **no official public API** as of April 2026 — no developer REST endpoint, SDK, or documented API key system is publicly available. Midjourney is considering an enterprise API but no release date is confirmed. Third-party proxy APIs violate Midjourney TOS and risk account bans. V7→V8 sref code migration: V8 sref numeric codes differ from V6/V7; regenerate style codes against V8.
+
+- **Grammar:** Prose + `--flags`. V8 follows detailed multi-element prompts with higher fidelity than V7.
 - **Negative:** `--no concept` syntax (= `:: concept::-0.5`). Weight sum must remain positive.
-- **Style lock:** `--sref <image_id> --sw 100 --style raw`.
-- **Text:** ≤3 words, fragile. Composite preferred.
-- **Standard flags:** `--ar 1:1 --style raw --q 2`.
+- **Style lock:** `--sref <image_id> --sw 100 --style raw` (regenerate sref codes against V8; V6/V7 codes produce different results).
+- **Text:** V8 Alpha delivers significantly improved text accuracy — street signs, product labels, poster copy — but composite is still preferred for brand wordmarks requiring exact kerning.
+- **Standard flags:** `--ar 1:1 --style raw`.
+- **API access:** No official public API. Use `external_prompt_only` mode (web UI) for all users.
 
-### 1.6 Ideogram 2/3 Turbo
+### 1.6 Ideogram 3 / 3 Turbo
+
+> **Updated 2026-04-21:** Ideogram 3 Turbo pricing is $0.04/image (not free). Text rendering accuracy is ~90–95% for Turbo; Quality tier ($0.10/image) is higher. Turbo is best for drafts/speed; use Quality for final brand wordmark assets. Text ceiling for reliable rendering: ≤4 words for Turbo, longer phrases (up to ~8–10 words) for Quality tier.
+>
+> **Transparency correction:** Ideogram v3 transparent generation uses a **dedicated endpoint** (`POST /ideogram-v3/generate-transparent`), NOT a `style: "transparent"` parameter on the standard endpoint. The standard `/ideogram-v3/generate` endpoint has no transparency param. Use the separate transparent endpoint for RGBA output.
 
 - **Grammar:** Prose + text strings in double quotes.
-- **Best-in-class text rendering** (≤5 words for v3).
-- **Transparency (v3):** `style: "transparent"` API param.
+- **Best-in-class text rendering:** ≤4 words reliable for Turbo; ≤8–10 for Quality.
+- **Transparency (v3):** Use the dedicated `/ideogram-v3/generate-transparent` endpoint — outputs PNG with alpha channel directly. This is a separate endpoint, NOT a param on the standard generate endpoint.
 - **Magic Prompt:** Turn off for brand work — it overwrites intent.
+- **Pricing:** Turbo $0.04/img · Balanced $0.07/img · Quality $0.10/img.
 
 ```
 BEFORE: "logo with text acme in it"
 AFTER:  "A minimalist vector logo for ACME. Geometric interconnected circles 
          in deep navy. Wordmark 'ACME' in modern sans-serif, tight tracking, 
          bold weight. Flat design, centered, high contrast. White background."
-WITH v3 TRANSPARENCY: add API param style="transparent"
+WITH v3 TRANSPARENCY: call /ideogram-v3/generate-transparent endpoint (not style param)
 ```
 
-### 1.7 Recraft V3/V4
+### 1.7 Recraft V4 (current — V3 superseded)
+
+> **Updated 2026-04-21:** Recraft V4 confirmed as current production model family (released February 2026). V3 is superseded. V4 ships four variants: **V4** (standard raster, ~10s), **V4 Vector** (native SVG, ~15s), **V4 Pro** (2048×2048 raster, ~30s), **V4 Pro Vector** (high-res native SVG, ~45s). Recraft is the only AI model that natively generates production-ready vector SVGs — real editable paths, not raster-to-vector tracing. Controls API is largely compatible with V3; verify current parameter names via context7 before using.
 
 - **Brand lock:** `style_id: "uuid"` (persistent style across generations).
-- **Palette:** `controls.colors: ["#hex", ...]` (hard palette enforcement).
-- **Native SVG:** Only production model with native vector output.
-- **Path count:** Target ≤60–80 paths for a clean logo mark.
+- **Palette:** `controls.colors: ["#hex", ...]` (hard palette enforcement, V4 compatible).
+- **Native SVG:** V4 Vector and V4 Pro Vector are the current native vector output models. Real SVG paths, not raster-to-vector tracing. Output opens directly in Illustrator, Figma, or Sketch.
+- **Path count:** Target ≤60–80 paths for a clean logo mark (V4 Vector); V4 Pro Vector handles more complex geometry.
 
 ---
 
@@ -209,14 +221,20 @@ illustration library."
 
 ## 5. Text-in-Image Handling — The ≤3-Word Rule
 
+> **Updated 2026-04-21:** Ideogram 3 Turbo reliable ceiling revised to ≤4 words based on 2026 user data; Quality tier extends to ~8–10 words. Midjourney V8 Alpha (March 2026) significantly improved text rendering — readable street signs, product labels — but composite is still preferred for exact brand wordmarks. GPT-image-1.5 (released December 2025, current OpenAI image model) maintains similar text-rendering ceiling to gpt-image-1 with improvements in brand logo preservation across edits. DALL-E 3 shutting down May 12, 2026 — migrate to gpt-image-1.5.
+
 | Model | Reliable ceiling | Error mode |
 |---|---|---|
-| Ideogram 3 Turbo | ≤5 words | Misspelling, kerning collapse |
-| `gpt-image-1` / Imagen | ≤30 chars (~5 words) | Character substitution |
-| Flux.2 | ~10–15 words | Fragile on long copy |
+| Ideogram 3 Turbo | ≤4 words (Turbo); ≤8–10 (Quality) | Misspelling, kerning collapse |
+| `gpt-image-1` / `gpt-image-1.5` | ≤30 chars (~5 words) | Character substitution |
+| Nano Banana Pro (Gemini 3 Pro Image) | ≤20 chars | Character substitution |
+| Flux.2 [pro/max] | ~10–15 words | Fragile on long copy |
 | Flux.1 [pro] | ≤5 words | Kerning errors |
 | SDXL | ≤3 words | Hallucination |
-| Midjourney v7 | ≤3 words (fragile) | Spacing errors |
+| Midjourney v8 Alpha | ≤6–8 words (much improved vs V7) | Spacing errors on complex text |
+| Midjourney v7 | ≤5 words (improved vs V6) | Spacing errors on longer text |
+
+> **DALL-E 3 deprecation:** DALL-E 3 API shuts down May 12, 2026. If you have any references to `dall-e-3` in code or routing tables, migrate to `gpt-image-1.5` (current) or `gpt-image-1` (stable). gpt-image-1.5 is 20% cheaper per image than gpt-image-1 and has stronger brand logo preservation in edits.
 
 **For >3 words:** Generate the mark text-free, composite SVG type in Figma/Illustrator using brand typography tokens.
 

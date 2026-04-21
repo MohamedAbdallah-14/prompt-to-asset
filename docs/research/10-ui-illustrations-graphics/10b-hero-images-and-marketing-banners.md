@@ -7,12 +7,12 @@ date: 2026-04-19
 word_count_target: 2000-3500
 primary_models_covered:
   - midjourney-v7
-  - flux-1.1-pro
-  - flux-1-pro-ultra
-  - gpt-image-1
+  - midjourney-v8-alpha
+  - flux-2-pro
+  - gpt-image-1.5
   - imagen-4
-  - ideogram-3
-  - recraft-v3
+  - ideogram-3-turbo
+  - recraft-v4
 deliverables:
   - aspect_ratio_table
   - composition_ruleset
@@ -39,9 +39,11 @@ Hero/banner generation is a distinct problem from general illustration. Three co
 
 **Top 3 findings:**
 
-- **Finding 1 — The aspect ratio must be paired with a composition directive.** Just setting `--ar 16:9` or `size=1792x1024` is insufficient. You must explicitly name the focal region ("subject in right third, 65% of frame"), the safe zone ("left 45% of canvas reserved for headline, solid low-contrast field, no detail"), and the horizon/bleed ("content safely inside 90% center-crop for mobile"). Models that can honor this are Flux Pro and Imagen 4; MJ v7 honors it partially via `--ar` plus prompt, and gpt-image-1 is the most literal via explicit compositional language.
+- **Finding 1 — The aspect ratio must be paired with a composition directive.** Just setting `--ar 16:9` or `size=1792x1024` is insufficient. You must explicitly name the focal region ("subject in right third, 65% of frame"), the safe zone ("left 45% of canvas reserved for headline, solid low-contrast field, no detail"), and the horizon/bleed ("content safely inside 90% center-crop for mobile"). Models that can honor this are FLUX.2 Pro and Imagen 4; MJ v7 honors it partially via `--ar` plus prompt, and gpt-image-1.5 is the most literal via explicit compositional language. Also supports native streaming: `stream: true` + `partial_images: 0–3` for progressive preview.
 
-- **Finding 2 — Choose the model by *what the hero must carry*, not by general quality.** If the banner contains legible text (product name, version, feature label): **gpt-image-1** (OpenAI's model, ~99% text accuracy on short strings) or **Ideogram 3** are the only correct picks. If the banner is pure aesthetic with no text: **Midjourney v7** for cinematic polish and material soul, **Flux 1.1 Pro / Pro Ultra** for prompt adherence and commercial realism. For brand-consistent multi-hero sets (one product → 10 audience variants): Flux with a style reference image via `--sref` equivalent, or Recraft v3 with a saved style.
+- **Finding 2 — Choose the model by *what the hero must carry*, not by general quality.** If the banner contains legible text (product name, version, feature label): **gpt-image-1.5** (OpenAI, December 2025 — denser text, ~20% cheaper than gpt-image-1, ~4× faster) or **Ideogram 3 / 3 Turbo** are the correct picks. If the banner is pure aesthetic with no text: **Midjourney v7** (current stable, V8 Alpha available March 2026) for cinematic polish and material soul, **FLUX.2 Pro / 1.1 Pro Ultra** for prompt adherence and commercial realism. For brand-consistent multi-hero sets (one product → 10 audience variants): FLUX.2 with up to 10 native reference images, or Recraft V4 with a saved style.
+
+> **Updated 2026-04-21:** Model landscape update — gpt-image-1.5 (Dec 2025) supersedes gpt-image-1 with better text density and lower cost. Midjourney V7 is current stable default; V8 Alpha (March 2026) adds 5× speed and native 2K. FLUX.2 (November 2025) supersedes FLUX.1 series with native multi-reference editing (≤10 refs). Recraft V4 (February 2026) supersedes V3 with four tiers including V4 Pro SVG for high-res native vectors.
 
 - **Finding 3 — The "2026 look" is textured, not smooth.** The biggest shift from 2023 to 2026 is that AI-smooth gradients and glossy 3D blobs now read as dated and "AI slop." The current dominant treatments are **film grain + stipple texture over gradient**, **hand-drawn imperfection over technical precision**, **dark backgrounds with product UI as hero**, and **monochrome with a single accent color** (Vercel/Frame aesthetic). Prompts that ask for "clean, smooth, polished gradient" in 2026 produce work that looks 2-3 years old. Prompts should explicitly request "subtle film grain," "halftone stipple overlay," "imperfect hand-placed noise," or "tactile tech" texture language.
 
@@ -242,17 +244,19 @@ texture. Subject clearly distinct from background.
 
 ## Model Picks
 
+> **Updated 2026-04-21:** Model picks updated to reflect the current generation. gpt-image-1.5 (December 2025) replaces gpt-image-1 as the primary text-rendering pick — same API model ID but now the default. Midjourney V7 is current stable; V8 Alpha (March 2026) is faster/sharper but not yet production-default. FLUX.2 (November 2025) supersedes FLUX.1.1 Pro series. Recraft V4 (February 2026) supersedes V3 with expanded tiers including V4 Pro SVG.
+
 | Requirement | Primary pick | Backup | Why |
 |---|---|---|---|
-| Concept polish, cinematic hero, no text needed | **Midjourney v7** | Flux 1.1 Pro Ultra | Best lighting/composition "soul"; strongest for painterly and cinematic |
-| Banner with legible short text ("Launch Week", "v2.0", product name) | **gpt-image-1** | Ideogram 3 | ~99% text accuracy on ≤6-word strings; Ideogram close second |
-| Maximum prompt adherence (respects negative space / composition directives) | **Flux 1.1 Pro** | Imagen 4 | Best at honoring complex spatial language |
-| Brand-consistent multi-hero series (10 variants, one style) | **Flux Pro + sref image** | Recraft v3 w/ saved style | `sref` / style refs are the most reliable consistency tool |
-| Photoreal product mockup hero | **Flux 1.1 Pro Ultra** | Imagen 4 | Commercial realism without "AI shine" |
-| Iridescent / mesh gradient / 3D blob aesthetic | **Midjourney v7** | Flux Pro | MJ renders these exceptionally well |
-| Isometric / low-poly 3D illustration | **Flux Pro** or **Recraft v3** | MJ v7 | Cleaner geometry, less "rendered" look |
-| Vector/SVG output (if brand system needs SVG) | **Recraft v3** | — | Only commercial model outputting true editable SVG |
-| Social OG card with heavy text (≥10 words) | **gpt-image-1** | Ideogram 3 | Accept that anything >6 words must be composited in Figma/code |
+| Concept polish, cinematic hero, no text needed | **Midjourney v7** (V8 Alpha available) | FLUX.2 Pro | Best lighting/composition "soul"; V8 adds 5× speed + native 2K |
+| Banner with legible short text ("Launch Week", "v2.0", product name) | **gpt-image-1.5** | Ideogram 3 Turbo | Denser, more accurate text than gpt-image-1; ~20% cheaper; 4× faster |
+| Maximum prompt adherence (respects negative space / composition directives) | **FLUX.2 Pro** | Imagen 4 | Best at honoring complex spatial language; multi-reference native |
+| Brand-consistent multi-hero series (10 variants, one style) | **FLUX.2 Pro + native multi-ref** | Recraft V4 w/ saved style | FLUX.2 natively accepts up to 10 reference images per call |
+| Photoreal product mockup hero | **FLUX.2 Pro** | Imagen 4 | Commercial realism without "AI shine"; FLUX.2 [max] for max quality |
+| Iridescent / mesh gradient / 3D blob aesthetic | **Midjourney v7** | FLUX.2 Pro | MJ renders these exceptionally well |
+| Isometric / low-poly 3D illustration | **FLUX.2 Pro** or **Recraft V4** | MJ v7 | Cleaner geometry, less "rendered" look |
+| Vector/SVG output (if brand system needs SVG) | **Recraft V4 / V4 Pro SVG** | — | Only commercial model outputting true editable SVG; V4 Pro SVG adds 2048×2048 |
+| Social OG card with heavy text (≥10 words) | **gpt-image-1.5** | Ideogram 3 | Accept that anything >6 words must be composited in Figma/code |
 
 ### Brand-consistent multi-hero workflow
 
@@ -294,7 +298,7 @@ Style-specific additions:
    *Fix:* Name a specific named style from the taxonomy. Add `tactile tech`, `film grain`, `editorial quality`. Negative-prompt `abstract blob, generic gradient, AI slop`.
 
 3. **Text renders as gibberish.**
-   *Fix:* Switch to gpt-image-1 or Ideogram 3. If using MJ/Flux, don't ask for text at all — composite text in Figma/code. Explicitly negative-prompt `text, letters, typography, gibberish text`.
+   *Fix:* Switch to gpt-image-1.5 or Ideogram 3 Turbo (use `/ideogram-v3/generate-transparent` endpoint with `rendering_speed: "TURBO"` for transparent assets — not a `style: "transparent"` param). If using MJ/Flux, don't ask for text at all — composite text in Figma/code. Explicitly negative-prompt `text, letters, typography, gibberish text`. Note: Flux raises a TypeError on `negative_prompt` — use affirmative anchors like `"pure white background"` instead.
 
 4. **Aspect ratio honored but composition squeezed.**
    *Fix:* Include the target aspect in the prompt body ("designed for 16:9 widescreen layout with left-third text safe zone") in addition to the `--ar` flag. Models sometimes treat the flag as post-crop rather than composition guidance.
@@ -319,11 +323,11 @@ Style-specific additions:
 
 ## Quick Decision Tree
 
-- Needs legible text? → **gpt-image-1** (or Ideogram 3), ≤6 words only.
-- Cinematic/painterly "soul" priority? → **Midjourney v7**.
-- Commercial realism, photo-mockup, strict prompt adherence? → **Flux 1.1 Pro / Pro Ultra**.
-- Isometric / low-poly / developer-illustration style? → **Flux Pro** or **Recraft v3**.
-- Need editable vector output? → **Recraft v3** (only commercial option).
+- Needs legible text? → **gpt-image-1.5** (or Ideogram 3 Turbo), ≤6 words only; composite for longer text.
+- Cinematic/painterly "soul" priority? → **Midjourney v7** (V8 Alpha available for faster/2K output).
+- Commercial realism, photo-mockup, strict prompt adherence? → **FLUX.2 Pro** (supersedes FLUX.1.1 Pro).
+- Isometric / low-poly / developer-illustration style? → **FLUX.2 Pro** or **Recraft V4**.
+- Need editable vector output? → **Recraft V4 / V4 Pro SVG** (only commercial option; V4 Pro SVG adds 2048×2048 resolution).
 
 ## References
 

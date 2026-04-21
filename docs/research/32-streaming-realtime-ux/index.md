@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 32 — Streaming Realtime Ux
 
 MCP Streamable HTTP progress, SSE for long-running tool calls, incremental SVG rendering, BullMQ + SSE job progress, optimistic preview patterns.

@@ -2,7 +2,10 @@
 slug: 06-stable-diffusion-flux
 role: index
 date: 2026-04-21
+last_audited: 2026-04-21
 ---
+
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
 
 # Category 06 — Stable Diffusion Flux
 

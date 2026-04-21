@@ -4,6 +4,8 @@ role: index
 date: 2026-04-21
 ---
 
+> **📅 Research snapshot as of 2026-04-21.** Provider pricing, free-tier availability, and model capabilities drift every quarter. The router reads `data/routing-table.json` and `data/model-registry.json` at runtime — treat those as source of truth. If this document disagrees with the registry, the registry wins.
+
 # Category 05 — Openai Dalle Gpt Image
 
 OpenAI's gpt-image-1 / 1.5 and the deprecated DALL·E 3: native RGBA via `background:"transparent"`, best-in-class text rendering, `input_fidelity`, the invisible rewriter, and moderation stack.

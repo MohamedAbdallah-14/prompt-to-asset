@@ -17,7 +17,7 @@ Runs between `asset_enhance_prompt()` and `asset_generate_*()`. Takes a normaliz
 | SD 1.5 / SDXL | Tag-soup, comma-separated, no articles | **77 CLIP tokens**, chunk via `BREAK` | **full CFG support, use it** | LayerDiffuse adapter or matte post | ≤3 words |
 | Flux.1 / Flux.2 | Prose narrative, long sentences OK | 512 (Flux.1) / ~32K (Flux.2) | **errors 400 if sent** | no native RGBA; matte post | Flux.1 ≤5 words; Flux.2 ~10–15 |
 | Midjourney v6/v7 | Prose + `--flags` | unbounded | `--no X` = `:: X::-0.5` (sum >0) | none; matte post | ≤3 words (fragile) |
-| Ideogram 2/3 Turbo | Prose + text in `"double quotes"` | unbounded | silently ignored | v3: `style: "transparent"` API param | ≤5 words (best-in-class) |
+| Ideogram 2/3 Turbo | Prose + text in `"double quotes"` | unbounded | silently ignored | v3: dedicated `/ideogram-v3/generate-transparent` endpoint; `rendering_speed: "TURBO"` for Turbo tier | ≤5 words (best-in-class) |
 | Recraft V3/V4 | Prose + `controls.colors` + `style_id` | unbounded | silently ignored | native SVG handles alpha trivially | ≤5 words |
 
 ## Negative-prompt translation

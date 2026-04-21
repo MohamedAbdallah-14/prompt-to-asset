@@ -42,14 +42,18 @@ word_target: 3500
 The single most common failure a prompt-to-asset plugin has to absorb, for any
 "I want a transparent X" request, is the **checker-box / opaque background**
 artifact: the model draws the checkerboard texture (or a solid color) into the
-image instead of producing RGBA pixels with real alpha. Very few generation
-endpoints today ship genuine alpha — at the time of writing, the reliable
-native-RGBA providers for product work are **OpenAI `gpt-image-1`**
-(`background: "transparent"`, PNG/WebP output) and **Recraft v3**
-(`response_format: "url"` with transparent PNG for icon/logo/vector styles).
+image instead of producing RGBA pixels with real alpha. As of April 2026, the
+confirmed native-RGBA providers for product work are:
+
+- **OpenAI `gpt-image-1` / `gpt-image-1.5`** — `background: "transparent"` API parameter; PNG/WebP output; works best at `quality: "medium"` or `"high"`.
+- **Ideogram 3.0** — `/ideogram-v3/generate-transparent` dedicated endpoint; FLASH/TURBO/BALANCED/QUALITY speed tiers; produces clean RGBA PNG natively.
+- **Recraft v3** — the in-generation transparent-style flag has been unreliable since 2025; the reliable path is the post-hoc **Remove Background** tool. Treat as post-matte for most workflows.
+
 Everything else — Gemini 2.5 Flash Image ("Nano Banana"), Flux.1, Midjourney,
 SDXL — generates on an opaque canvas and needs a **matting/background-removal
 post step** to become transparent.
+
+> **Updated 2026-04-21:** Ideogram 3.0 `generate-transparent-v3` added as a confirmed native-RGBA path (see [Ideogram API docs](https://developer.ideogram.ai/api-reference/api-reference/generate-transparent-v3)). Recraft v3 demoted from "reliable native" to "post-hoc Remove Background" per community reports and Canny feedback. gpt-image-1 quality requirement for transparency (`medium`/`high`) added per OpenAI docs.
 
 For a prompt-to-asset plugin, this means the "transparent" request is not one
 API call; it is a **small pipeline** with a decision tree at the top:
@@ -96,13 +100,19 @@ user wants transparent asset
 │
 └── Is asset illustration / product shot / character / photo-ish?
     │
-    ├── gpt-image-1 key available?
-    │   └── yes → call with background="transparent", output_format="png"
+    ├── gpt-image-1 key available? (best for photo/illustration)
+    │   └── yes → call with background="transparent", output_format="png",
+    │            quality="medium"|"high" (NOT "low")
     │            → validate RGBA, return
     │
-    ├── Recraft v3 key available?
-    │   └── yes → call with style="vector_illustration"/"icon", response_format=url
-    │            → Recraft returns transparent PNG for vector styles
+    ├── Ideogram 3.0 key available? (best for logo/typography/flat design)
+    │   └── yes → call /ideogram-v3/generate-transparent
+    │            (rendering_speed: "TURBO" for fast, "QUALITY" for final)
+    │            → validate RGBA, return
+    │
+    ├── Recraft v3 key available? (vector/icon styles only via post-hoc Remove BG)
+    │   └── yes → generate with style="vector_illustration"/"icon"
+    │            → call Recraft Remove Background API on result
     │            → validate RGBA, return
     │
     └── fallback: Gemini / Flux / SDXL + post-strip
@@ -289,11 +299,13 @@ def run(req: TransparentRequest, *, openai_key: str = "", recraft_key: str = "",
 Notes on model choice inside `_strip_bg`:
 
 - `birefnet-general` (BiRefNet, Zheng et al. 2024) — best general tradeoff in
-  2025–2026; handles fur, hair, glass.
+  2025–2026; handles fur, hair, glass. Pass this explicitly — rembg's default is still `u2net`.
+- `birefnet-matting` — new in 2025; better on hair, glass, and semi-transparent subjects.
 - `isnet-general-use` — fast, very clean for product shots.
-- `u2net` — legacy default, kept for CPU-only / offline use.
-- For commercial-license safety, load **BRIA RMBG 2.0** directly from HF
-  (`briaai/RMBG-2.0`) — the rembg bundled weights are not commercial-safe.
+- `u2net` — rembg's **default** (as of 2026); kept for CPU-only / offline use.
+- **Do NOT load BRIA RMBG 2.0 for commercial work without a Bria license** — it is CC BY-NC 4.0 on HuggingFace. BiRefNet (MIT) is the safe default.
+
+> **Updated 2026-04-21:** Clarified that rembg default remains `u2net`. Added `birefnet-matting` as the preferred session for hair/glass subjects. BRIA RMBG commercial-use warning strengthened.
 
 ## Node Pipeline
 

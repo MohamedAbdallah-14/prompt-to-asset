@@ -57,7 +57,7 @@ Eleventy, and Nuxt. Below is the April-2026 shape of the niche.
 
 ## The new frontrunner: Takumi (Rust)
 
-**`kane50613/takumi`** is the most important non-Satori finding. 1.6 k ★,
+**`kane50613/takumi`** is the most important non-Satori finding. ~1.3–1.6 k ★ (as of 2026-04; confirmed actively maintained),
 dual-licensed Apache-2.0 / MIT, written in Rust, designed as a drop-in for
 `next/og` with an `ImageResponse`-shaped API. Three properties make it
 interesting for our pipeline:
@@ -82,8 +82,9 @@ for Cloudflare Workers / Vercel Edge / Netlify Edge / browsers. Bundle size on
 edge is comparable to Satori+resvg-wasm. Only real con: raster-only (no SVG
 output), irrelevant for OG cards.
 
-Nuxt OG Image v6 already defaults to Takumi and keeps Satori as a fallback
-renderer; that is the strongest validation of the claim.
+Nuxt OG Image v6 uses Takumi as the recommended renderer (with Satori as an explicit fallback via renderer-specific `.takumi.vue` file suffixes); that is the strongest validation of the claim. Note: v6 removed the global `defaults.renderer` config — renderer selection is now per-component-filename suffix, not a single default.
+
+> **Updated 2026-04-21:** Nuxt OG Image v6 confirmed Takumi as the recommended renderer. However, the v6 architecture changed how the renderer is specified: there is no global default renderer setting. Teams choose the renderer per component via filename suffix (`.takumi.vue`, `.satori.vue`). "v6 defaults to Takumi" overstates it — v6 *recommends* Takumi and makes it the documented first choice, but both renderers require explicit per-component opt-in.
 
 ## Cloudflare-Workers track: `workers-og` and friends
 

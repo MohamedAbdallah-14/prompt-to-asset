@@ -13,6 +13,8 @@
 **Release:** v10.4.0
 **License:** MIT
 
+> **Updated 2026-04-21:** The SKILL.md cross-IDE portability table below is current for 2026. Kiro CLI and Kiro IDE are listed as install targets — these are newly supported IDEs as of 2025/2026. Cline now natively supports the SKILL.md format (experimental feature). Continue.dev also supports SKILL.md portability. Antigravity's installer supports `--kiro`, `--opencode`, and `--path` flags added in v10+. The antigravity SKILL.md format is the same spec as Claude Code's format (YAML frontmatter + markdown body), confirming cross-IDE convergence. Smithery MCP registry: 7,000+ servers as of April 2026, making MCP the dominant extension mechanism across all supported IDEs in this table.
+
 ### What It Is
 
 An installable GitHub library of reusable `SKILL.md` playbooks. Skills are flat directories under `skills/<name>/SKILL.md`. The installer is an npm package invoked as `npx antigravity-awesome-skills`.
@@ -136,11 +138,13 @@ Also supports video edit and remix modes.
 
 **`imagen`** (source: `sanjay3290/ai-skills`)
 - Model: `gemini-3-pro-image-preview` (called via Google Gemini API, not Vertex)
-- Requires: `GEMINI_API_KEY`
+- Requires: `GEMINI_API_KEY` — **billed project required as of 2025-12; unbilled keys return HTTP 429 `limit: 0` on image endpoints**
 - No transparency support (RGB VAE limitation not documented in the skill itself)
 - Script: `python scripts/generate_image.py "prompt" [output_path] [--size 2K]`
 - Platforms: Windows, macOS, Linux
 - No negative prompt field
+
+> **Updated 2026-04-21:** The Google Gemini / Imagen image generation API has **no free tier** as of December 2025. Unbilled `GEMINI_API_KEY` values return HTTP 429 with `limit: 0` on image generation endpoints (text/multimodal/embeddings remain free). Nano Banana Pro pricing via fal.ai: $0.15/image (1K/2K), $0.30/image (4K). For free Gemini image generation, use Google AI Studio web UI (`https://aistudio.google.com`) in `external_prompt_only` mode — the web UI still allows free interactive generation (~500–1,000 images/day). The `imagen` skill and `ai-studio-image` skill in antigravity both require a billed project to run programmatically.
 
 **`ai-studio-image`** (source: community, author: renat)
 - Primary model: `gemini-2-flash-exp` (free tier)
