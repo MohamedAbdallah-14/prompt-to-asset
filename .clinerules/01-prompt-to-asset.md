@@ -98,3 +98,12 @@ If the `asset_*` tools are not registered, still apply the six facts above in wh
 - Validate against the target platform's spec (iOS 824², Android 72dp, PWA 80% maskable, favicon 16×16 legibility) before handing the file to the user.
 
 **Never declare an asset ready without alpha validation, safe-zone bbox check, and — if text is involved — an OCR/Levenshtein check of the wordmark.**
+
+## Supporting skills (engage when applicable)
+
+The plugin ships 12 skills. The 8 asset-type skills (`logo`, `app-icon`, `favicon`, `og-image`, `illustration`, `transparent-bg`, `vectorize`, plus the `asset-enhancer` orchestrator) cover the happy path. Four more skills cover the long tail:
+
+- **`svg-authoring`** — engaged whenever `asset_generate_*` returns an `InlineSvgPlan`. Enforces viewBox, path-budget, palette, optical balance, and small-scale legibility rules so the emitted SVG survives `asset_save_inline_svg` validation. Read this before writing any `<svg>` block.
+- **`t2i-prompt-dialect`** — engaged during prompt rewriting. Per-model rules (gpt-image-1 prose, Imagen ≥30 words, SDXL 77-token tag-soup with `BREAK`, Flux no `negative_prompt`, Ideogram quoted text, Recraft `controls.colors`). Handles negative→affirmative translation and brand-palette injection per dialect.
+- **`asset-validation-debug`** — engaged when `asset_validate` or a generator returns warnings. Maps failure codes (`T0_CHECKERBOARD`, `T0_ALPHA_MISSING`, `T1_PALETTE_DRIFT`, `T1_TEXT_MISSPELL`, etc.) to repair primitives (matte, inpaint, route change, seed sweep, composite). Enforces a retry budget so Claude does not loop on hopeless regenerations.
+- **`brand-consistency`** — engaged for multi-asset sets. Builds `BrandBundle`, enforces palette per model (Recraft `controls.colors`, Midjourney `--sref`, IP-Adapter), validates CSD style similarity + ΔE2000, and promotes accepted assets into the reference set so each new generation tightens the brand lock. Covers LoRA training ROI (>20 assets).

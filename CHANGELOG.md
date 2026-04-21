@@ -11,7 +11,19 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- **Four new skills (→ 12 total).** Close the long-tail gaps the asset-type skills don't cover. No MCP tool surface change; the skills guide Claude through flows the 24-tool API already supports.
+  - `svg-authoring` — engaged whenever `asset_generate_*` returns an `InlineSvgPlan`. Enforces viewBox, path-budget, palette, optical balance, and small-scale (16×16) legibility rules so the emitted `<svg>` survives `asset_save_inline_svg` validation. Covers style taxonomy (flat / outlined / filled / duotone / minimal) with SVG patterns for each.
+  - `t2i-prompt-dialect` — engaged during prompt rewriting. Per-model rules for `gpt-image-1`, Imagen / Gemini, SD 1.5 / SDXL, Flux.1 / Flux.2, Midjourney, Ideogram, Recraft. Handles negative-prompt translation (Flux errors on it, Imagen / `gpt-image-1` ignore it, SDXL uses it), token budgets (SDXL 77 CLIP tokens with `BREAK` chunking), transparency quirks (never prompt Imagen / Gemini for transparency), and brand-palette injection per dialect.
+  - `asset-validation-debug` — engaged when `asset_validate` or a generator returns warnings. Maps failure codes (`T0_CHECKERBOARD`, `T0_ALPHA_MISSING`, `T1_PALETTE_DRIFT`, `T1_TEXT_MISSPELL`, etc.) to concrete repair primitives (matte, inpaint, route change, seed sweep, composite). Applies a retry budget so Claude does not loop on hopeless regenerations. Cost/ROI matrix for each primitive (SVGO 0.01×, matte 0.05×, inpaint 0.3×, regenerate 4×).
+  - `brand-consistency` — engaged for multi-asset sets. Builds `BrandBundle` (palette, typography, style refs, do-not list), enforces palette per model (Recraft `controls.colors` hard-lock → IP-Adapter → Midjourney `--sref` → Flux LoRA), validates CSD style similarity + ΔE2000, promotes accepted assets into the reference set so each new generation tightens the brand lock. Covers LoRA training ROI (break-even at ~20 assets).
+- **Research synthesis** at `docs/research/24-skills-for-p2a/` — 9 documents covering the gap analysis, marketplace-skill survey, per-skill design specs, and the master `SYNTHESIS.md` with a ranked priority matrix and dependency map.
+
+### Changed
+
+- `rules/asset-enhancer-activate.md` gains a "Supporting skills" section pointing at the four new skills. Regenerates into `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, and every IDE mirror.
+- `scripts/sync-mirrors.sh` + `scripts/verify-repo.sh` — SKILLS array extended from 8 to 12. CI verify-repo still enforces byte-for-byte mirror consistency.
 
 ## [0.3.0] — 2026-04-21
 

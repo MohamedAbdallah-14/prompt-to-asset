@@ -12,7 +12,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-SKILLS=(asset-enhancer logo app-icon favicon og-image illustration transparent-bg vectorize)
+SKILLS=(asset-enhancer logo app-icon favicon og-image illustration transparent-bg vectorize svg-authoring t2i-prompt-dialect asset-validation-debug brand-consistency)
 RULE_BODY="rules/asset-enhancer-activate.md"
 
 # ============================================================================

@@ -68,7 +68,7 @@ do
 done
 
 # Skill directory verification
-for sk in asset-enhancer logo app-icon favicon og-image illustration transparent-bg vectorize; do
+for sk in asset-enhancer logo app-icon favicon og-image illustration transparent-bg vectorize svg-authoring t2i-prompt-dialect asset-validation-debug brand-consistency; do
   for dest in .claude/skills .cursor/skills .windsurf/skills plugins/prompt-to-asset/skills; do
     if [ -e "$dest/$sk/SKILL.md" ]; then
       if ! diff -q "skills/$sk/SKILL.md" "$dest/$sk/SKILL.md" >/dev/null 2>&1; then
