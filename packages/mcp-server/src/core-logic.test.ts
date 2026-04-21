@@ -174,14 +174,14 @@ describe("cache", () => {
   it("writeCache + readCache roundtrip", () => {
     const buf = Buffer.from("cache-me");
     const p = writeCache("deadbeefcafebabe", "x.bin", buf);
-    expect(p).toContain("de/deadbeefcafebabe");
+    expect(p).toContain(join("de", "deadbeefcafebabe"));
     const got = readCache("deadbeefcafebabe", "x.bin");
     expect(got?.toString()).toBe("cache-me");
   });
 
   it("writeArtifact writes relative files under outDir", () => {
     const p = writeArtifact(tmp, "sub/dir/a.txt", "hello");
-    expect(p).toBe(join(tmp, "sub/dir/a.txt"));
+    expect(p).toBe(join(tmp, "sub", "dir", "a.txt"));
   });
 });
 

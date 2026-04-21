@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { initBrand } from "./init-brand.js";
 
 let tmp: string;
@@ -61,7 +61,7 @@ describe("tools/init-brand", () => {
     writeFileSync(join(tmp, "next.config.js"), "module.exports = {};");
     const r = await initBrand({ app_name: "NextApp", cwd: tmp });
     expect(r.detected.kind).toBe("nextjs");
-    expect(r.assets_dir).toContain("public/branding");
+    expect(r.assets_dir).toContain(join("public", "branding"));
   });
 
   it("detects Flutter via pubspec.yaml", async () => {
@@ -162,6 +162,6 @@ describe("tools/init-brand", () => {
       assets_dir: "custom/my-assets"
     });
     expect(existsSync(r.assets_dir)).toBe(true);
-    expect(r.assets_dir.endsWith("custom/my-assets")).toBe(true);
+    expect(r.assets_dir.endsWith(`custom${sep}my-assets`)).toBe(true);
   });
 });
