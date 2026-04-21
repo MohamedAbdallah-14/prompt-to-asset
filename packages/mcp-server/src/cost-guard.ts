@@ -34,11 +34,12 @@ export const PRICE_TABLE_USD_PER_IMAGE: Record<string, number> = {
   "gpt-image-1-mini": 0.008,
   "dall-e-3": 0.08,
 
-  // Google
+  // Google — verified Apr 2026 at ai.google.dev/gemini-api/docs/pricing
+  // No model in this family has a free API tier; all image calls cost.
   "imagen-3": 0.03,
-  "imagen-4": 0.04,
-  "gemini-3-flash-image": 0.039, // Nano Banana. Free tier was removed 2025-12; paid only.
-  "gemini-3-pro-image": 0.067, // Nano Banana Pro 1K
+  "imagen-4": 0.04, // Imagen 4 Standard; Fast=$0.02, Ultra=$0.06 (see model-registry)
+  "gemini-3-flash-image": 0.067, // gemini-3.1-flash-image-preview (Nano Banana 2) at 1K
+  "gemini-3-pro-image": 0.134, // gemini-3-pro-image-preview (Nano Banana Pro) at 1K/2K; 4K=$0.24
 
   // Ideogram
   "ideogram-3": 0.08,

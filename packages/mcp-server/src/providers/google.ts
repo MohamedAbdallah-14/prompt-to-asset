@@ -12,19 +12,27 @@ import { dummyPng } from "./openai.js";
  * send transparency-required requests here. If asked, we still generate on white
  * and let the pipeline matte post-hoc.
  *
- * BILLING (2025-12+): Google removed Gemini / Imagen image-generation from its
- * universal free API tier. `gemini-3.1-flash-image-preview`,
- * `gemini-3-pro-image-preview`, `gemini-2.5-flash-image`, and all `imagen-4.0-*`
- * variants show "Not available" in the Free Tier column of the official pricing
- * page. An unbilled GEMINI_API_KEY hitting these endpoints returns HTTP 429
- * with `limit: 0` on `GenerateRequestsPerDayPerProjectPerModel-FreeTier` —
- * a daily quota of zero, not a rate limit. Billing must be enabled on the GCP
- * project for programmatic access. Paid prices: Nano Banana (gemini-2.5-flash-image)
- * $0.039/img, Imagen 4 Fast $0.02/img, Nano Banana 2 $0.067/img (1K) / $0.101
- * (2K) / $0.151 (4K). Batch API halves most of these. The AI Studio web UI
- * (https://aistudio.google.com) remains free for interactive use — treat it
- * as a paste-only free target and feed the downloaded PNG through
- * asset_ingest_external.
+ * BILLING (verified 2026-04-22 against ai.google.dev/gemini-api/docs/pricing):
+ * Google removed Gemini / Imagen image-generation from its universal free API
+ * tier in Dec 2025. `gemini-3.1-flash-image-preview`, `gemini-3-pro-image-preview`,
+ * `gemini-2.5-flash-image`, and every `imagen-4.0-*` variant show
+ * "Not available" in the Free Tier column of the official pricing page. An
+ * unbilled GEMINI_API_KEY hitting these endpoints returns HTTP 429 with
+ * `limit: 0` on `GenerateRequestsPerDayPerProjectPerModel-FreeTier` — a daily
+ * quota of zero, not a rate limit. Billing must be enabled on the GCP project
+ * for programmatic access.
+ *
+ * Paid per-image prices (standard rate; batch API is 50% off):
+ *   - Nano Banana (gemini-2.5-flash-image)            $0.039 @ 1K
+ *   - Nano Banana 2 (gemini-3.1-flash-image-preview)  $0.045 / $0.067 / $0.101 / $0.151 @ 0.5K / 1K / 2K / 4K
+ *   - Nano Banana Pro (gemini-3-pro-image-preview)    $0.134 @ 1K and 2K, $0.24 @ 4K (+ $0.0011 per input image)
+ *   - Imagen 4 Fast / Standard / Ultra                $0.02 / $0.04 / $0.06
+ *
+ * Free interactive paths: AI Studio web UI (https://aistudio.google.com,
+ * ~500-1000 img/day, dynamic, no credit card), Gemini consumer app
+ * (gemini.google.com: Basic 20/day, AI Plus 50, AI Pro 100, Ultra 1000 per
+ * Google's help page Mar 2026). Both are paste-only — feed the downloaded PNG
+ * through asset_ingest_external.
  */
 export const GoogleProvider: Provider = {
   name: "google",

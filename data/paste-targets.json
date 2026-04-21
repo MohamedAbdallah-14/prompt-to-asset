@@ -54,7 +54,7 @@
       {
         "name": "Google AI Studio (Nano Banana) — FREE interactive web UI only",
         "url": "https://aistudio.google.com",
-        "notes": "Free interactive web UI only — API requires billing since 2025-12 (paid $0.039/img). The Gemini 2.5 / 3 Flash Image model is nicknamed 'Nano Banana' in the community. Strong multimodal-edit (attach reference images, up to 3); no transparent output — matte afterwards via asset_remove_background. Text ceiling ~3 words (garbles past that)."
+        "notes": "Free interactive web UI only — API requires billing since 2025-12. Paid (verified at ai.google.dev/gemini-api/docs/pricing Apr 2026): gemini-3.1-flash-image-preview (current canonical, Nano Banana 2) $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K; legacy gemini-2.5-flash-image (original Nano Banana) $0.039/img at 1K. The Gemini 2.5/3 Flash Image model is nicknamed 'Nano Banana' in the community. Strong multimodal-edit (attach reference images, up to 3); no transparent output — matte afterwards via asset_remove_background. Text ceiling ~3 words on the original, improved on 3.1."
       },
       {
         "name": "Gemini app",
@@ -66,7 +66,7 @@
       {
         "name": "Google AI Studio (Nano Banana Pro) — FREE interactive web UI only",
         "url": "https://aistudio.google.com",
-        "notes": "Free interactive web UI only — API requires billing since 2025-12 (paid $0.067-$0.151/img at 1K-4K). The Pro variant of Nano Banana with higher aesthetic than the Flash tier. Selectable as gemini-3-pro-image-preview when available in your region. Text ceiling ~50 chars (better than Flash). Still no transparent output; matte externally."
+        "notes": "Free interactive web UI only — API requires billing since 2025-12 (paid Nano Banana Pro: $0.134/img at 1K and 2K, $0.24/img at 4K, plus $0.0011 per input image; verified at ai.google.dev/gemini-api/docs/pricing Apr 2026). The Pro variant of Nano Banana with higher aesthetic than the Flash tier. Selectable as gemini-3-pro-image-preview when available in your region. Text ceiling ~50 chars (better than Flash). Still no transparent output; matte externally."
       },
       {
         "name": "Vertex AI Studio (Nano Banana Pro)",
@@ -78,7 +78,7 @@
       {
         "name": "Google AI Studio (Nano Banana Pro preview) — FREE interactive web UI only",
         "url": "https://aistudio.google.com",
-        "notes": "Same surface as gemini-3-pro-image. Free interactive web UI only; API requires billing (paid $0.067-$0.151/img at 1K-4K). Text ceiling ~50 chars per Google. No transparent output — matte externally."
+        "notes": "Same surface as gemini-3-pro-image. Free interactive web UI only; API requires billing (paid Nano Banana Pro: $0.134/img at 1K and 2K, $0.24/img at 4K, plus $0.0011 per input image; verified at ai.google.dev/gemini-api/docs/pricing Apr 2026). Text ceiling ~50 chars per Google. No transparent output — matte externally."
       }
     ],
     "nano-banana-pro": [

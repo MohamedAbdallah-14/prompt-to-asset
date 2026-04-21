@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/model-registry.schema.json",
-  "version": "1.2.0",
-  "updated": "2026-04-21",
+  "version": "1.2.2",
+  "updated": "2026-04-22",
   "source": "docs/research/SYNTHESIS.md § Model Capability Matrix",
   "models": [
     {
@@ -156,7 +156,7 @@
       "api": "REST",
       "paste_only": false,
       "deprecated": "2026-06-30",
-      "successor": "gemini-2.5-flash-image",
+      "successor": "gemini-3-flash-image",
       "strengths": [
         "strongest Google photoreal"
       ],
@@ -169,7 +169,7 @@
         "wordmark >15 chars",
         "new integrations (deprecated)"
       ],
-      "cost_hint": "No free API tier; $0.04/img (Imagen 4), $0.02/img (Imagen 4 Fast). DEPRECATED — EOL June 30, 2026. Migrate to gemini-2.5-flash-image."
+      "cost_hint": "No free API tier (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026). Paid: Imagen 4 Fast $0.02/img, Imagen 4 Standard $0.04/img, Imagen 4 Ultra $0.06/img. DEPRECATED — EOL June 30, 2026. Migrate to gemini-3.1-flash-image-preview."
     },
     {
       "id": "gemini-3-flash-image",
@@ -202,7 +202,7 @@
       "never_use_for": [
         "transparent background"
       ],
-      "cost_hint": "No free API tier as of 2025-12; $0.039/img Nano Banana. AI Studio web UI is free for interactive use."
+      "cost_hint": "No free API tier as of 2025-12; paid via gemini-3.1-flash-image-preview (Nano Banana 2): $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K. Legacy gemini-2.5-flash-image (original Nano Banana): $0.039/img at 1K. Both are paid-only. AI Studio web UI (https://aistudio.google.com) is free for interactive use (Google does not publish a hard daily cap; community-observed 500–1,000 images/day dynamic on server load)."
     },
     {
       "id": "gemini-3-pro-image",
@@ -236,7 +236,7 @@
       "never_use_for": [
         "transparent background"
       ],
-      "cost_hint": "No free API tier as of 2025-12; Nano Banana Pro paid: $0.067/img (1K), $0.101/img (2K), $0.151/img (4K). AI Studio web UI is free for interactive use.",
+      "cost_hint": "No free API tier as of 2025-12; Nano Banana Pro paid (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026): $0.134/img at 1K and 2K, $0.24/img at 4K. Plus $0.0011 per input image (560 tokens). AI Studio web UI (https://aistudio.google.com) is free for interactive use; Gemini consumer app Basic: 20 images/day, AI Plus: 50/day, AI Pro: 100/day (Google help page, Mar 2026).",
       "notes": "text_ceiling_chars set conservatively at 30; Google documents reliable rendering up to ~50 chars."
     },
     {

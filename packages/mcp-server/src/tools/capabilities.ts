@@ -160,7 +160,7 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
       how: "Paste-only free path: generate interactively in the AI Studio web UI (https://aistudio.google.com), download the PNG, then call asset_ingest_external. Programmatic image-gen via GEMINI_API_KEY requires billing as of 2025-12.",
       quality: "Good (Gemini 3 Pro/Flash Image, Nano Banana, Imagen 4) — web UI only",
       catch:
-        "No free API tier for image-gen as of 2025-12; an unbilled GEMINI_API_KEY hitting image endpoints returns HTTP 429 with limit:0. Paid prices: $0.039/img Nano Banana, $0.02/img Imagen 4 Fast, $0.067-$0.151/img Nano Banana 2 (1K-4K). RGB only — matte post-generation.",
+        "No free API tier for image-gen (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026); an unbilled GEMINI_API_KEY hitting image endpoints returns HTTP 429 with limit:0. Paid prices: gemini-2.5-flash-image (Nano Banana) $0.039/img; gemini-3.1-flash-image-preview (Nano Banana 2) $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K; gemini-3-pro-image-preview (Nano Banana Pro) $0.134 at 1K/2K, $0.24 at 4K + $0.0011 per input image; Imagen 4 Fast $0.02, Standard $0.04, Ultra $0.06. Batch API is 50% off. RGB only — matte post-generation.",
       url: "https://aistudio.google.com"
     },
     {

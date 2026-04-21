@@ -29,9 +29,9 @@ const HINTS = {
   "imagen-4":
     "$0.04/img paid; Imagen 4 Fast $0.02/img. No free API tier as of 2025-12; AI Studio web UI free for interactive use.",
   "gemini-3-flash-image":
-    "No free API tier as of 2025-12; $0.039/img (Nano Banana). AI Studio web UI is free for interactive use.",
+    "No free API tier as of 2025-12. Current canonical gemini-3.1-flash-image-preview (Nano Banana 2): $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K. Legacy gemini-2.5-flash-image: $0.039/img. AI Studio web UI is free for interactive use (500–1,000 img/day, community-observed).",
   "gemini-3-pro-image":
-    "No free API tier as of 2025-12; Nano Banana 2 $0.067/img (1K), $0.101 (2K), $0.151 (4K). AI Studio web UI free for interactive use.",
+    "No free API tier as of 2025-12; Nano Banana Pro (gemini-3-pro-image-preview): $0.134/img at 1K and 2K, $0.24/img at 4K, plus $0.0011 per input image. Verified at ai.google.dev/gemini-api/docs/pricing Apr 2026. AI Studio web UI free for interactive use.",
   "sd-1.5": "$0.01/img (Stability Core)",
   sdxl: "$0.04/img (Stability Core)",
   "sd3-large": "$0.065/img (Stability SD3)",

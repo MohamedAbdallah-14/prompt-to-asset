@@ -76,7 +76,13 @@ You end up with `AppIcon.appiconset`, Android adaptive layers (Android 13 monoch
 | **`inline_svg`**           | Host LLM emits `<svg>` in chat                 | Logos, favicons, simple icons     | ≤40 paths; simple geometry                                           |
 | **`external_prompt_only`** | Paste into any web UI                          | Whatever that UI gives you        | Manual save, then `asset_ingest_external`                            |
 
-Note on Google: as of 2025-12, `gemini-3.1-flash-image-preview` (Nano Banana 2), `gemini-3-pro-image-preview` (Nano Banana Pro), `gemini-2.5-flash-image`, and `imagen-4.0-*` are all removed from the universal free API tier. An unbilled `GEMINI_API_KEY` returns HTTP 429 with `limit: 0` on image endpoints. The key still works on the free tier for text / multimodal / embeddings. Paid pricing: Nano Banana $0.039/img, Imagen 4 Fast $0.02/img, Nano Banana Pro $0.067 (1K) / $0.101 (2K) / $0.151 (4K).
+Note on Google (verified against [ai.google.dev/gemini-api/docs/pricing](https://ai.google.dev/gemini-api/docs/pricing), Apr 2026):
+
+- **No Gemini or Imagen image model has a public API free tier.** `gemini-3.1-flash-image-preview` (Nano Banana 2), `gemini-3-pro-image-preview` (Nano Banana Pro), `gemini-2.5-flash-image` (original Nano Banana), and all `imagen-4.0-*` variants show `Free Tier: Not available` on Google's own pricing page. An unbilled `GEMINI_API_KEY` returns HTTP 429 with `limit: 0` on every image endpoint.
+- **Free for text, multimodal understanding, and embeddings.** The Gemini text-out models (Gemini 3 Pro, 2.5 Flash, 2.5 Flash-Lite, and friends) still have `Free of charge` input + output on the free tier, subject to RPD/RPM/TPM caps viewable in AI Studio.
+- **Free interactive image generation is only via the AI Studio web UI** at [https://aistudio.google.com](https://aistudio.google.com). Google does not publish a hard cap; community-observed limit is 500–1,000 images/day, dynamic with server load. Use `external_prompt_only` mode + `asset_ingest_external` to bring the PNG into the pipeline.
+- **Free image generation via the Gemini consumer app** at [gemini.google.com](https://gemini.google.com): Basic tier 20 images/day (Nano Banana 2), Google AI Plus 50/day, Google AI Pro 100/day, Ultra 1,000/day. (Source: Google help page, Mar 2026.)
+- **Paid API pricing (per image, standard):** original Nano Banana (`gemini-2.5-flash-image`) $0.039; Nano Banana 2 Flash (`gemini-3.1-flash-image-preview`) $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K; Nano Banana Pro (`gemini-3-pro-image-preview`) $0.134/1K-2K, $0.24/4K (plus $0.0011 per input image); Imagen 4 Fast $0.02, Standard $0.04, Ultra $0.06. Batch API is 50% off.
 
 Run `p2a doctor` or ask your assistant for `asset_doctor()` to see what's live in your environment right now.
 

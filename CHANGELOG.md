@@ -11,6 +11,23 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-04-22
+
+Documentation accuracy pass for Google's image generation offerings. No runtime or routing changes — everything here corrects pricing and free-tier claims across the repo after verifying against Google's official pricing page.
+
+### Fixed
+
+- **Nano Banana Pro pricing corrected.** `data/model-registry.json` and `packages/mcp-server/src/cost-guard.ts` had `gemini-3-pro-image` priced at `$0.067/$0.101/$0.151` (the Nano Banana 2 Flash tiers). The verified Nano Banana Pro price is `$0.134` per image at 1K/2K and `$0.24` at 4K, plus input-image charges. Cost estimates for Pro runs were roughly half of reality.
+- **Nano Banana 2 Flash pricing disambiguated.** `gemini-3-flash-image` now carries separate cost hints for the current `gemini-3.1-flash-image-preview` ($0.045 / $0.101 / $0.151 for 1K / 2K / 4K) and the legacy `gemini-2.5-flash-image` ($0.039/img). Earlier text conflated the two.
+- **Imagen 4 tiers itemised.** `imagen-4` cost hint now lists Fast ($0.02), Standard ($0.04), and Ultra ($0.06) separately, and the `successor` field points to `gemini-3-flash-image` (an id that exists in the registry) rather than the removed `gemini-2.5-flash-image`.
+- **Free-tier claims aligned with reality.** `README.md`, `GETTING_STARTED.md`, `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`, `.clinerules/01-prompt-to-asset.md`, `.windsurf/rules/prompt-to-asset.md`, `.cursor/rules/prompt-to-asset.mdc`, `rules/asset-enhancer-activate.md`, `docs/research/08-logo-generation/8b-prompt-patterns-by-logo-style.md`, `data/paste-targets.json`, `bundle/mcpb/manifest.json`, `.env.example`, and the `capabilities`, `doctor`, and `google` provider modules now state the verified position: **no API free tier for Gemini/Imagen image generation**; free interactive use is available via AI Studio (500–1000 images/day dynamic) and the Gemini consumer app (Basic 20/day, AI Plus 50/day, AI Pro 100/day, Ultra 1000/day).
+- **Ecosystem note corrected.** The stale claim that Google had restored a free API tier for Nano Banana has been removed from the logo-generation research notes.
+
+### Changed
+
+- **`data/model-registry.json`** bumped to 1.2.2 / 2026-04-22.
+- **`scripts/add-cost-hints.mjs`** updated so regenerated cost hints match the verified pricing.
+
 ## [0.4.1] — 2026-04-22
 
 Quality pass on the 0.4.0 release. No feature changes — everything here is a drift-correction, a polish, or a CI fix.

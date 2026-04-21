@@ -6,13 +6,13 @@
     "url": "https://github.com/MohamedAbdallah-14/prompt-to-asset",
     "source": "github"
   },
-  "version": "0.4.1",
+  "version": "0.4.2",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "prompt-to-asset",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "transport": {
         "type": "stdio"
       },
@@ -25,7 +25,7 @@
         },
         {
           "name": "GEMINI_API_KEY",
-          "description": "Enables api mode via Google Imagen / Gemini 3 Flash Image (Nano Banana). Paid only: Google removed image-gen from the free API tier in 2025-12 (Nano Banana $0.039/img, Imagen 4 Fast $0.02/img, Nano Banana 2 $0.067-$0.151/img). An unbilled key returns HTTP 429 with limit:0 on image endpoints. The AI Studio web UI (https://aistudio.google.com) is still free for interactive use — paste-only, then call asset_ingest_external.",
+          "description": "Enables api mode via Google Imagen / Gemini 3 Flash Image (Nano Banana family) / Nano Banana Pro. Paid only: Google has no free API tier for image generation (Nano Banana $0.039/img, Nano Banana 2 Flash $0.045-$0.151/img by res, Nano Banana Pro $0.134/img at 1K/2K and $0.24/img at 4K plus input-image cost, Imagen 4 Fast $0.02 / Standard $0.04 / Ultra $0.06). An unbilled key returns HTTP 429 with limit:0 on image endpoints. Free interactive paths: AI Studio web UI (500-1000 images/day dynamic) and Gemini consumer app (Basic 20/day, AI Plus 50/day, AI Pro 100/day, Ultra 1000/day) — paste-only, then call asset_ingest_external.",
           "isRequired": false,
           "isSecret": true
         },

@@ -286,13 +286,13 @@ These are distilled from repeated failure modes observed in community prompt thr
 
 ### Gemini Flash Image / Nano Banana family / Imagen 4
 
-> **Updated 2026-04-21:** The model landscape has shifted significantly. "Nano Banana" refers to `gemini-2.5-flash-image` (the free-tier flash model). "Nano Banana Pro" refers to `gemini-3-pro-image-preview` (billed only, no free API tier). "Nano Banana 2" is `gemini-3.1-flash-image-preview`, released February 26, 2026, with 4K output and improved text rendering. Imagen 4 has no free tier whatsoever (all tiers are billed). The free API tier for Nano Banana (gemini-2.5-flash-image) was restored to ~500 req/day after a Dec 2025 cut. Nano Banana Pro has 0 free API RPD — a billing-enabled project is required.
+> **Updated 2026-04-22 (re-verified against [ai.google.dev/gemini-api/docs/pricing](https://ai.google.dev/gemini-api/docs/pricing)):** "Nano Banana" refers to `gemini-2.5-flash-image` (original, $0.039/img at 1K). "Nano Banana 2" is `gemini-3.1-flash-image-preview`, released Feb 26, 2026: $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K. "Nano Banana Pro" is `gemini-3-pro-image-preview`: $0.134/img at 1K and 2K, $0.24/img at 4K, plus $0.0011 per input image. **All three** — plus all `imagen-4.0-*` variants (Fast $0.02, Standard $0.04, Ultra $0.06) — show `Free Tier: Not available` on Google's public pricing page. An unbilled `GEMINI_API_KEY` returns HTTP 429 `limit: 0` on every image endpoint. The only free paths are the AI Studio web UI (https://aistudio.google.com, ~500–1,000 images/day dynamic cap) and the Gemini consumer app (Basic: 20 img/day, AI Plus: 50/day, AI Pro: 100/day, Ultra: 1,000/day). Text / multimodal / embeddings remain free of charge via API subject to RPD/RPM/TPM caps.
 
 - **Prompt shape:** natural prose, multi-sentence okay.
 - **Transparency problem:** Gemini Flash Image models are known for rendering a *checkered pattern* in the background when asked for a transparent PNG, instead of emitting true alpha. Mitigation: ask for a plain white background and post-process with `rembg` / BRIA RMBG (category 13 + 16). Do not rely on the model for alpha.
 - **Safety filter aggressive on "brand" / commercial language.** Rephrasing `a logo for a gun-store` → `a geometric icon mark for a hunting outfitter` clears filters.
 - **Imagen 4** significantly better at vector-flat style than Imagen 3; Imagen 3 leans photo-realistic by default. Imagen 4 is available only via paid Vertex AI (no free tier).
-- **Nano Banana 2 (gemini-3.1-flash-image-preview):** Released Feb 2026. 4K resolution, improved text rendering, up to 14 style reference images. Free dev tier access (limited RPD).
+- **Nano Banana 2 (gemini-3.1-flash-image-preview):** Released Feb 2026. 4K resolution, improved text rendering, up to 14 style reference images. No free API tier — billing required; use the AI Studio web UI for free interactive access.
 - **Nano Banana Pro (gemini-3-pro-image-preview):** Best-in-class for multilingual text in images and long-passage rendering. No free API tier — requires a billed Google Cloud project.
 
 ### DALL·E 3 / gpt-image-1 / gpt-image-1.5

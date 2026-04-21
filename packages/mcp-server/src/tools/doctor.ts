@@ -112,13 +112,16 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
   };
 
   // Free-tier routes, ranked best-first (same order as CLI doctor).
-  // NOTE 2026-04-21: Google removed Gemini / Imagen image-gen from its free API
-  // tier in Dec 2025. `gemini-3.1-flash-image-preview`, `gemini-3-pro-image-preview`,
-  // `gemini-2.5-flash-image` and `imagen-4.0-*` all show "Not available" in the
-  // Free Tier column of the official pricing page and return HTTP 429 with
+  // NOTE 2026-04-22 (re-verified against ai.google.dev/gemini-api/docs/pricing):
+  // Google removed Gemini / Imagen image-gen from its free API tier in Dec 2025.
+  // `gemini-3.1-flash-image-preview`, `gemini-3-pro-image-preview`,
+  // `gemini-2.5-flash-image` and every `imagen-4.0-*` variant show "Not available"
+  // in the Free Tier column of the official pricing page and return HTTP 429 with
   // `limit: 0` on unbilled projects. AI Studio web UI remains free for
-  // interactive generation — see paste_only_providers below. Cloudflare Workers
-  // AI is now the top-ranked free API route.
+  // interactive generation (~500-1000 img/day dynamic) — see paste_only_providers
+  // below. Gemini consumer app Basic: 20 img/day with Nano Banana 2, AI Plus: 50,
+  // AI Pro: 100, Ultra: 1000 (Google help page, Mar 2026). Cloudflare Workers AI
+  // is the top-ranked free programmatic API route.
   const freeRanked: Array<{ rank: number; id: string; live: boolean; note: string }> = [
     {
       rank: 1,
@@ -212,7 +215,7 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
     }
     if (avail["google"]) {
       what_to_try_next.push(
-        "GEMINI_API_KEY is set, but Gemini/Imagen image-gen has no free API tier (removed 2025-12). The key still works for text/multimodal on the free tier. For image-gen, enable billing on the GCP project ($0.039/img Nano Banana, $0.02/img Imagen 4 Fast) or use the free AI Studio web UI: https://aistudio.google.com → generate → download → call asset_ingest_external."
+        "GEMINI_API_KEY is set, but Gemini/Imagen image-gen has no free API tier (removed 2025-12; verified at ai.google.dev/gemini-api/docs/pricing Apr 2026). The key still works for text/multimodal/embeddings on the free tier (subject to RPD/RPM/TPM caps). For image-gen, enable billing on the GCP project: gemini-2.5-flash-image $0.039/img, gemini-3.1-flash-image-preview $0.067-$0.151/img (1K-4K), gemini-3-pro-image-preview $0.134-$0.24/img (1K-4K), Imagen 4 Fast $0.02/img. Free alternatives: AI Studio web UI (https://aistudio.google.com) paste-only flow → call asset_ingest_external, or Gemini app (Basic 20 img/day, AI Plus 50, AI Pro 100, Ultra 1000)."
       );
     }
   } else {
@@ -251,7 +254,7 @@ function paidHint(name: string): string {
     case "openai":
       return "gpt-image-1 / gpt-image-1.5 / dall-e-3 — best transparent PNG + text rendering";
     case "google":
-      return "Gemini 3 Flash Image (Nano Banana) / Imagen 4 — billing required on the GCP project; no API free tier as of 2025-12. Nano Banana $0.039/img, Imagen 4 Fast $0.02/img. AI Studio web UI (https://aistudio.google.com) is free but paste-only.";
+      return "Gemini 3 Flash Image (Nano Banana / Nano Banana 2) / Nano Banana Pro / Imagen 4 — billing required on the GCP project; no API free tier as of 2025-12 (every image model shows Free Tier: Not available on ai.google.dev/gemini-api/docs/pricing). Paid: Nano Banana $0.039, Nano Banana 2 $0.067-$0.151 (1K-4K), Nano Banana Pro $0.134-$0.24 (1K-4K), Imagen 4 Fast $0.02. AI Studio web UI (https://aistudio.google.com) is free but paste-only (~500-1000 img/day dynamic).";
     case "ideogram":
       return "Ideogram 3 / 3 Turbo — best-in-class wordmark rendering";
     case "recraft":
