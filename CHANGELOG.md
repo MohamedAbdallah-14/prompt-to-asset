@@ -13,6 +13,33 @@ changelog notes otherwise.
 
 _Nothing yet._
 
+## [0.3.0] — 2026-04-21
+
+Game-asset add-on + auto-install for native binaries. No breaking changes; the 16-tool 0.2 surface is untouched.
+
+### Added
+
+- **Seven new MCP tools (→ 24 total).**
+  - `asset_doctor` — structured environment inventory with ranked free-tier routes, paid key status, paste-only surfaces, and a "what to try next" list. MCP equivalent of `p2a doctor --json`. Read-only by default.
+  - `asset_models_list` + `asset_models_inspect` — browse the 60+ model registry with filters (`free`, `paid`, `paste_only`, `rgba`, `svg`) and drill into one model for the full capability dump, paste targets, and the routing rules that reference it.
+  - `asset_export_bundle` — fan a 1024² master PNG out to iOS AppIconSet, Android adaptive, PWA maskable, visionOS parallax, Flutter launcher, and favicon from a single tool call. Offline; no key. Pair it with `asset_save_inline_svg` to go from brief → platform bundle without typing into a terminal.
+  - `asset_sprite_sheet` — pack a frame directory into one sheet + TexturePacker-compatible JSON atlas (Phaser, PixiJS, Godot, Unity). For game devs.
+  - `asset_nine_slice` — emit a 9-slice config + CSS `border-image` + engine-ready numbers (Unity / Godot / Phaser / PixiJS) + optional Android `.9.png`.
+  - `asset_init_brand` — scaffold `brand.json` + auto-detect the framework (Next.js, Expo, Flutter, Xcode, Astro, Vite, Remix, Nuxt, React Native, Electron, Node) so the next generator call has a brand source-of-truth and a sensible output dir.
+- **`p2a doctor --fix` (and `asset_doctor(auto_fix=true)`).** Opt-in auto-installer for the native-binary gap. macOS: Homebrew for `potrace`; cargo for `vtracer` (it's not in brew-core). Windows: scoop where available. Linux + anything else: surfaces the exact apt/dnf/rustup commands rather than running them unprompted. Never sudo. `--fix --dry-run` previews. npm optional deps get a reinstall hint, not in-place manipulation.
+- **Live Pollinations integration test** at `tests/integration/pollinations.test.ts`. Gated behind `INTEGRATION=1`; proves the zero-key HTTP-GET route actually produces a valid asset and feeds through `asset_ingest_external` (restoration pre-pass on JPEG input included). End-to-end proof of work, not just logic regression.
+- **Design thesis in README** — "You own the API keys. The LLM owns everything else." The only terminal action is install + set keys; every other verb (doctor, fan-out, brand scaffolding, sprite sheets, 9-slice, model inspection) is an MCP tool the assistant calls.
+
+### Fixed
+
+- `createServer()` internal version string was stuck at `0.1.0`; now tracks package.json.
+- Sprite-sheet test suite used `require("node:fs")` in-line; converted to ESM imports so ESLint's `no-require-imports` rule stops breaking CI.
+- README Claude Desktop `.mcpb` link no longer hardcodes the old 0.2.0 filename.
+
+### CI
+
+- Release bumps `0.2.1` → `0.3.0` across `package.json`, `packages/mcp-server/package.json`, `server.json`, `bundle/mcpb/manifest.json`.
+
 ## [0.2.1] — 2026-04-20
 
 Maintenance release. Needed so `mcpName` lands in the published npm `package.json` and the Official MCP Registry can verify GitHub ownership.

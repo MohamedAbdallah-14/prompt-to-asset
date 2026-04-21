@@ -17,9 +17,9 @@ interface Check {
 
 const checks: Check[] = [
   {
-    name: "TOOLS: exactly 17 tools registered",
+    name: "TOOLS: exactly 24 tools registered",
     fn: () => {
-      if (TOOLS.length !== 17) throw new Error(`expected 17 tools, got ${TOOLS.length}`);
+      if (TOOLS.length !== 24) throw new Error(`expected 24 tools, got ${TOOLS.length}`);
     }
   },
   {

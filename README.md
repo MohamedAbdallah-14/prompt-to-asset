@@ -17,7 +17,7 @@
 [![Install in Cursor](https://img.shields.io/badge/Cursor-Install-000?logo=cursor)](cursor://anysphere.cursor-deeplink/mcp/install?name=prompt-to-asset&config=eyJjb21tYW5kIjogIm5weCIsICJhcmdzIjogWyIteSIsICJwcm9tcHQtdG8tYXNzZXQiXX0=)
 [![Install in VS Code](https://img.shields.io/badge/VS%20Code-Install-007ACC?logo=visualstudiocode)](vscode:mcp/install?%7B%22name%22%3A%20%22prompt-to-asset%22%2C%20%22type%22%3A%20%22stdio%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22prompt-to-asset%22%5D%7D)
 [![Install in VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-Install-24bfa5?logo=visualstudiocode)](vscode-insiders:mcp/install?%7B%22name%22%3A%20%22prompt-to-asset%22%2C%20%22type%22%3A%20%22stdio%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22prompt-to-asset%22%5D%7D)
-[![Install in Claude Desktop](https://img.shields.io/badge/Claude%20Desktop-%2Emcpb-D97706)](https://github.com/MohamedAbdallah-14/prompt-to-asset/releases/latest/download/prompt-to-asset-0.2.0.mcpb)
+[![Install in Claude Desktop](https://img.shields.io/badge/Claude%20Desktop-%2Emcpb-D97706)](https://github.com/MohamedAbdallah-14/prompt-to-asset/releases/latest/download/prompt-to-asset-0.3.0.mcpb)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-claude%20mcp%20add-7F56D9)](https://docs.claude.com/en/docs/claude-code/mcp)
 [![Smithery](https://img.shields.io/badge/Smithery-Install-6366f1)](https://smithery.ai/server/prompt-to-asset)
 
@@ -92,6 +92,7 @@ Three modes ship in the box, and every single one can finish on $0:
 ```bash
 # Zero install — every command works via npx
 npx prompt-to-asset doctor
+npx prompt-to-asset doctor --fix  # install vtracer / potrace via brew/cargo/scoop — never sudo
 npx prompt-to-asset pick          # interactive route picker
 npx prompt-to-asset init          # scaffold brand.json + IDE registration hints
 
@@ -116,7 +117,18 @@ claude mcp add prompt-to-asset -- p2a
 # Codex / Gemini CLI / Cline — see docs/install.md for the exact stanzas
 ```
 
-Restart your IDE. The assistant now has **16 `asset_*` tools**. See [GETTING_STARTED.md](./GETTING_STARTED.md) for the full on-ramp, [docs/install.md](./docs/install.md) for per-IDE details, and [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for the common snags.
+Restart your IDE. The assistant now has **24 `asset_*` tools**. See [GETTING_STARTED.md](./GETTING_STARTED.md) for the full on-ramp, [docs/install.md](./docs/install.md) for per-IDE details, and [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for the common snags.
+
+### The design thesis — you shouldn't need to learn the CLI
+
+**You own the API keys. The LLM owns everything else.** That's the deal.
+
+- **One thing you do in a terminal:** install the package + set API keys in your shell or `.env`. Secrets shouldn't pass through chat.
+- **Everything else** — doctor checks, model inspection, platform fan-out, bundle exports, sprite sheets, 9-slice configs, brand.json scaffolding — is a tool the LLM calls for you when you ask in natural language.
+
+So the user experience is: _"generate a favicon for my Next.js app, dark-mode aware"_ — and the LLM chains `asset_init_brand` (if `brand.json` is missing) → `asset_enhance_prompt` → `asset_generate_favicon` → `asset_save_inline_svg` → reports the paths. Zero CLI typing.
+
+The CLI still exists and is first-class for CI/CD, shell scripts, and people who don't use an MCP-aware IDE. Both surfaces hit the same core — adding a CLI flag and the matching MCP tool are a single PR.
 
 ### From a clone (contributors)
 
@@ -131,6 +143,17 @@ npm run test:run
 ---
 
 ## Quickstart by platform
+
+After registering the MCP server, **just ask your IDE.** Try:
+
+> _"Set up prompt-to-asset for this repo, then generate a favicon and fan it out to every platform."_
+
+The LLM will call `asset_init_brand` (detecting Next.js / Expo / Flutter / Xcode / etc. and writing `brand.json`), then `asset_enhance_prompt`, then the right generator, then `asset_export_bundle` — all without asking you to touch a shell.
+
+If you want the raw CLI for CI, shell scripts, or when there's no LLM in the loop, the same commands are documented below.
+
+<details>
+<summary><b>CLI equivalents for CI/CD and headless use</b></summary>
 
 ### Next.js / Astro / Vite / Remix / Nuxt
 
@@ -186,7 +209,9 @@ p2a nine-slice ./panel.png --guides 16,16,16,16 --android-9patch
 
 Atlas output is TexturePacker-compatible; Phaser, PixiJS, Godot, Three.js all load it. Nine-slice emits a JSON config + CSS `border-image` + Unity/Godot/Phaser/PixiJS numbers + (optionally) an Android `.9.png`.
 
-> **Note.** These two game-dev helpers are CLI-only in 0.2; the MCP server does not expose `asset_generate_sprite_sheet` / `asset_generate_nine_slice` yet. Drive them from a shell or a npm-script and feed the output back to your MCP host if you want the LLM to know about it.
+Both are also exposed over MCP as `asset_sprite_sheet` and `asset_nine_slice` — ask the LLM, no shell required.
+
+</details>
 
 ---
 
@@ -196,50 +221,65 @@ In a new chat:
 
 > Make me a transparent logo for a developer-tools company called Forge. Flat vector, two-tone warm orange on neutral.
 
-1. `asset_capabilities()` — what's live: inline_svg, paste targets, paid APIs, free-tier routes.
-2. `asset_enhance_prompt({ brief })` — classification, routed model, rewritten prompt, `modes_available[]`, `svg_brief?`, `paste_targets?`, and a **`routing_trace`** that points at the research file backing the decision plus the `never_models` explaining why Imagen/DALL-E were rejected.
-3. Offers you `inline_svg` / `external_prompt_only` / `api`.
-4. If `inline_svg`: assistant writes the `<svg>` inline AND calls `asset_save_inline_svg`, which writes `master.svg` + favicon.ico + apple-touch + AppIconSet + PWA bundle to disk.
-5. If `external_prompt_only`: assistant shows the refined prompt + the best paste target (free paths first). You generate → save → tell the assistant to call `asset_ingest_external <file>`.
-6. If `api`: assistant calls the routed provider. Server mattes → vectorizes → exports → validates.
+1. `asset_doctor()` if the assistant needs to know which modes/providers are live right now (or `asset_capabilities()` for the capability matrix).
+2. `asset_init_brand({ app_name: "Forge", palette: ["#EA580C", "#F5F5F4"] })` if no `brand.json` exists yet — scaffolds it and ensures the assets dir.
+3. `asset_enhance_prompt({ brief })` — classification, routed model, rewritten prompt, `modes_available[]`, `svg_brief?`, `paste_targets?`, and a **`routing_trace`** that points at the research file backing the decision plus `never_models` (why Imagen / DALL-E were rejected).
+4. Offers you `inline_svg` / `external_prompt_only` / `api`.
+5. If `inline_svg`: assistant writes the `<svg>` inline AND calls `asset_save_inline_svg`, which writes `master.svg` + favicon.ico + apple-touch + AppIconSet + PWA bundle to disk.
+6. If `external_prompt_only`: assistant shows the refined prompt + the best paste target (free paths first). You generate → save → tell the assistant to call `asset_ingest_external <file>`.
+7. If `api`: assistant calls the routed provider. Server mattes → vectorizes → exports → validates.
+8. Follow-up: _"also fan this out for iOS and Android"_ → assistant calls `asset_export_bundle` with the saved master.
 
 ---
 
-## MCP tool surface (16 tools)
+## MCP tool surface (24 tools)
 
-| Tool                           | Purpose                                                                                                                                                                                                                                                               |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `asset_capabilities`           | Inventory — which modes + providers are live. Buckets paid / free-tier / paste-only and surfaces the free zero-key routes prominently. Read-only.                                                                                                                     |
-| `asset_enhance_prompt`         | Classify, route, rewrite. Returns modes + `svg_brief` + `paste_targets` + **`routing_trace { research_sources, never_models, fallback_chain }`** + **`clarifying_questions[]`** when the brief is ambiguous (host LLM should surface via AskUserQuestion). Read-only. |
-| `asset_generate_logo`          | `inline_svg` / `external_prompt_only` / `api`. Returns `InlineSvgPlan` / `ExternalPromptPlan` / `AssetBundle`.                                                                                                                                                        |
-| `asset_generate_app_icon`      | Same three modes. `api` produces full iOS / Android / PWA / visionOS / Flutter fan-out. Set `ios_18_appearances: true` for dark + tinted variants.                                                                                                                    |
-| `asset_generate_favicon`       | `favicon-{16,32,48}.png` + `icon.svg` + `icon-dark.svg` + `apple-touch` + PWA 192/512/512-maskable + `<link>` snippet + `manifest.webmanifest`.                                                                                                                       |
-| `asset_generate_og_image`      | 1200×630 via Satori + `@resvg/resvg-js`. Deterministic typography — no diffusion-rendered text garbage.                                                                                                                                                               |
-| `asset_generate_illustration`  | `external_prompt_only` / `api`. Brand-locked via bundle refs / LoRA / `style_id`. Routed primary: Flux.2 (up to 8 refs).                                                                                                                                              |
-| `asset_generate_splash_screen` | iOS `LaunchScreen-2732.png`, Android `mipmap-*/splash.png` + theme XML, PWA splash + README. Pass `existing_mark_svg` to reuse an already-approved mark.                                                                                                              |
-| `asset_generate_hero`          | Marketing hero art (16:9 / 21:9 / 3:2 / 2:1). `external_prompt_only` / `api`.                                                                                                                                                                                         |
-| `asset_save_inline_svg`        | Round-trip for `inline_svg`. Validates the SVG against the brief, writes bundle to disk.                                                                                                                                                                              |
-| `asset_ingest_external`        | Round-trip for `external_prompt_only`. Matte → vectorize → validate → bundle.                                                                                                                                                                                         |
-| `asset_remove_background`      | BiRefNet / BRIA RMBG-2.0 / LayerDiffuse / difference matte / U²-Net.                                                                                                                                                                                                  |
-| `asset_vectorize`              | `vtracer` / `potrace` / Recraft / posterize fallback, then SVGO.                                                                                                                                                                                                      |
-| `asset_upscale_refine`         | DAT2 / Real-ESRGAN / SUPIR / img2img / Lanczos — asset-type-aware.                                                                                                                                                                                                    |
-| `asset_validate`               | Tier-0 (dims, alpha, checkerboard FFT, safe-zone bbox, ΔE2000 palette, WCAG contrast, OCR Levenshtein). Tier-2 VLM-as-judge via `PROMPT_TO_BUNDLE_VLM_URL`.                                                                                                           |
-| `asset_brand_bundle_parse`     | Parse `brand.json` / DTCG tokens / AdCP / Markdown → canonical `BrandBundle`.                                                                                                                                                                                         |
+| Tool                           | Purpose                                                                                                                                                                                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `asset_capabilities`           | Inventory — which modes + providers are live. Buckets paid / free-tier / paste-only and surfaces the free zero-key routes prominently. Read-only.                                                                                                                          |
+| `asset_enhance_prompt`         | Classify, route, rewrite. Returns modes + `svg_brief` + `paste_targets` + **`routing_trace { research_sources, never_models, fallback_chain }`** + **`clarifying_questions[]`** when the brief is ambiguous (host LLM should surface via AskUserQuestion). Read-only.      |
+| `asset_generate_logo`          | `inline_svg` / `external_prompt_only` / `api`. Returns `InlineSvgPlan` / `ExternalPromptPlan` / `AssetBundle`.                                                                                                                                                             |
+| `asset_generate_app_icon`      | Same three modes. `api` produces full iOS / Android / PWA / visionOS / Flutter fan-out. Set `ios_18_appearances: true` for dark + tinted variants.                                                                                                                         |
+| `asset_generate_favicon`       | `favicon-{16,32,48}.png` + `icon.svg` + `icon-dark.svg` + `apple-touch` + PWA 192/512/512-maskable + `<link>` snippet + `manifest.webmanifest`.                                                                                                                            |
+| `asset_generate_og_image`      | 1200×630 via Satori + `@resvg/resvg-js`. Deterministic typography — no diffusion-rendered text garbage.                                                                                                                                                                    |
+| `asset_generate_illustration`  | `external_prompt_only` / `api`. Brand-locked via bundle refs / LoRA / `style_id`. Routed primary: Flux.2 (up to 8 refs).                                                                                                                                                   |
+| `asset_generate_splash_screen` | iOS `LaunchScreen-2732.png`, Android `mipmap-*/splash.png` + theme XML, PWA splash + README. Pass `existing_mark_svg` to reuse an already-approved mark.                                                                                                                   |
+| `asset_generate_hero`          | Marketing hero art (16:9 / 21:9 / 3:2 / 2:1). `external_prompt_only` / `api`.                                                                                                                                                                                              |
+| `asset_save_inline_svg`        | Round-trip for `inline_svg`. Validates the SVG against the brief, writes bundle to disk.                                                                                                                                                                                   |
+| `asset_ingest_external`        | Round-trip for `external_prompt_only`. Matte → vectorize → validate → bundle.                                                                                                                                                                                              |
+| `asset_remove_background`      | BiRefNet / BRIA RMBG-2.0 / LayerDiffuse / difference matte / U²-Net.                                                                                                                                                                                                       |
+| `asset_vectorize`              | `vtracer` / `potrace` / Recraft / posterize fallback, then SVGO.                                                                                                                                                                                                           |
+| `asset_upscale_refine`         | DAT2 / Real-ESRGAN / SUPIR / img2img / Lanczos — asset-type-aware.                                                                                                                                                                                                         |
+| `asset_validate`               | Tier-0 (dims, alpha, checkerboard FFT, safe-zone bbox, ΔE2000 palette, WCAG contrast, OCR Levenshtein). Tier-2 VLM-as-judge via `PROMPT_TO_BUNDLE_VLM_URL`.                                                                                                                |
+| `asset_brand_bundle_parse`     | Parse `brand.json` / DTCG tokens / AdCP / Markdown → canonical `BrandBundle`.                                                                                                                                                                                              |
+| `asset_doctor`                 | Structured environment inventory: native deps (sharp, vtracer, potrace, png-to-ico, satori, resvg-js, tesseract.js, svgo), free-tier routes ranked best-first, paid keys, paste-only surfaces, pipeline URLs, mode availability, and a "what to try next" list. Read-only. |
+| `asset_models_list`            | Browse the 60+ model registry with filters: `free` / `paid` / `paste_only` / `rgba` / `svg`. Returns structured entries for each model. Read-only.                                                                                                                         |
+| `asset_models_inspect`         | Full capability dump for one model id (or aka alias). Strengths, weaknesses, paste targets, routing rules referencing it, env status. Read-only.                                                                                                                           |
+| `asset_export_bundle`          | Fan out a 1024² master PNG to iOS AppIconSet + Android adaptive + PWA maskable + visionOS parallax + Flutter launcher + favicon bundle. Offline; no key.                                                                                                                   |
+| `asset_sprite_sheet`           | Pack PNG/WEBP/JPG frames into one sprite sheet + TexturePacker-compatible JSON atlas (Phaser / PixiJS / Godot / Unity). Offline.                                                                                                                                           |
+| `asset_nine_slice`             | Emit a 9-slice config + CSS `border-image` + Unity/Godot/Phaser/PixiJS numbers from an image + 4 pixel guides. Optional Android `.9.png` encoding.                                                                                                                         |
+| `asset_init_brand`             | Scaffold `brand.json` + ensure the assets dir exists. Auto-detects framework (Next.js, Expo, Flutter, Xcode, Astro, Vite, Remix, Nuxt, React Native, Electron, Node). Does NOT handle IDE MCP registration (that's the one terminal step the user owns).                   |
 
 ---
 
 ## CLI surface
 
+Primarily used by the LLM over `Bash` when MCP isn't registered yet, and by CI/CD scripts. Every read-only command accepts `--json` for machine-readable output.
+
 ```
 p2a                        # default — MCP stdio server (keeps existing IDE registrations working)
 p2a mcp                    # same, explicit
 p2a export <master.png>    # offline platform fan-out: iOS AppIconSet + Android adaptive (monochrome included) + PWA + visionOS + favicon + Flutter
+p2a export <master.png> --json   # same but emit the bundle manifest as JSON
 p2a init                   # interactive brand.json + framework detection + IDE registration hints
 p2a pick                   # interactive model picker — asset type + constraints → ranked route
 p2a doctor                 # read-only inventory: sharp, vtracer, potrace, providers (free + paid + paste-only), pipeline URLs
+p2a doctor --json          # same, as structured JSON (for CI / LLM-over-Bash)
 p2a doctor --data          # check data/model-registry.json ↔ data/routing-table.json consistency (CI-friendly)
 p2a models list            # browse the registry. Flags: --free | --paid | --paste-only | --rgba | --svg
+p2a models list --json     # structured output
 p2a models inspect <id>    # full capability dump + paste targets + routing rules + research pointers
+p2a models inspect <id> --json   # structured output
 p2a sprite-sheet <dir>     # pack frames → PNG + TexturePacker atlas (Phaser / PixiJS / Godot / Unity)
 p2a nine-slice <image>     # emit 9-slice JSON + CSS border-image + Unity/Godot/Phaser numbers + .9.png
 p2a --help

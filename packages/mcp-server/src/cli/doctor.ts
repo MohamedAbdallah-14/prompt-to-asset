@@ -21,9 +21,70 @@ import {
 import { loadSharp } from "../pipeline/sharp.js";
 import { checkDataIntegrity } from "../data-integrity.js";
 import { execFileSync } from "node:child_process";
+import { doctor } from "../tools/doctor.js";
+import { autoFix } from "../tools/doctor-fix.js";
 
 export async function doctorCommand(argv: string[] = []): Promise<void> {
   const dataOnly = argv.includes("--data");
+  const asJson = argv.includes("--json");
+  const fix = argv.includes("--fix");
+  const dryRun = argv.includes("--dry-run");
+
+  if (fix) {
+    const report = await autoFix({ dry_run: dryRun });
+    if (asJson) {
+      process.stdout.write(JSON.stringify(report, null, 2) + "\n");
+      process.exit(report.ok ? 0 : 1);
+    }
+    const lines: string[] = [];
+    lines.push(`prompt-to-asset doctor --fix${dryRun ? " --dry-run" : ""}`);
+    lines.push("");
+    lines.push(`Platform: ${report.platform} ${report.arch}`);
+    lines.push("");
+    if (report.steps.length === 0 && report.manual_hints.length === 0) {
+      lines.push("Nothing to install — all native binaries and optional modules present.");
+    } else {
+      if (report.steps.length > 0) {
+        lines.push(dryRun ? "Planned steps (dry-run):" : "Ran:");
+        for (const s of report.steps) {
+          const tag = !s.ran ? "(planned)" : s.success ? "[ok]" : "[FAILED]";
+          lines.push(`  ${tag}  ${s.command} ${s.args.join(" ")}`);
+          lines.push(`          ${s.reason}`);
+          if (s.output && !s.success) {
+            lines.push(
+              s.output
+                .split("\n")
+                .map((l: string) => `          │ ${l}`)
+                .join("\n")
+            );
+          }
+        }
+        lines.push("");
+      }
+      if (report.manual_hints.length > 0) {
+        lines.push("Run these yourself:");
+        for (const h of report.manual_hints) lines.push(`  - ${h}`);
+        lines.push("");
+      }
+      if (report.still_missing.length > 0) {
+        lines.push(`Still missing: ${report.still_missing.join(", ")}`);
+        lines.push("");
+      }
+    }
+    process.stdout.write(lines.join("\n") + "\n");
+    process.exit(report.ok ? 0 : 1);
+  }
+
+  // --json short-circuits the text-rendering path and calls the MCP tool
+  // directly. Useful for scripts / CI / LLM-over-Bash.
+  if (asJson) {
+    const report = await doctor({ check_data: dataOnly });
+    process.stdout.write(JSON.stringify(report, null, 2) + "\n");
+    if (dataOnly && report.data_integrity && !report.data_integrity.ok) {
+      process.exit(1);
+    }
+    return;
+  }
 
   if (dataOnly) {
     const report = checkDataIntegrity();

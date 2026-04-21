@@ -3,9 +3,9 @@
   "dxt_version": "0.1",
   "name": "prompt-to-asset",
   "display_name": "prompt-to-asset",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Prompt enhancer + asset pipeline: one brief to iOS/Android/PWA/favicon/OG via routed image models.",
-  "long_description": "Turn a one-line brief into a complete, ship-ready asset bundle — app icons, favicons, OG images, illustrations, splash screens. Three modes: inline_svg (zero-key, host LLM writes the SVG), external_prompt_only (paste into your subscription), api (server-driven via OpenAI / Gemini / Ideogram / Recraft / Flux / Stability / Leonardo / fal.ai / Replicate / HF / Cloudflare / Pollinations / Stable Horde / ComfyUI). 17 MCP tools including asset_enhance_prompt, asset_generate_logo / app_icon / favicon / og_image / illustration / hero / splash_screen, asset_save_inline_svg, asset_ingest_external, asset_train_brand_lora.",
+  "long_description": "Turn a one-line brief into a complete, ship-ready asset bundle — app icons, favicons, OG images, illustrations, splash screens. Three modes: inline_svg (zero-key, host LLM writes the SVG), external_prompt_only (paste into your subscription), api (server-driven via OpenAI / Gemini / Ideogram / Recraft / Flux / Stability / Leonardo / fal.ai / Replicate / HF / Cloudflare / Pollinations / Stable Horde / ComfyUI). 24 MCP tools including asset_enhance_prompt, asset_generate_logo / app_icon / favicon / og_image / illustration / hero / splash_screen, asset_save_inline_svg, asset_ingest_external, asset_train_brand_lora, asset_doctor (with auto_fix), asset_models_list, asset_models_inspect, asset_export_bundle, asset_sprite_sheet, asset_nine_slice, asset_init_brand.",
   "author": {
     "name": "Mohamed Abdallah",
     "url": "https://github.com/MohamedAbdallah-14"

@@ -15,6 +15,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve, basename, extname } from "node:path";
 import { exportAppIconBundle, exportFaviconBundle } from "../pipeline/export.js";
 import { loadSharp } from "../pipeline/sharp.js";
+import { exportBundle } from "../tools/export-bundle.js";
 
 interface ExportArgs {
   input: string;
@@ -28,6 +29,7 @@ interface ExportArgs {
 }
 
 export async function exportCommand(argv: string[]): Promise<void> {
+  const asJson = argv.includes("--json");
   const args = parseArgs(argv);
   if (!args) {
     process.exit(2);
@@ -36,6 +38,27 @@ export async function exportCommand(argv: string[]): Promise<void> {
   if (!existsSync(args.input)) {
     process.stderr.write(`p2a export: input not found: ${args.input}\n`);
     process.exit(1);
+  }
+
+  // --json short-circuits through the MCP tool wrapper so the shape matches
+  // exactly what an LLM calling the tool over MCP would see.
+  if (asJson) {
+    try {
+      const result = await exportBundle({
+        master_path: args.input,
+        platforms: args.platforms,
+        out_dir: args.outDir,
+        ...(args.flattenColor !== undefined && { bg: args.flattenColor }),
+        ...(args.appName !== undefined && { app_name: args.appName }),
+        ...(args.themeColor !== undefined && { theme: args.themeColor }),
+        ios18: args.ios18
+      });
+      process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+    } catch (e) {
+      process.stderr.write(`${(e as Error).message}\n`);
+      process.exit(1);
+    }
+    return;
   }
 
   const sharp = await loadSharp();

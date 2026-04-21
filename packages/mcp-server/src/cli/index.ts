@@ -67,9 +67,17 @@ Usage:
                                --android-9patch     also emit an Android .9.png
   p2a doctor                 Print dependency + API-key inventory. Read-only.
                              Flags:
-                               --data  Check that model-registry.json and
-                                       routing-table.json agree (exits 1 on
-                                       broken refs; useful in CI).
+                               --data       Check that model-registry.json and
+                                            routing-table.json agree (exits 1 on
+                                            broken refs; useful in CI).
+                               --fix        Install missing native binaries
+                                            (vtracer, potrace). Homebrew / cargo /
+                                            scoop only — never sudo. Linux distro
+                                            installs are printed for you to run.
+                               --fix --dry-run
+                                            Preview install commands without
+                                            executing them.
+                               --json       Machine-readable output.
   p2a --help, -h             Show this message.
 
 Environment: see .env.example for optional provider keys and pipeline URLs.

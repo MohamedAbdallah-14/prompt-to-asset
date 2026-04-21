@@ -13,6 +13,7 @@ import { MODEL_REGISTRY, ROUTING_TABLE } from "../config.js";
 import { providerKeyForModel, detectApiAvailability } from "../modes.js";
 import { allPasteTargets } from "../paste-targets.js";
 import type { ModelInfo } from "../types.js";
+import { modelsList, modelsInspect } from "../tools/models.js";
 
 export async function modelsCommand(argv: string[]): Promise<void> {
   const [sub, ...rest] = argv;
@@ -27,6 +28,16 @@ export async function modelsCommand(argv: string[]): Promise<void> {
     if (!id) {
       process.stderr.write("p2a models inspect: missing <model-id>\n");
       process.exit(2);
+    }
+    if (rest.includes("--json")) {
+      try {
+        const result = await modelsInspect({ id });
+        process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+      } catch (e) {
+        process.stderr.write(`${(e as Error).message}\n`);
+        process.exit(1);
+      }
+      return;
     }
     await inspectModel(id);
     return;
@@ -52,14 +63,31 @@ Usage:
   p2a models list --svg               Only models with native SVG output.
   p2a models inspect <id>             Full capability dump + paste targets + routing references.
 
+Machine-readable output:
+  Pass --json on any list or inspect call to get structured JSON (for LLMs over Bash).
+
 Examples:
   p2a models list
   p2a models list --free
+  p2a models list --free --json
   p2a models inspect gpt-image-1
-  p2a models inspect pollinations-flux
+  p2a models inspect pollinations-flux --json
 `;
 
 async function listModels(flags: string[]): Promise<void> {
+  const asJson = flags.includes("--json");
+  if (asJson) {
+    const result = await modelsList({
+      ...(flags.includes("--free") && { free: true }),
+      ...(flags.includes("--paid") && { paid: true }),
+      ...(flags.includes("--paste-only") && { paste_only: true }),
+      ...(flags.includes("--rgba") && { rgba: true }),
+      ...(flags.includes("--svg") && { svg: true })
+    });
+    process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+    return;
+  }
+
   const avail = detectApiAvailability();
   let models = MODEL_REGISTRY.models;
 

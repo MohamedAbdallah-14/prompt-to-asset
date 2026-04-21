@@ -54,19 +54,37 @@ Every asset request resolves to one of three modes. Call `asset_capabilities()` 
 
 **Cost guardrail.** If the user has set `P2A_MAX_SPEND_USD_PER_RUN`, an api-mode call may throw `CostBudgetExceededError` before hitting the provider. Relay the estimate + cap verbatim — do not paper over with a retry loop.
 
-## MCP tool surface (16 tools)
+## MCP tool surface (24 tools)
 
-- `asset_capabilities()` — read-only inventory of modes, paid/free/paste-only providers, unconfigured env vars, and zero-key routes (`free_api.routes` enumerates Pollinations, Stable Horde, HF, Google AI Studio free tier, local ComfyUI).
+**Discovery / capability (read-only):**
+- `asset_capabilities()` — inventory of modes, paid/free/paste-only providers, unconfigured env vars, and zero-key routes (`free_api.routes` enumerates Pollinations, Stable Horde, HF, Google AI Studio free tier, local ComfyUI).
+- `asset_doctor({ check_data? })` — structured environment inventory (native deps, ranked free-tier routes, paid keys, paste-only surfaces, pipeline URLs, mode flags, "what to try next" hints). MCP equivalent of `p2a doctor`.
+- `asset_models_list({ free?, paid?, paste_only?, rgba?, svg? })` — browse the 60+ model registry with filters.
+- `asset_models_inspect({ id })` — full capability dump for one model id (or aka alias).
+
+**Routing / prompt-engineering:**
 - `asset_enhance_prompt({ brief, asset_type?, brand_bundle? })` → AssetSpec + modes_available + svg_brief? + paste_targets? + `routing_trace { never_models, fallback_chain, research_sources }`.
+
+**Generation (three-mode):**
 - `asset_generate_logo`, `asset_generate_app_icon`, `asset_generate_favicon`, `asset_generate_og_image`, `asset_generate_illustration` — each takes `mode?: "inline_svg" | "external_prompt_only" | "api"`. Omit for auto-select.
 - `asset_generate_splash_screen`, `asset_generate_hero` — cross-platform splash bundle + marketing hero art. `external_prompt_only` / `api` only (no inline_svg — path budget too small for composed scenes; generate a mark inline_svg first, then pass it via `existing_mark_svg`).
+
+**Round-trip + pipeline primitives:**
 - `asset_save_inline_svg({ svg, asset_type })` — **round-trip endpoint for `inline_svg` mode.** Call immediately after emitting the `<svg>` in chat. Writes master.svg and, for favicon/app_icon, the full platform bundle. Returns file paths.
 - `asset_ingest_external({ image_path, asset_type })` — round-trip endpoint for `external_prompt_only` mode. Runs matte → vectorize → validate → bundle.
 - `asset_remove_background`, `asset_vectorize`, `asset_upscale_refine` — pipeline primitives.
 - `asset_validate({ image, asset_type, brand_bundle? })` — tier-0/1/2 QA stack.
 - `asset_brand_bundle_parse({ source })` → canonical BrandBundle.
 
+**Project setup + offline fan-out (no key required):**
+- `asset_init_brand({ app_name, palette?, assets_dir? })` — scaffold `brand.json` + ensure the assets dir + detect the framework (Next.js / Expo / Flutter / Xcode / Astro / Vite / Remix / Nuxt / React Native / Electron / Node). Does NOT handle IDE MCP registration — the user owns that one terminal step.
+- `asset_export_bundle({ master_path, platforms?, bg?, app_name?, theme?, ios18? })` — fan a 1024² master PNG out to iOS AppIconSet + Android adaptive + PWA maskable + visionOS parallax + Flutter launcher + favicon bundle. Offline; same code as `p2a export`.
+- `asset_sprite_sheet({ dir, layout?, columns?, padding?, out?, atlas? })` — pack frames into a sheet + TexturePacker-compatible atlas (Phaser/PixiJS/Godot/Unity).
+- `asset_nine_slice({ image, guides, android_9patch? })` — emit 9-slice JSON + CSS + engine-ready numbers + optional Android `.9.png`.
+
 The tools are annotated `readOnlyHint` / `idempotentHint` where appropriate so Cursor auto-approves without prompting.
+
+**Design principle.** The human's interface is natural language in chat plus a terminal only for API keys. Everything else — doctor checks, model inspection, platform fan-out, sprite sheets, 9-slice, brand.json scaffolding — should be driven by the LLM via these tools, not asked of the user as a shell command. When MCP isn't available, the same commands exist as `p2a ...` CLI with `--json` for machine-readable output that the LLM can consume over Bash.
 
 ## Fallback when MCP is unavailable
 

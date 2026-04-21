@@ -22,7 +22,14 @@ import {
   CapabilitiesInput,
   IngestExternalInput,
   SaveInlineSvgInput,
-  TrainBrandLoraInput
+  TrainBrandLoraInput,
+  DoctorInput,
+  ModelsListInput,
+  ModelsInspectInput,
+  ExportBundleInput,
+  SpriteSheetInput,
+  NineSliceInput,
+  InitBrandInput
 } from "./schemas.js";
 
 import { enhancePrompt } from "./tools/enhance-prompt.js";
@@ -42,6 +49,12 @@ import { capabilities } from "./tools/capabilities.js";
 import { ingestExternal } from "./tools/ingest-external.js";
 import { saveInlineSvg } from "./tools/save-inline-svg.js";
 import { trainBrandLora } from "./tools/train-brand-lora.js";
+import { doctor } from "./tools/doctor.js";
+import { modelsList, modelsInspect } from "./tools/models.js";
+import { exportBundle } from "./tools/export-bundle.js";
+import { spriteSheet } from "./tools/sprite-sheet.js";
+import { nineSlice } from "./tools/nine-slice.js";
+import { initBrand } from "./tools/init-brand.js";
 
 export const TOOLS: Tool[] = [
   {
@@ -502,6 +515,218 @@ export const TOOLS: Tool[] = [
       required: ["name", "training_images"]
     },
     annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_doctor",
+    description:
+      "Structured environment inventory — MCP equivalent of `p2a doctor`. Returns native-dependency status (sharp, vtracer, potrace, png-to-ico, satori, resvg-js, tesseract.js, svgo), free-tier routes ranked best-first, paid-provider keys, paste-only providers, pipeline extension URLs, which modes are available right now, and a concrete 'what to try next' suggestion list. Read-only by default. Pass check_data=true to also run the model-registry/routing-table integrity check. Pass auto_fix=true to install missing native binaries (Homebrew / cargo / scoop — never sudo); pair with auto_fix_dry_run=true to preview without executing.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        check_data: {
+          type: "boolean",
+          default: false,
+          description:
+            "Also run data-integrity check (equivalent to `p2a doctor --data`). Useful in CI after data edits."
+        },
+        auto_fix: {
+          type: "boolean",
+          default: false,
+          description:
+            "Run the auto-installer for missing native binaries (vtracer, potrace). Homebrew on macOS, cargo as fallback, scoop on Windows. Linux distro installs and npm optional deps are surfaced as manual hints instead of executed. Response gains an `auto_fix` field."
+        },
+        auto_fix_dry_run: {
+          type: "boolean",
+          default: false,
+          description:
+            "Only meaningful when auto_fix=true. Plan steps without executing. Defaults to false."
+        }
+      },
+      required: []
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
+    name: "asset_models_list",
+    description:
+      "List the model registry (60+ entries) with optional filters. MCP equivalent of `p2a models list`. Returns id, family, provider, dialect, native_rgba/svg flags, text ceiling, tier (free/paid/paste-only), key_set status. Filter flags: free, paid, paste_only, rgba, svg. Read-only; no network.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        free: { type: "boolean", description: "Only zero-key / free-tier models." },
+        paid: { type: "boolean", description: "Only paid direct-API models." },
+        paste_only: {
+          type: "boolean",
+          description: "Only paste-only surfaces (Midjourney, Firefly, Krea)."
+        },
+        rgba: { type: "boolean", description: "Only models with native transparent-PNG output." },
+        svg: { type: "boolean", description: "Only models with native SVG output." }
+      },
+      required: []
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false }
+  },
+  {
+    name: "asset_models_inspect",
+    description:
+      "Full capability dump for one model. MCP equivalent of `p2a models inspect <id>`. Accepts a model id or an `aka` alias. Returns the full ModelInfo record, env status, paste targets, routing rules that reference this model (as PRIMARY / fallback / NEVER), and usage notes. Read-only; no network.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description:
+            "Model id or aka alias (e.g. 'gpt-image-1', 'nano-banana', 'ideogram-3-turbo')."
+        }
+      },
+      required: ["id"]
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false }
+  },
+  {
+    name: "asset_export_bundle",
+    description:
+      "Fan out a 1024² master PNG into the full platform bundle (iOS AppIconSet, Android adaptive, PWA maskable, visionOS parallax, Flutter launcher, favicon set). MCP equivalent of `p2a export master.png`. No API key required; runs entirely on sharp. Use when the LLM has a master (inline_svg saved, api-mode result, or user-supplied hand-authored PNG) and needs the platform fan-out.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        master_path: {
+          type: "string",
+          description: "Absolute path to the 1024² master PNG. Resized up front to RGBA 1024²."
+        },
+        platforms: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["ios", "android", "pwa", "favicon", "visionos", "flutter", "all"]
+          },
+          description: "Which platform bundles to emit. Defaults to all."
+        },
+        out_dir: {
+          type: "string",
+          description:
+            "Output directory. Defaults to ./assets/bundle-<stem>-<timestamp> so repeated runs don't clobber."
+        },
+        bg: {
+          type: "string",
+          description:
+            "Background color hex for iOS 1024 marketing (opaque), Android adaptive BG, favicon apple-touch. Defaults white."
+        },
+        app_name: { type: "string", description: "Short name for the PWA manifest." },
+        theme: { type: "string", description: "theme_color hex for the PWA manifest." },
+        ios18: {
+          type: "boolean",
+          default: false,
+          description: "When true, also emit iOS 18 dark + tinted 1024² appearance variants."
+        }
+      },
+      required: ["master_path"]
+    },
+    annotations: { openWorldHint: false }
+  },
+  {
+    name: "asset_sprite_sheet",
+    description:
+      "Pack a directory of PNG/WEBP/JPG frames into one sprite sheet + TexturePacker-compatible JSON atlas (works in Phaser, PixiJS, Three.js, Godot, Unity via a light importer). MCP equivalent of `p2a sprite-sheet <dir>`. Offline, no API key.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        dir: {
+          type: "string",
+          description: "Directory containing frames. Sorted by natural filename order."
+        },
+        layout: { type: "string", enum: ["grid", "strip"], default: "grid" },
+        columns: {
+          type: "integer",
+          minimum: 1,
+          description: "Columns (grid only). Defaults to ceil(sqrt(n))."
+        },
+        padding: { type: "integer", minimum: 0, default: 0 },
+        out: { type: "string", description: "Output PNG path. Defaults to ./sprites.png." },
+        atlas: {
+          type: "string",
+          description: "Output atlas JSON path. Defaults to the sheet path with .json extension."
+        }
+      },
+      required: ["dir"]
+    },
+    annotations: { openWorldHint: false }
+  },
+  {
+    name: "asset_nine_slice",
+    description:
+      "Emit a 9-slice config + CSS border-image snippet + Unity/Godot/Phaser/PixiJS-ready numbers from one image and 4 pixel offsets. Optionally also emit an Android .9.png with the 1px stretchable-region encoding. MCP equivalent of `p2a nine-slice <image>`.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        image: { type: "string", description: "Path to the source image." },
+        guides: {
+          type: "object",
+          properties: {
+            left: { type: "integer", minimum: 0 },
+            top: { type: "integer", minimum: 0 },
+            right: { type: "integer", minimum: 0 },
+            bottom: { type: "integer", minimum: 0 }
+          },
+          required: ["left", "top", "right", "bottom"],
+          description: "Pixel offsets from each edge marking the fixed regions."
+        },
+        out: {
+          type: "string",
+          description: "Output directory. Defaults to the directory of the input image."
+        },
+        android_9patch: {
+          type: "boolean",
+          default: false,
+          description: "Also emit <name>.9.png with Android 9-patch 1px-border encoding."
+        }
+      },
+      required: ["image", "guides"]
+    },
+    annotations: { openWorldHint: false }
+  },
+  {
+    name: "asset_init_brand",
+    description:
+      "Scaffold brand.json in the project root + ensure the assets dir exists. MCP equivalent of the `brand.json` portion of `p2a init`. Auto-detects the framework (Next.js, Expo, Flutter, Xcode, Astro, Vite, Remix, Nuxt, React Native, Electron, Node) and returns platform hints. Deliberately does NOT do IDE MCP registration — that's the one piece the user handles once at install time via a terminal. Call this at the start of a new project so subsequent generator calls have a brand source-of-truth and a known output dir.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        app_name: {
+          type: "string",
+          description: "App / brand name. Goes into brand.json and any PWA manifest."
+        },
+        palette: {
+          type: "array",
+          items: { type: "string" },
+          description: "Brand palette as hex strings. Defaults to ['#2563eb', '#ffffff']."
+        },
+        assets_dir: {
+          type: "string",
+          description:
+            "Where generated assets should live. Defaults to the framework's conventional dir."
+        },
+        display_font: { type: "string", description: "Display font family. Defaults to Inter." },
+        body_font: { type: "string", description: "Body font family. Defaults to Inter." },
+        do_not: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Brand constraints to inject as negative anchors. Defaults to drop-shadows / heavy-gradients / skeuomorphic-bevels."
+        },
+        overwrite: {
+          type: "boolean",
+          default: false,
+          description: "When true, overwrites an existing brand.json."
+        },
+        cwd: {
+          type: "string",
+          description: "Project root. Defaults to process.cwd()."
+        }
+      },
+      required: ["app_name"]
+    },
+    annotations: { openWorldHint: false }
   }
 ];
 
@@ -509,7 +734,7 @@ export function createServer(): Server {
   const server = new Server(
     {
       name: "prompt-to-asset",
-      version: "0.1.0"
+      version: "0.3.0"
     },
     {
       capabilities: {
@@ -576,6 +801,27 @@ export function createServer(): Server {
           break;
         case "asset_train_brand_lora":
           result = await trainBrandLora(TrainBrandLoraInput.parse(args ?? {}));
+          break;
+        case "asset_doctor":
+          result = await doctor(DoctorInput.parse(args ?? {}));
+          break;
+        case "asset_models_list":
+          result = await modelsList(ModelsListInput.parse(args ?? {}));
+          break;
+        case "asset_models_inspect":
+          result = await modelsInspect(ModelsInspectInput.parse(args ?? {}));
+          break;
+        case "asset_export_bundle":
+          result = await exportBundle(ExportBundleInput.parse(args ?? {}));
+          break;
+        case "asset_sprite_sheet":
+          result = await spriteSheet(SpriteSheetInput.parse(args ?? {}));
+          break;
+        case "asset_nine_slice":
+          result = await nineSlice(NineSliceInput.parse(args ?? {}));
+          break;
+        case "asset_init_brand":
+          result = await initBrand(InitBrandInput.parse(args ?? {}));
           break;
         default:
           throw new Error(`Unknown tool: ${name}`);

@@ -279,6 +279,161 @@ export const SaveInlineSvgInput = z.object({
     )
 });
 
+export const DoctorInput = z.object({
+  check_data: z
+    .boolean()
+    .optional()
+    .describe(
+      "When true, also run the model-registry ↔ routing-table integrity check (equivalent to `p2a doctor --data`). Adds a `data_integrity` field to the response."
+    ),
+  auto_fix: z
+    .boolean()
+    .optional()
+    .describe(
+      "When true, run the auto-installer for missing native binaries (vtracer, potrace). macOS: shells out to `brew install` / `cargo install`. Linux/Windows: returns the commands for the user to run (no sudo). Never touches npm modules — surfaces a reinstall hint instead. Response gains an `auto_fix` field with {steps, still_missing, manual_hints, ok}. Pair with auto_fix_dry_run=true to preview without executing."
+    ),
+  auto_fix_dry_run: z
+    .boolean()
+    .optional()
+    .describe(
+      "Only meaningful when auto_fix=true. When true, plan the steps but do not execute them. Default false."
+    )
+});
+
+export const ModelsListInput = z.object({
+  free: z.boolean().optional().describe("Only zero-key / free-tier models."),
+  paid: z.boolean().optional().describe("Only paid direct-API models."),
+  paste_only: z
+    .boolean()
+    .optional()
+    .describe("Only paste-only surfaces (Midjourney, Firefly, Krea)."),
+  rgba: z.boolean().optional().describe("Only models with native transparent-PNG output."),
+  svg: z.boolean().optional().describe("Only models with native SVG output.")
+});
+
+export const ModelsInspectInput = z.object({
+  id: z
+    .string()
+    .min(1)
+    .describe(
+      "Model id or an `aka` alias (e.g. 'gpt-image-1', 'nano-banana', 'ideogram-3-turbo', 'pollinations-flux')."
+    )
+});
+
+export const ExportBundleInput = z.object({
+  master_path: z
+    .string()
+    .min(1)
+    .describe(
+      "Absolute path to the 1024² master PNG. Will be resized to 1024² RGBA before fan-out."
+    ),
+  platforms: z
+    .array(z.enum(["ios", "android", "pwa", "favicon", "visionos", "flutter", "all"]))
+    .optional()
+    .describe(
+      "Which platform bundles to emit. Defaults to every platform. 'all' expands to ios+android+pwa+favicon+visionos+flutter."
+    ),
+  out_dir: z
+    .string()
+    .optional()
+    .describe(
+      "Output directory. Defaults to ./assets/bundle-<stem>-<timestamp> so repeated exports don't clobber."
+    ),
+  bg: z
+    .string()
+    .optional()
+    .describe(
+      "Background color hex for iOS 1024 marketing (must be opaque) + Android adaptive BG + favicon apple-touch. Defaults to white."
+    ),
+  app_name: z.string().optional().describe("Short name written into the PWA manifest."),
+  theme: z.string().optional().describe("theme_color hex for the PWA manifest."),
+  ios18: z
+    .boolean()
+    .default(false)
+    .describe("When true, also emit iOS 18 dark + tinted 1024² appearance variants.")
+});
+
+export const SpriteSheetInput = z.object({
+  dir: z
+    .string()
+    .min(1)
+    .describe("Directory containing PNG / WEBP / JPG frames. Sorted by natural filename order."),
+  layout: z
+    .enum(["grid", "strip"])
+    .default("grid")
+    .describe("grid = columns x rows; strip = single row."),
+  columns: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Number of columns (grid layout only). Defaults to ceil(sqrt(n))."),
+  padding: z.number().int().min(0).default(0).describe("Gutter in pixels around each cell."),
+  out: z.string().optional().describe("Output PNG path. Defaults to ./sprites.png."),
+  atlas: z
+    .string()
+    .optional()
+    .describe(
+      "Output atlas JSON path. Defaults to the sheet path with .json extension. TexturePacker-compatible schema."
+    )
+});
+
+export const NineSliceInput = z.object({
+  image: z.string().min(1).describe("Path to the source image."),
+  guides: z
+    .object({
+      left: z.number().int().min(0),
+      top: z.number().int().min(0),
+      right: z.number().int().min(0),
+      bottom: z.number().int().min(0)
+    })
+    .describe("Pixel offsets from each edge marking the fixed regions."),
+  out: z
+    .string()
+    .optional()
+    .describe("Output directory. Defaults to the directory of the input image."),
+  android_9patch: z
+    .boolean()
+    .default(false)
+    .describe(
+      "Also emit a <name>.9.png with Android 9-patch 1px border encoding stretchable and content regions."
+    )
+});
+
+export const InitBrandInput = z.object({
+  app_name: z
+    .string()
+    .min(1)
+    .describe("The app / brand name. Used in brand.json and the PWA manifest."),
+  palette: z
+    .array(z.string())
+    .min(1)
+    .optional()
+    .describe(
+      "Brand palette as hex strings (e.g. ['#2563eb', '#ffffff']). Defaults to blue + white if omitted."
+    ),
+  assets_dir: z
+    .string()
+    .optional()
+    .describe("Where generated assets should live. Defaults to the framework's conventional dir."),
+  display_font: z.string().optional().describe("Display font family. Defaults to Inter."),
+  body_font: z.string().optional().describe("Body font family. Defaults to Inter."),
+  do_not: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "Brand constraints the rewriter should inject as negative anchors. Defaults to drop-shadows / heavy-gradients / skeuomorphic-bevels."
+    ),
+  overwrite: z
+    .boolean()
+    .default(false)
+    .describe("When true, overwrites an existing brand.json. Otherwise reports and leaves it."),
+  cwd: z
+    .string()
+    .optional()
+    .describe("Project root. Defaults to process.cwd(). Must be inside the path allow-list.")
+});
+
 export const IngestExternalInput = z.object({
   image_path: z
     .string()
@@ -325,4 +480,11 @@ export type TrainBrandLoraInputT = z.infer<typeof TrainBrandLoraInput>;
 export type CapabilitiesInputT = z.infer<typeof CapabilitiesInput>;
 export type IngestExternalInputT = z.infer<typeof IngestExternalInput>;
 export type SaveInlineSvgInputT = z.infer<typeof SaveInlineSvgInput>;
+export type DoctorInputT = z.infer<typeof DoctorInput>;
+export type ModelsListInputT = z.infer<typeof ModelsListInput>;
+export type ModelsInspectInputT = z.infer<typeof ModelsInspectInput>;
+export type ExportBundleInputT = z.infer<typeof ExportBundleInput>;
+export type SpriteSheetInputT = z.infer<typeof SpriteSheetInput>;
+export type NineSliceInputT = z.infer<typeof NineSliceInput>;
+export type InitBrandInputT = z.infer<typeof InitBrandInput>;
 export type ModeT = z.infer<typeof ModeSchema>;
