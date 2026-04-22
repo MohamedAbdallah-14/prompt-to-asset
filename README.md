@@ -2,21 +2,18 @@
 
 <a id="top"></a>
 
-<img src="./assets/hero.svg" alt="prompt-to-asset — turn a one-line brief into a ship-ready asset bundle for iOS, Android, PWA, favicon, OG, and visionOS. Works with Claude Code, Cursor, Windsurf, VS Code. Zero API key required." width="100%" />
+<img src="./.github/assets/hero.svg" alt="prompt-to-asset — turn a one-line brief into a ship-ready asset bundle for iOS, Android, PWA, favicon, OG, and visionOS. Works with Claude Code, Cursor, Windsurf, VS Code. Zero API key required." width="100%" />
 
 <h1>prompt&#8209;to&#8209;asset</h1>
 
-<p>
-  <b>One brief → a validated, ship-ready asset bundle.</b><br/>
-  App icons, favicons, OG images, logos, splash screens, SVG — routed to the right model, mattes clean, vectorizes, and fans out to every platform.<br/>
-  <b>Works with or without an API key.</b>
-</p>
+<p><b>One brief → a validated, ship-ready asset bundle.</b><br/>
+App icons, favicons, OG images, logos, splash screens, SVG — routed to the right model, matted, vectorized, and fanned out to every platform.<br/>
+<b>Works with or without an API key.</b></p>
 
 <p>
   <a href="https://www.npmjs.com/package/prompt-to-asset"><img alt="npm" src="https://img.shields.io/npm/v/prompt-to-asset?style=flat&color=cb3837&logo=npm&logoColor=white&label=npm"/></a>
   <a href="https://www.npmjs.com/package/prompt-to-asset"><img alt="downloads" src="https://img.shields.io/npm/dm/prompt-to-asset.svg?style=flat&color=8b5cf6&label=downloads"/></a>
   <a href="https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/MohamedAbdallah-14/prompt-to-asset/actions/workflows/ci.yml/badge.svg"/></a>
-  <a href="https://codecov.io/gh/MohamedAbdallah-14/prompt-to-asset"><img alt="coverage" src="https://codecov.io/gh/MohamedAbdallah-14/prompt-to-asset/graph/badge.svg"/></a>
   <a href="./LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-22d3ee.svg?style=flat"/></a>
   <a href="https://nodejs.org"><img alt="node" src="https://img.shields.io/badge/node-%E2%89%A520.11-10b981.svg?style=flat"/></a>
   <a href="https://modelcontextprotocol.io"><img alt="MCP" src="https://img.shields.io/badge/MCP-1.0-a78bfa.svg?style=flat"/></a>
@@ -24,7 +21,6 @@
   <a href="https://github.com/MohamedAbdallah-14/prompt-to-asset/stargazers"><img alt="stars" src="https://img.shields.io/github/stars/MohamedAbdallah-14/prompt-to-asset?style=flat&color=f59e0b&logo=github"/></a>
 </p>
 
-<!-- One-click install buttons — for-the-badge style (Badges4-README convention) -->
 <p>
   <a href="cursor://anysphere.cursor-deeplink/mcp/install?name=prompt-to-asset&config=eyJjb21tYW5kIjogIm5weCIsICJhcmdzIjogWyIteSIsICJwcm9tcHQtdG8tYXNzZXQiXX0="><img alt="Install in Cursor" src="https://img.shields.io/badge/Install_in_Cursor-000000?style=for-the-badge&logo=cursor&logoColor=white"/></a>
   <a href="vscode:mcp/install?%7B%22name%22%3A%20%22prompt-to-asset%22%2C%20%22type%22%3A%20%22stdio%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22prompt-to-asset%22%5D%7D"><img alt="Install in VS Code" src="https://img.shields.io/badge/Install_in_VS_Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white"/></a>
@@ -34,6 +30,7 @@
 
 <sub>
   <a href="#30-second-start">Quickstart</a> ·
+  <a href="#free-paths-at-a-glance">Free paths</a> ·
   <a href="#usage">Usage</a> ·
   <a href="#the-three-modes">Modes</a> ·
   <a href="#the-router">Router</a> ·
@@ -48,69 +45,96 @@
 
 ## 30-second start
 
-**Pick one path. Run it. You're done.**
+**Pick one. Run it. You're done.** The recommended path is first.
+
+Runtime: **Node ≥ 20.11** (24 recommended). macOS, Linux, Windows (WSL2 for `--fix` native deps).
 
 <table>
 <tr>
+<td width="34%" valign="top">
+
+### 🔵 AI assistant · recommended
+
+Click an install button above. Then paste one of these into chat:
+
+```text
+• Make a transparent logo for Forge, a dev-tools brand. Flat vector, warm orange.
+• Make a favicon for my app, dark-mode aware.
+• Fan this master.png out to iOS + Android + PWA.
+• Ingest this screenshot as a mark, vectorize, export everything.
+```
+
+Works in Cursor, Claude Code, VS Code, Windsurf, Codex, Gemini CLI. Zero terminal typing.
+
+</td>
 <td width="33%" valign="top">
 
 ### 🟢 Zero key, zero install
 
-Works right now. One HTTP GET, then offline fan-out.
+One `curl`, one `npx`. Offline fan-out to every platform.
 
 ```bash
 curl -o logo.png \
   "https://image.pollinations.ai/prompt/\
-minimal+flat+vector+logo+for+a+tech+startup\
-?model=flux&width=1024&height=1024&nologo=true"
+minimal+flat+vector+logo\
+?model=flux&width=1024&nologo=true"
 
 npx prompt-to-asset export logo.png \
-  --platforms ios,android,pwa,favicon,visionos
+  --platforms ios,android,pwa,favicon
 ```
 
-You get: `AppIcon.appiconset`, Android adaptive (with Android 13 monochrome), PWA 192/512/maskable, full favicon bundle, visionOS parallax scaffold.
+Outputs: iOS AppIconSet, Android adaptive, PWA, favicon bundle, visionOS scaffold.
 
 </td>
 <td width="33%" valign="top">
 
-### 🔵 AI assistant (recommended)
+### 🟣 CLI · with an API key
 
-Click the install button above for your IDE. Then in chat:
-
-```text
-Make a transparent logo for Forge,
-a developer-tools brand. Flat vector,
-warm orange on neutral.
-```
-
-Your assistant chains `asset_enhance_prompt` → `asset_generate_logo` → `asset_save_inline_svg` and writes the files. **No typing in a terminal.**
-
-Works in **Cursor · Claude Code · VS Code · Windsurf · Codex · Gemini CLI**.
-
-</td>
-<td width="33%" valign="top">
-
-### 🟣 CLI (with a key)
-
-For CI, scripts, and no rate limits.
+For CI and no rate limits.
 
 ```bash
 npm i -g prompt-to-asset
-p2a doctor              # check env
-p2a doctor --fix        # auto-install native deps
-p2a pick                # interactive picker
+p2a doctor          # check env
+p2a doctor --fix    # auto-install deps
+p2a pick            # interactive
 ```
 
-Add any provider key to `.env` (OpenAI, Ideogram, Recraft, Flux/BFL, Gemini, Stability, Leonardo, fal.ai). `p2a doctor` tells you what's live.
+Supports OpenAI, Ideogram, Recraft, BFL/Flux, Gemini, Stability, Leonardo, fal.ai.
 
 </td>
 </tr>
 </table>
 
-> [!TIP]
-> **Don't know where to start?** Click the **Cursor** or **VS Code** install button above, restart your editor, and ask: _"make a favicon for my app, dark-mode aware."_ Your assistant does the rest.
+<a id="free-paths-at-a-glance"></a>
 
-<p align="right"><a href="#top">⬆ back to top</a></p>
+### Free paths at a glance
+
+You don't need a paid API key. Ranked best-first:
+
+| Route | Gets you | Signup |
+|---|---|---|
+| **`inline_svg`** via AI assistant | Logos, favicons, icon packs — instant | None |
+| **Pollinations** (HTTP GET) | Flux-quality raster, RGB | None |
+| **Cloudflare Workers AI** | Flux-1-Schnell + SDXL, 10k neurons/day | Free token + account ID |
+| **HF Inference** | SDXL, SD3, Flux dev/schnell | Free read token |
+| **Stable Horde** | SDXL, Flux on community GPUs | Anonymous queue |
+| **Google AI Studio** (paste-only UI) | Nano Banana / Nano Banana Pro | Google account |
+
+Details + quotas: [Free paths beyond Pollinations](#free-paths-beyond-pollinations). Run `p2a doctor` or ask your assistant for `asset_doctor()` to see what's live right now.
+
+> [!TIP]
+> Stuck? Click **Install in Cursor** or **Install in VS Code** above, restart the editor, and say: _"make a favicon for my app, dark-mode aware."_
+
+---
+
+## Highlights
+
+- **[Three execution modes](#the-three-modes)** — `inline_svg` (host LLM authors SVG), `external_prompt_only` (paste into any web UI), `api` (server calls the routed provider). Pick what fits. All three finish on $0.
+- **[60+ models, one router](#the-router)** — gpt-image-1.5, Ideogram 3 Turbo, Recraft V4, Flux.2, Nano Banana Pro, Imagen 4, SDXL/SD3, plus free-tier Pollinations / HF / Horde / Cloudflare. Each rule cites a research source.
+- **[Refuses to do the wrong thing](#the-router)** — the `Never` column. No wordmarks past 3 words through a diffusion sampler. No transparent PNG through Imagen. No `negative_prompt` on Flux.
+- **[Offline platform fan-out](#platform-support)** — one 1024² master → iOS AppIconSet, Android adaptive + monochrome, PWA 192/512/512-maskable, favicon bundle, visionOS parallax, Flutter launcher. Zero network.
+- **[Validates before shipping](#security)** — tier-0 checks on every output: dims, alpha presence, checkerboard FFT, safe-zone bbox, ΔE2000 palette drift, WCAG contrast, OCR Levenshtein on wordmarks.
+- **[Sprite sheets + 9-slice](#mcp-tools)** — pack PNG frames into TexturePacker-compatible atlases (Phaser, PixiJS, Godot, Unity); emit 9-slice numbers + CSS `border-image` + Android `.9.png`.
 
 ---
 
@@ -160,7 +184,6 @@ Behind the scenes:
 
 Zero CLI typing. The CLI is still first-class for CI, shell scripts, and non-MCP environments — both surfaces hit the same core.
 
-<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
@@ -201,7 +224,6 @@ flowchart LR
 
 The host LLM picks the mode, or you do. The server surfaces `modes_available` so the assistant offers them to you. **Free paths first — always.**
 
-<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
@@ -251,7 +273,6 @@ Verified against [ai.google.dev/gemini-api/docs/pricing](https://ai.google.dev/g
 
 > Run `p2a doctor` (or ask your assistant for `asset_doctor()`) to see what's live in your environment right now.
 
-<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
@@ -309,7 +330,6 @@ Download the [`.mcpb` bundle](https://github.com/MohamedAbdallah-14/prompt-to-as
 
 Once registered, your assistant has the full **24 `asset_*` tool** surface.
 
-<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
@@ -457,7 +477,6 @@ The only thing that happens in a terminal is installing the package and putting 
 
 </details>
 
-<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
@@ -472,7 +491,6 @@ The only thing that happens in a terminal is installing the package and putting 
 | flutter_launcher_icons                   |         ✗          |          ✗          |                  ✓                  |     partial      |                     iOS + Android                      |
 | **`prompt-to-asset`**                    |         ✓          |   ✓ (60+ models)    | ✓ (Pollinations / HF / Horde / SVG) |        ✓         | ✓ (iOS + Android + PWA + visionOS + favicon + Flutter) |
 
-<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
@@ -520,7 +538,6 @@ SSOTs live in `skills/*/SKILL.md`, `rules/*.md`, `.claude-plugin/`, and `data/*.
 - **Common snags:** [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 - **Release notes:** [CHANGELOG.md](./CHANGELOG.md)
 
-<p align="right"><a href="#top">⬆ back to top</a></p>
 
 ---
 
