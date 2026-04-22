@@ -111,14 +111,14 @@ Supports OpenAI, Ideogram, Recraft, BFL/Flux, Gemini, Stability, Leonardo, fal.a
 
 You don't need a paid API key. Ranked best-first:
 
-| Route | Gets you | Signup |
-|---|---|---|
-| **`inline_svg`** via AI assistant | Logos, favicons, icon packs — instant | None |
-| **Pollinations** (HTTP GET) | Flux-quality raster, RGB | None |
-| **Cloudflare Workers AI** | Flux-1-Schnell + SDXL, 10k neurons/day | Free token + account ID |
-| **HF Inference** | SDXL, SD3, Flux dev/schnell | Free read token |
-| **Stable Horde** | SDXL, Flux on community GPUs | Anonymous queue |
-| **Google AI Studio** (paste-only UI) | Nano Banana / Nano Banana Pro | Google account |
+| Route                                | Gets you                               | Signup                  |
+| ------------------------------------ | -------------------------------------- | ----------------------- |
+| **`inline_svg`** via AI assistant    | Logos, favicons, icon packs — instant  | None                    |
+| **Pollinations** (HTTP GET)          | Flux-quality raster, RGB               | None                    |
+| **Cloudflare Workers AI**            | Flux-1-Schnell + SDXL, 10k neurons/day | Free token + account ID |
+| **HF Inference**                     | SDXL, SD3, Flux dev/schnell            | Free read token         |
+| **Stable Horde**                     | SDXL, Flux on community GPUs           | Anonymous queue         |
+| **Google AI Studio** (paste-only UI) | Nano Banana / Nano Banana Pro          | Google account          |
 
 Details + quotas: [Free paths beyond Pollinations](#free-paths-beyond-pollinations). Run `p2a doctor` or ask your assistant for `asset_doctor()` to see what's live right now.
 
@@ -184,7 +184,6 @@ Behind the scenes:
 
 Zero CLI typing. The CLI is still first-class for CI, shell scripts, and non-MCP environments — both surfaces hit the same core.
 
-
 ---
 
 ## Why this exists
@@ -223,7 +222,6 @@ flowchart LR
 | **`api`**                  | Optional | Server calls the provider directly. Works **zero-key via Pollinations / Horde / HF**, or with paid keys. Route → generate → matte → vectorize → export → validate → content-addressed bundle.                                                                                                    | Automation, CI, no rate-limit tolerance                        |
 
 The host LLM picks the mode, or you do. The server surfaces `modes_available` so the assistant offers them to you. **Free paths first — always.**
-
 
 ---
 
@@ -272,7 +270,6 @@ Verified against [ai.google.dev/gemini-api/docs/pricing](https://ai.google.dev/g
 </details>
 
 > Run `p2a doctor` (or ask your assistant for `asset_doctor()`) to see what's live in your environment right now.
-
 
 ---
 
@@ -329,7 +326,6 @@ Download the [`.mcpb` bundle](https://github.com/MohamedAbdallah-14/prompt-to-as
 </table>
 
 Once registered, your assistant has the full **24 `asset_*` tool** surface.
-
 
 ---
 
@@ -477,7 +473,6 @@ The only thing that happens in a terminal is installing the package and putting 
 
 </details>
 
-
 ---
 
 ## Comparison
@@ -490,7 +485,6 @@ The only thing that happens in a terminal is installing the package and putting 
 | appicon.co                               |         ✗          |          ✗          |                  ✓                  |     partial      |                        iOS only                        |
 | flutter_launcher_icons                   |         ✗          |          ✗          |                  ✓                  |     partial      |                     iOS + Android                      |
 | **`prompt-to-asset`**                    |         ✓          |   ✓ (60+ models)    | ✓ (Pollinations / HF / Horde / SVG) |        ✓         | ✓ (iOS + Android + PWA + visionOS + favicon + Flutter) |
-
 
 ---
 
@@ -537,7 +531,6 @@ SSOTs live in `skills/*/SKILL.md`, `rules/*.md`, `.claude-plugin/`, and `data/*.
 - **User on-ramp:** [GETTING_STARTED.md](./GETTING_STARTED.md)
 - **Common snags:** [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 - **Release notes:** [CHANGELOG.md](./CHANGELOG.md)
-
 
 ---
 
