@@ -2,7 +2,7 @@
 
 <a id="top"></a>
 
-<img src="./.github/assets/hero.svg" alt="prompt-to-asset — turn a one-line brief into a ship-ready asset bundle for iOS, Android, PWA, favicon, OG, and visionOS. Works with Claude Code, Cursor, Windsurf, VS Code. Zero API key required." width="100%" />
+<img src="./.github/assets/hero.gif" alt="prompt-to-asset demo — one prompt becomes a full favicon bundle in 20 seconds. Works with Claude Code, Cursor, Windsurf, VS Code. Zero API key required." width="100%" />
 
 <h1>prompt&#8209;to&#8209;asset</h1>
 
@@ -38,12 +38,6 @@ App icons, favicons, OG images, logos, splash screens, SVG — routed to the rig
   <a href="./GETTING_STARTED.md">Full guide</a> ·
   <a href="./CHANGELOG.md">Changelog</a>
 </sub>
-
-<br/>
-
-<video src="https://github.com/MohamedAbdallah-14/prompt-to-asset/raw/main/.github/assets/hero.mp4" poster="https://raw.githubusercontent.com/MohamedAbdallah-14/prompt-to-asset/main/.github/assets/hero.svg" controls autoplay muted loop playsinline width="100%"></video>
-
-<sub><i>20s, one prompt → full favicon bundle. No API key.</i></sub>
 
 </div>
 
