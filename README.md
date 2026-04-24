@@ -17,6 +17,7 @@ App icons, favicons, OG images, logos, splash screens, SVG — routed to the rig
   <a href="./LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-22d3ee.svg?style=flat"/></a>
   <a href="https://nodejs.org"><img alt="node" src="https://img.shields.io/badge/node-%E2%89%A520.11-10b981.svg?style=flat"/></a>
   <a href="https://modelcontextprotocol.io"><img alt="MCP" src="https://img.shields.io/badge/MCP-1.0-a78bfa.svg?style=flat"/></a>
+  <a href="https://glama.ai/mcp/servers/MohamedAbdallah-14/prompt-to-asset"><img alt="Glama score" src="https://glama.ai/mcp/servers/MohamedAbdallah-14/prompt-to-asset/badges/score.svg"/></a>
   <a href="#30-second-start"><img alt="zero-key" src="https://img.shields.io/badge/zero--key-ready-16a34a.svg?style=flat"/></a>
   <a href="https://github.com/MohamedAbdallah-14/prompt-to-asset/stargazers"><img alt="stars" src="https://img.shields.io/github/stars/MohamedAbdallah-14/prompt-to-asset?style=flat&color=f59e0b&logo=github"/></a>
 </p>
