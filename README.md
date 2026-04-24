@@ -39,6 +39,12 @@ App icons, favicons, OG images, logos, splash screens, SVG — routed to the rig
   <a href="./CHANGELOG.md">Changelog</a>
 </sub>
 
+<br/>
+
+<video src="https://github.com/MohamedAbdallah-14/prompt-to-asset/raw/main/.github/assets/hero.mp4" poster="https://raw.githubusercontent.com/MohamedAbdallah-14/prompt-to-asset/main/.github/assets/hero.svg" controls autoplay muted loop playsinline width="100%"></video>
+
+<sub><i>20s, one prompt → full favicon bundle. No API key.</i></sub>
+
 </div>
 
 ---
