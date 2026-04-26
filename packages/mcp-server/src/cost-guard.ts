@@ -29,11 +29,14 @@
 // model-registry.json which is versioned heavily.
 export const PRICE_TABLE_USD_PER_IMAGE: Record<string, number> = {
   // OpenAI — IDs must match data/model-registry.json exactly.
-  // gpt-image-2 high-quality 1024²: ~$0.21 per third-party reporting; verify
-  // against api.openai.com/pricing once OpenAI publishes the calculator output.
-  "gpt-image-2": 0.21,
+  // gpt-image-2: OpenAI has NOT yet listed this on api.openai.com/pricing
+  // (verified 2026-04-26). Third-party aggregators report ~$0.21/img high-
+  // quality 1024² mirroring gpt-image-1's ceiling. Using a conservative $0.25
+  // placeholder so the budget guard errs on the side of triggering early
+  // rather than under-charging. Update once OpenAI publishes the calculator.
+  "gpt-image-2": 0.25,
   "gpt-image-1": 0.19,
-  "gpt-image-1.5": 0.19,
+  "gpt-image-1.5": 0.133,
   "gpt-image-1-mini": 0.008,
   "dall-e-3": 0.08,
 
@@ -52,10 +55,14 @@ export const PRICE_TABLE_USD_PER_IMAGE: Record<string, number> = {
   "recraft-v3": 0.04,
   "recraft-v4": 0.08,
 
-  // Flux family
+  // Flux family — Flux 2 priced per-MP on fal: $0.03 first MP + $0.015/extra.
+  // 1024² = 1MP = $0.03, but ceiling-conservative $0.06 covers landscape too.
   "flux-pro": 0.05,
   "flux-kontext-pro": 0.05,
-  "flux-2": 0.08,
+  "flux-2": 0.06,
+  "flux-2-flex": 0.05,
+  "flux-2-dev": 0.012,
+  "flux-2-klein": 0.005,
   "flux-schnell": 0.003,
   "flux-dev": 0.025,
 
@@ -104,6 +111,16 @@ export const PRICE_TABLE_USD_PER_IMAGE: Record<string, number> = {
   "pixazo-flux-schnell": 0.0012,
   "pixazo-sdxl-base": 0,
   "pixazo-sd15-inpainting": 0,
+
+  // NVIDIA NIM — 1,000 requests/month free, no credit card. No paid tier on
+  // build.nvidia.com (overage simply rejects).
+  "nim-flux-1-dev": 0,
+  "nim-flux-1-schnell": 0,
+  "nim-flux-1-kontext-dev": 0,
+  "nim-flux-2-klein": 0,
+  "nim-sdxl-turbo": 0,
+  "nim-sd3.5-large": 0,
+  "nim-sana": 0,
 
   // Free tier / zero key — must match registry ids in data/model-registry.json
   "pollinations-flux": 0,

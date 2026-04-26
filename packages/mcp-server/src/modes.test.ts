@@ -133,6 +133,7 @@ describe("availability + selectMode", () => {
       fal: false,
       freepik: false,
       pixazo: false,
+      nvidia: false,
       huggingface: false,
       // Pollinations + Stable Horde are zero-key — on by default.
       pollinations: true,
