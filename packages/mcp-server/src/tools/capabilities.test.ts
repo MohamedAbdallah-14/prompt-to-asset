@@ -16,12 +16,17 @@ const KEYS = [
   "FREEPIK_API_KEY",
   "PIXAZO_API_KEY",
   "PIXAZO_SUBSCRIPTION_KEY",
+  "NVIDIA_API_KEY",
+  "NIM_API_KEY",
   "HF_TOKEN",
   "HUGGINGFACE_API_KEY",
   "CLOUDFLARE_API_TOKEN",
   "CLOUDFLARE_ACCOUNT_ID",
   "REPLICATE_API_TOKEN",
-  "REPLICATE_API_KEY"
+  "REPLICATE_API_KEY",
+  "POLLINATIONS_DISABLED",
+  "HORDE_DISABLED",
+  "PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL"
 ];
 
 describe("asset_capabilities", () => {
@@ -82,6 +87,7 @@ describe("asset_capabilities", () => {
       "pollinations",
       "stable-horde",
       "huggingface",
+      "nvidia-nim",
       "google-ai-studio",
       "cloudflare",
       "local-comfyui",
@@ -93,12 +99,42 @@ describe("asset_capabilities", () => {
     }
   });
 
+  it("does not advertise Imagen 4 as a free programmatic API route", async () => {
+    const caps = await capabilities({});
+    const joined = [caps.free_api.notes, ...caps.hints, ...caps.free_api.routes.map((r) => r.how + r.catch)].join(
+      "\n"
+    );
+    expect(joined).not.toMatch(/Imagen 4 via GEMINI_API_KEY.*25 RPD/i);
+    const studio = caps.free_api.routes.find((r) => r.id === "google-ai-studio");
+    expect(studio?.how).toMatch(/paste-only/i);
+    expect(studio?.catch).toMatch(/no free API tier/i);
+  });
+
+  it("treats GEMINI_API_KEY as paid image API, not a free programmatic route", async () => {
+    process.env["POLLINATIONS_DISABLED"] = "1";
+    process.env["HORDE_DISABLED"] = "1";
+    process.env["GEMINI_API_KEY"] = "gemini-test";
+    const caps = await capabilities({});
+    expect(caps.api.available).toBe(true);
+    expect(caps.api.providers.google).toBe(true);
+    expect(caps.free_api.available).toBe(false);
+    const joined = [caps.free_api.notes, ...caps.hints, ...caps.free_api.routes.map((r) => r.how + r.catch)].join(
+      "\n"
+    );
+    expect(joined).not.toMatch(/Imagen 4 via GEMINI_API_KEY.*free/i);
+    expect(joined).toMatch(/Google image APIs.*paid-only|Programmatic image-gen via GEMINI_API_KEY requires billing/i);
+  });
+
   it("providers_registered mirrors the model registry and reports key_set", async () => {
     const caps = await capabilities({});
     const gptImage = caps.providers_registered.find((p) => p.id === "gpt-image-1");
     expect(gptImage).toBeTruthy();
     expect(gptImage!.provider_key_env).toBe("OPENAI_API_KEY");
     expect(gptImage!.key_set).toBe(false);
+    const nim = caps.providers_registered.find((p) => p.id === "nim-flux-1-dev");
+    expect(nim).toBeTruthy();
+    expect(nim!.provider_key_env).toBe("NVIDIA_API_KEY");
+    expect(nim!.provider_key_env_aliases).toEqual(["NIM_API_KEY"]);
   });
 
   it("narrows modes_by_asset_type when asset_type is passed", async () => {

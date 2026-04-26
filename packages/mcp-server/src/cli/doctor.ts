@@ -231,7 +231,9 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
   lines.push("Modes available right now");
   lines.push("  inline_svg            always — requires only a host LLM.");
   lines.push("  external_prompt_only  always — any web UI works.");
-  lines.push(`  api (free)            ${anyFree ? "yes (Pollinations / Horde / HF on)" : "no"}`);
+  lines.push(
+    `  api (free)            ${anyFree ? "yes (Cloudflare / NVIDIA NIM / HF / Horde / Pollinations depending on keys)" : "no"}`
+  );
   lines.push(
     `  api (paid)            ${anyPaid ? "yes (≥1 paid provider key set)" : "no — optional; set a key to enable"}`
   );

@@ -6,9 +6,9 @@
 
 <h1>prompt&#8209;to&#8209;asset</h1>
 
-<p><b>One brief → a validated, ship-ready asset bundle.</b><br/>
-App icons, favicons, OG images, logos, splash screens, SVG — routed to the right model, matted, vectorized, and fanned out to every platform.<br/>
-<b>Works with or without an API key.</b></p>
+<p><b>Free image generation for developers, from the CLI or your AI assistant.</b><br/>
+Turn one brief into app icons, favicons, OG images, logos, splash screens, SVG, and platform bundles using the best zero-cost routes first.<br/>
+<b>Built for Cloudflare Workers AI, NVIDIA NIM, HF Inference, Stable Horde, Pollinations, free trials, and offline SVG.</b></p>
 
 <p>
   <a href="https://www.npmjs.com/package/prompt-to-asset"><img alt="npm" src="https://img.shields.io/npm/v/prompt-to-asset?style=flat&color=cb3837&logo=npm&logoColor=white&label=npm"/></a>
@@ -34,7 +34,7 @@ App icons, favicons, OG images, logos, splash screens, SVG — routed to the rig
   <a href="#free-paths-at-a-glance">Free paths</a> ·
   <a href="#usage">Usage</a> ·
   <a href="#the-three-modes">Modes</a> ·
-  <a href="#the-router">Router</a> ·
+  <a href="#free-paths-beyond-pollinations">Free APIs</a> ·
   <a href="#mcp-tools">MCP tools</a> ·
   <a href="./GETTING_STARTED.md">Full guide</a> ·
   <a href="./CHANGELOG.md">Changelog</a>
@@ -89,9 +89,9 @@ Outputs: iOS AppIconSet, Android adaptive, PWA, favicon bundle, visionOS scaffol
 </td>
 <td width="33%" valign="top">
 
-### 🟣 CLI · with an API key
+### 🟣 CLI · free API keys
 
-For CI and no rate limits.
+Best CLI experience: free tokens first, paid keys optional.
 
 ```bash
 npm i -g prompt-to-asset
@@ -100,7 +100,7 @@ p2a doctor --fix    # auto-install deps
 p2a pick            # interactive
 ```
 
-Supports OpenAI, Ideogram, Recraft, BFL/Flux, Gemini, Stability, Leonardo, fal.ai.
+Start with Cloudflare Workers AI, NVIDIA NIM, HF Inference, Stable Horde, and free trials. Paid providers remain optional fallbacks.
 
 </td>
 </tr>
@@ -115,10 +115,11 @@ You don't need a paid API key. Ranked best-first:
 | Route                                | Gets you                               | Signup                  |
 | ------------------------------------ | -------------------------------------- | ----------------------- |
 | **`inline_svg`** via AI assistant    | Logos, favicons, icon packs — instant  | None                    |
-| **Pollinations** (HTTP GET)          | Flux-quality raster, RGB               | None                    |
 | **Cloudflare Workers AI**            | Flux-1-Schnell + SDXL, 10k neurons/day | Free token + account ID |
+| **NVIDIA NIM**                       | Flux.1-dev, Flux.2-klein, SDXL, SANA   | Free token, no card     |
 | **HF Inference**                     | SDXL, SD3, Flux dev/schnell            | Free read token         |
 | **Stable Horde**                     | SDXL, Flux on community GPUs           | Anonymous queue         |
+| **Pollinations** (HTTP GET)          | Last-resort raster, RGB                | None                    |
 | **Google AI Studio** (paste-only UI) | Nano Banana / Nano Banana Pro          | Google account          |
 
 Details + quotas: [Free paths beyond Pollinations](#free-paths-beyond-pollinations). Run `p2a doctor` or ask your assistant for `asset_doctor()` to see what's live right now.
@@ -130,8 +131,9 @@ Details + quotas: [Free paths beyond Pollinations](#free-paths-beyond-pollinatio
 
 ## Highlights
 
-- **[Three execution modes](#the-three-modes)** — `inline_svg` (host LLM authors SVG), `external_prompt_only` (paste into any web UI), `api` (server calls the routed provider). Pick what fits. All three finish on $0.
-- **[60+ models, one router](#the-router)** — gpt-image-1.5, Ideogram 3 Turbo, Recraft V4, Flux.2, Nano Banana Pro, Imagen 4, SDXL/SD3, plus free-tier Pollinations / HF / Horde / Cloudflare. Each rule cites a research source.
+- **Free CLI-first generation** — `p2a doctor`, `p2a pick`, and the MCP tools rank free API routes before paid models, so developers can generate inside the CLI without enabling billing.
+- **[Three execution modes](#the-three-modes)** — `inline_svg` (host LLM authors SVG), `external_prompt_only` (paste into any web UI), `api` (server calls a free or paid provider). Pick what fits. All three can finish on $0.
+- **[60+ models, free-first routing](#the-router)** — Cloudflare Workers AI, NVIDIA NIM, HF, Horde, Pollinations, free trials, plus optional paid OpenAI / Ideogram / Recraft / BFL / Gemini. Each rule cites a research source.
 - **[Refuses to do the wrong thing](#the-router)** — the `Never` column. No wordmarks past 3 words through a diffusion sampler. No transparent PNG through Imagen. No `negative_prompt` on Flux.
 - **[Offline platform fan-out](#platform-support)** — one 1024² master → iOS AppIconSet, Android adaptive + monochrome, PWA 192/512/512-maskable, favicon bundle, visionOS parallax, Flutter launcher. Zero network.
 - **[Validates before shipping](#security)** — tier-0 checks on every output: dims, alpha presence, checkerboard FFT, safe-zone bbox, ΔE2000 palette drift, WCAG contrast, OCR Levenshtein on wordmarks.
@@ -236,9 +238,9 @@ Router decisions live in [`data/routing-table.json`](./data/routing-table.json).
 | Logo with 1–3 word text  | Ideogram 3 Turbo → `gpt-image-1.5` → Recraft V4                 | Composite SVG type over mark                            | Imagen, SD 1.5, `flux-schnell`     |
 | Logo with >3 word text   | **Never a diffusion sampler.** Mark + SVG typography composite. | —                                                       | —                                  |
 | Native SVG               | Recraft V4 (V3 for brand-style pipelines)                       | `inline_svg` (host LLM authors SVG)                     | Everyone else                      |
-| Photoreal hero           | Flux Pro / Flux.2 → `gpt-image-1.5` → Gemini 2.5 Flash Image    | SDXL + brand LoRA                                       | DALL·E 3, Imagen 4 (deprecated)    |
+| Photoreal hero           | Free CLI route first: Cloudflare / NVIDIA NIM / HF              | Flux Pro / `gpt-image-1.5` / Gemini with paid keys      | DALL·E 3, Imagen 4 for new work    |
 | Iterate an existing mark | `flux-kontext-pro` (edit-only)                                  | Pollinations Kontext (free)                             | —                                  |
-| Zero-key everything      | Pollinations (Flux) → `inline_svg`                              | Stable Horde → HF Inference → paste-only                | —                                  |
+| Zero-cost everything     | `inline_svg` → Cloudflare / NVIDIA NIM / HF / Horde             | Pollinations → paste-only                               | —                                  |
 
 The **Never** column matters. It's why `prompt-to-asset` refuses to render wordmarks past 3 words in any diffusion sampler, and why asking for a transparent PNG never goes to Imagen.
 
@@ -249,9 +251,10 @@ The **Never** column matters. It's why `prompt-to-asset` refuses to render wordm
 | Option                     | How                                            | Best at                           | Catch                                                                |
 | -------------------------- | ---------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- |
 | **Cloudflare Workers AI**  | Free API token + account ID                    | Flux-1-Schnell, SDXL, DreamShaper | 10k neurons/day cap (~900 Flux-Schnell or 5k SDXL-Lightning)         |
+| **NVIDIA NIM**             | Free API token, no card                        | Flux.1-dev, Flux.2-klein, SDXL, SANA | 1k requests/month; strong free CLI route                         |
 | **HF Inference**           | Free read token                                | SDXL, SD3, Flux dev + schnell     | Rate-limited, cold-start latency                                     |
-| **Pollinations.ai**        | `curl` → HTTP GET. No signup.                  | Flux-quality raster, instantly    | ~1 req / 15s anonymous, RGB only                                     |
 | **Stable Horde**           | Anonymous kudos queue                          | SDXL, Flux community GPUs         | Minutes of queue on the free lane                                    |
+| **Pollinations.ai**        | `curl` → HTTP GET. No signup.                  | Throwaway raster                  | Last resort: silent model swaps, downsizing, RGB only                |
 | **Google AI Studio (UI)**  | Free interactive web UI at aistudio.google.com | Nano Banana / Nano Banana Pro     | No free API — paste-only; download PNG, call `asset_ingest_external` |
 | **Local ComfyUI**          | Community `comfyui-mcp` adapter                | Full fidelity, no caps            | You bring the GPU                                                    |
 | **`inline_svg`**           | Host LLM emits `<svg>` in chat                 | Logos, favicons, simple icons     | ≤40 paths; simple geometry                                           |
@@ -260,10 +263,10 @@ The **Never** column matters. It's why `prompt-to-asset` refuses to render wordm
 <details>
 <summary><b>Google Gemini / Imagen — verified pricing (Apr 2026)</b></summary>
 
-Verified 2026-04-26 against the AI Studio rate-limit dashboard:
+Verified 2026-04-26 against public Gemini API pricing:
 
-- **Imagen 4 has a free API tier.** `imagen-4.0-generate-preview`, `imagen-4.0-fast-generate-preview`, and `imagen-4.0-ultra-generate-preview` each show 0/25 RPD on the free tier (RPM/TPM not capped — only daily request count). Total ~75 free images/day across the Imagen 4 line on a single project. Imagen 4 Fast is the cheapest free Gemini illustration route.
-- **Nano Banana family is paid-only.** `gemini-3.1-flash-image-preview` (Nano Banana 2), `gemini-3-pro-image-preview` (Nano Banana Pro), `gemini-2.5-flash-image` (original Nano Banana) all show 0/0 across RPM/TPM/RPD on the free tier dashboard. Lyria 3 (Clip/Pro) and Veo 3 (Generate/Fast/Lite) are also 0/0. Billing must be enabled on the GCP project to use these via API.
+- **Imagen 4 image output is paid API.** The pricing table lists Free Tier as "Not available" and prices Fast / Standard / Ultra at $0.02 / $0.04 / $0.06 per image.
+- **Nano Banana family is paid API.** `gemini-3.1-flash-image-preview` (Nano Banana 2), `gemini-3-pro-image-preview` (Nano Banana Pro), and `gemini-2.5-flash-image` (original Nano Banana) list image output only in the paid tier. Billing must be enabled on the GCP project to use these via API.
 - **Free for text, multimodal understanding, and embeddings.** The Gemini text-out models still have `Free of charge` input + output on the free tier.
 - **Free interactive image generation is also via the AI Studio web UI** at [aistudio.google.com](https://aistudio.google.com). Community-observed limit 500–1,000 images/day, dynamic. Use `external_prompt_only` + `asset_ingest_external` if you want Nano Banana quality without billing.
 - **Free image generation via the Gemini consumer app** at [gemini.google.com](https://gemini.google.com): Basic 20/day, AI Plus 50/day, AI Pro 100/day, Ultra 1,000/day.

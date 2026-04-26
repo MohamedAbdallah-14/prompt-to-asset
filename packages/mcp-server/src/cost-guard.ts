@@ -8,8 +8,10 @@
  * prudent.
  *
  * Policy: each api-mode tool computes an estimate BEFORE calling the
- * provider. If the estimate exceeds `P2A_MAX_SPEND_USD_PER_RUN`, the tool
- * throws `CostBudgetExceededError` with a clear message. Default: no cap
+ * provider. Free/zero-cost providers still go through the estimator with $0
+ * pricing so logs stay consistent. If the estimate exceeds
+ * `P2A_MAX_SPEND_USD_PER_RUN`, the tool throws `CostBudgetExceededError` with
+ * a clear message. Default: no cap
  * (we don't want to break existing users), but we surface the env var
  * prominently in `p2a doctor` so it's easy to opt in.
  *

@@ -208,7 +208,7 @@ export function chooseApiTargetOrFallback(
   plan.warnings.unshift(
     `mode=api requested, but neither ${spec.target_model} nor any fallback has a reachable API right now. ` +
       `Returning an external_prompt_only plan so you can paste the rewritten prompt into one of the listed targets. ` +
-      `To enable api mode, set a provider key (OPENAI_API_KEY / IDEOGRAM_API_KEY / RECRAFT_API_KEY / BFL_API_KEY / GEMINI_API_KEY / STABILITY_API_KEY / LEONARDO_API_KEY / FAL_API_KEY / HF_TOKEN / REPLICATE_API_TOKEN / CLOUDFLARE_API_TOKEN) and re-run.`
+      `To enable api mode, set a free or paid provider key (CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID / NVIDIA_API_KEY / HF_TOKEN / OPENAI_API_KEY / IDEOGRAM_API_KEY / RECRAFT_API_KEY / BFL_API_KEY / GEMINI_API_KEY / STABILITY_API_KEY / LEONARDO_API_KEY / FAL_API_KEY / FREEPIK_API_KEY / PIXAZO_API_KEY / REPLICATE_API_TOKEN) and re-run.`
   );
   return { kind: "external", plan };
 }

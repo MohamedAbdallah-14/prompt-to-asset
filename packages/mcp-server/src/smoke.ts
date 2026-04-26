@@ -175,6 +175,7 @@ const checks: Check[] = [
         "pollinations",
         "stable-horde",
         "huggingface",
+        "nvidia-nim",
         "google-ai-studio",
         "cloudflare"
       ]) {

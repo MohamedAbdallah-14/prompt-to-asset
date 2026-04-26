@@ -112,23 +112,10 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
   };
 
   // Free-tier routes, ranked best-first (same order as CLI doctor).
-  // NOTE 2026-04-26 (verified against the user's own AI Studio rate-limit dashboard):
-  // The Gemini free-tier image story is split. Imagen 4 is back on free tier:
-  //   - imagen-4.0-generate-preview      0/25 RPD
-  //   - imagen-4.0-fast-generate-preview 0/25 RPD
-  //   - imagen-4.0-ultra-generate-preview 0/25 RPD
-  // (RPM and TPM are not capped on Imagen — only the daily request count.)
-  // Nano Banana family stays paid-only on the free tier project:
-  //   - gemini-2.5-flash-image (Nano Banana)        0/0
-  //   - gemini-3.1-flash-image-preview (Nano Banana 2)  0/0
-  //   - gemini-3-pro-image-preview (Nano Banana Pro)    0/0
-  // Lyria 3 and Veo 3 (all variants) also show 0/0 — paid-only.
-  // AI Studio web UI is still free for interactive generation (~500-1000 img/day
-  // dynamic) — see paste_only_providers below. Gemini consumer app Basic: 20
-  // img/day with Nano Banana 2, AI Plus: 50, AI Pro: 100, Ultra: 1000 (Google
-  // help page, Mar 2026). Cloudflare Workers AI is still the top-ranked free
-  // programmatic API route for Flux-Schnell / SDXL volume; Imagen 4 Fast at
-  // 25 RPD is now a real second option for users with GEMINI_API_KEY.
+  // NOTE 2026-04-26: public Gemini API pricing lists no free image-output
+  // tier for Imagen 4 or Nano Banana. Google AI Studio remains a free
+  // interactive paste-only route; programmatic free CLI generation should start
+  // with Cloudflare, NVIDIA NIM, HF, Horde, then Pollinations as last resort.
   const freeRanked: Array<{ rank: number; id: string; live: boolean; note: string }> = [
     {
       rank: 1,
@@ -138,21 +125,27 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
     },
     {
       rank: 2,
-      id: "huggingface",
-      live: Boolean(avail["huggingface"]),
-      note: "HF Inference — hosted SD/SDXL/Flux-schnell on a free read token. HF_TOKEN, no credit card."
+      id: "nvidia-nim",
+      live: Boolean(avail["nvidia"]),
+      note: "NVIDIA NIM — Flux.1-dev / Flux.2-klein / SDXL Turbo / SD 3.5 Large / SANA, 1k requests/month free. NVIDIA_API_KEY, no credit card."
     },
     {
       rank: 3,
-      id: "pollinations",
-      live: Boolean(avail["pollinations"]),
-      note: "Pollinations — zero signup, rate-limited (~1 req/15s anonymous). Silently swaps models per request."
+      id: "huggingface",
+      live: Boolean(avail["huggingface"]),
+      note: "HF Inference — hosted SD/SDXL/Flux-schnell on a free read token. HF_TOKEN, no credit card."
     },
     {
       rank: 4,
       id: "stable-horde",
       live: Boolean(avail.horde),
       note: "Stable Horde — community GPUs, anonymous queue can be long."
+    },
+    {
+      rank: 5,
+      id: "pollinations",
+      live: Boolean(avail["pollinations"]),
+      note: "Pollinations — zero signup, rate-limited (~1 req/15s anonymous). Last resort: silent model swaps and variable quality."
     }
   ];
 
@@ -167,6 +160,8 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
     { id: "stability", key_set: avail.stability, note: paidHint("stability") },
     { id: "leonardo", key_set: avail.leonardo, note: paidHint("leonardo") },
     { id: "fal", key_set: avail.fal, note: paidHint("fal") },
+    { id: "freepik", key_set: Boolean(avail["freepik"]), note: paidHint("freepik") },
+    { id: "pixazo", key_set: Boolean(avail["pixazo"]), note: paidHint("pixazo") },
     { id: "replicate", key_set: avail.replicate, note: paidHint("replicate") },
     { id: "comfyui", key_set: avail.comfyui, note: paidHint("comfyui") }
   ];
@@ -191,7 +186,7 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
   // An unbilled GEMINI_API_KEY returns 429 with limit:0, so treating it as
   // "live free" misleads the host LLM into picking a route that cannot run.
   const anyFree = Boolean(
-    avail.huggingface || avail.cloudflare || avail.pollinations || avail.horde
+    avail.huggingface || avail.cloudflare || avail["nvidia"] || avail.pollinations || avail.horde
   );
 
   const modes_available = {
@@ -222,7 +217,7 @@ export async function doctor(input: DoctorInputT): Promise<DoctorResult> {
     }
     if (avail["google"]) {
       what_to_try_next.push(
-        "GEMINI_API_KEY is set. Imagen 4 (Generate / Fast / Ultra) is on the free tier at 25 RPD each (~75 free images/day across the line) — Imagen 4 Fast is a real free programmatic illustration route alongside Cloudflare Workers AI. Nano Banana family (gemini-2.5-flash-image $0.039/img, gemini-3.1-flash-image-preview $0.067-$0.151/img 1K-4K, gemini-3-pro-image-preview $0.134-$0.24/img 1K-4K) stays paid-only — enable billing on the GCP project to unlock. For free Nano-Banana-quality output: paste into AI Studio web UI (https://aistudio.google.com) → asset_ingest_external, or use the Gemini consumer app (Basic 20 img/day, AI Plus 50, AI Pro 100, Ultra 1000)."
+        "GEMINI_API_KEY is set, but Google image output is paid API usage. Enable billing for Imagen 4 or Nano Banana, or keep Google as paste-only via AI Studio web UI (https://aistudio.google.com) → asset_ingest_external."
       );
     }
   } else {
@@ -261,7 +256,7 @@ function paidHint(name: string): string {
     case "openai":
       return "gpt-image-1 / gpt-image-1.5 / dall-e-3 — best transparent PNG + text rendering";
     case "google":
-      return "Gemini 3 Flash Image (Nano Banana / Nano Banana 2) / Nano Banana Pro / Imagen 4 — Imagen 4 Generate/Fast/Ultra are on the free tier at 25 RPD each (verified from AI Studio dashboard, 2026-04-26); Nano Banana family is paid-only (enable billing on the GCP project). Paid: Nano Banana $0.039, Nano Banana 2 $0.067-$0.151 (1K-4K), Nano Banana Pro $0.134-$0.24 (1K-4K), Imagen 4 Fast $0.02 (only above 25/day). AI Studio web UI (https://aistudio.google.com) is free but paste-only (~500-1000 img/day dynamic).";
+      return "Gemini 3 Flash Image (Nano Banana / Nano Banana 2) / Nano Banana Pro / Imagen 4 — paid API image output. Paid: Nano Banana $0.039, Nano Banana 2 $0.067-$0.151 (1K-4K), Nano Banana Pro $0.134-$0.24 (1K-4K), Imagen 4 Fast/Standard/Ultra $0.02/$0.04/$0.06. AI Studio web UI (https://aistudio.google.com) is free but paste-only.";
     case "ideogram":
       return "Ideogram 3 / 3 Turbo — best-in-class wordmark rendering";
     case "recraft":
@@ -275,6 +270,10 @@ function paidHint(name: string): string {
       return "Phoenix 1.0 + SDXL presets";
     case "fal":
       return "fal.ai aggregator — alt path for Flux and SDXL";
+    case "freepik":
+      return "Freepik — Mystic / Flux / native icon SVG / remove-background. 5 EUR free trial, no credit card.";
+    case "pixazo":
+      return "Pixazo — free tier exists but Appy Pie LLP claims output ownership on free-tier generations; paid tier transfers ownership.";
     case "replicate":
       return "Replicate aggregator — Flux 1.1 Pro, Recraft V3, Ideogram V3, SDXL behind one key";
     case "comfyui":

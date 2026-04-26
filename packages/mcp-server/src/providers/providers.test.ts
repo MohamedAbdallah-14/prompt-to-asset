@@ -11,6 +11,9 @@ import { FalProvider } from "./fal.js";
 import { HuggingFaceProvider } from "./huggingface.js";
 import { CloudflareProvider } from "./cloudflare.js";
 import { ReplicateProvider } from "./replicate.js";
+import { FreepikProvider } from "./freepik.js";
+import { PixazoProvider } from "./pixazo.js";
+import { NvidiaNimProvider } from "./nvidia-nim.js";
 import { PollinationsProvider } from "./pollinations.js";
 import { StableHordeProvider } from "./stable-horde.js";
 import { ComfyUiProvider } from "./comfyui.js";
@@ -47,6 +50,7 @@ interface FetchCall {
   method: string;
   headers: Record<string, string>;
   body: string | undefined;
+  rawBody: BodyInit | null | undefined;
 }
 
 /** Queue-of-responses fetch mock. Each fetch() call consumes the head of the queue. */
@@ -64,7 +68,8 @@ function createFetchMock(responses: ResponseSpec[]): { mock: typeof fetch; calls
       url,
       method: init?.method ?? "GET",
       headers,
-      body: typeof init?.body === "string" ? init.body : undefined
+      body: typeof init?.body === "string" ? init.body : undefined,
+      rawBody: init?.body
     });
     const spec = queue.shift();
     if (!spec) throw new Error(`unexpected fetch call: ${url}`);
@@ -215,8 +220,7 @@ describe("OpenAIProvider", () => {
     try {
       const result = await OpenAIProvider.generate("gpt-image-1", {
         ...baseReq,
-        transparency: true,
-        reference_images: ["https://example/ref.png"]
+        transparency: true
       });
       expect(result.image.equals(PNG_BYTES)).toBe(true);
       expect(result.native_rgba).toBe(true);
@@ -228,7 +232,36 @@ describe("OpenAIProvider", () => {
       expect(body.background).toBe("transparent");
       expect(body.output_format).toBe("png");
       expect(body.size).toBe("1024x1024");
-      expect(body.input_image).toEqual(["https://example/ref.png"]);
+    } finally {
+      restore();
+    }
+  });
+
+  it("uses the edits endpoint when OpenAI reference images are provided", async () => {
+    setKey("openai", "sk-xxx");
+    const { calls, restore } = installFetch(
+      { kind: "buffer", body: PNG_BYTES, contentType: "image/png" },
+      {
+        kind: "json",
+        body: { data: [{ b64_json: PNG_B64 }] }
+      }
+    );
+    try {
+      const result = await OpenAIProvider.generate("gpt-image-2", {
+        ...baseReq,
+        reference_images: ["https://example.com/reference.png"]
+      });
+      expect(result.image.equals(PNG_BYTES)).toBe(true);
+      expect(calls[0]!.url).toBe("https://example.com/reference.png");
+      expect(calls[1]!.url).toBe("https://api.openai.com/v1/images/edits");
+      expect(calls[1]!.headers["Content-Type"]).toBeUndefined();
+      const form = calls[1]!.rawBody as FormData;
+      expect(form.get("model")).toBe("gpt-image-2");
+      expect(form.get("prompt")).toBe(baseReq.prompt);
+      expect(form.get("size")).toBe("1024x1024");
+      const image = form.get("image[]");
+      expect(image).toBeInstanceOf(Blob);
+      expect((image as Blob).type).toBe("image/png");
     } finally {
       restore();
     }
@@ -251,6 +284,25 @@ describe("OpenAIProvider", () => {
       expect(JSON.parse(calls[1]!.body!).size).toBe("1024x1536");
       expect(JSON.parse(calls[2]!.body!).size).toBe("1792x1024");
       expect(JSON.parse(calls[3]!.body!).size).toBe("1024x1792");
+    } finally {
+      restore();
+    }
+  });
+
+  it("uses documented gpt-image-2 size constraints", async () => {
+    setKey("openai", "sk-xxx");
+    const { calls, restore } = installFetch(
+      { kind: "json", body: { data: [{ b64_json: PNG_B64 }] } },
+      { kind: "json", body: { data: [{ b64_json: PNG_B64 }] } },
+      { kind: "json", body: { data: [{ b64_json: PNG_B64 }] } }
+    );
+    try {
+      await OpenAIProvider.generate("gpt-image-2", { ...baseReq, width: 4096, height: 4096 });
+      await OpenAIProvider.generate("gpt-image-2", { ...baseReq, width: 4096, height: 2304 });
+      await OpenAIProvider.generate("gpt-image-2", { ...baseReq, width: 2304, height: 4096 });
+      expect(JSON.parse(calls[0]!.body!).size).toBe("2048x2048");
+      expect(JSON.parse(calls[1]!.body!).size).toBe("3840x2160");
+      expect(JSON.parse(calls[2]!.body!).size).toBe("2160x3840");
     } finally {
       restore();
     }
@@ -337,15 +389,15 @@ describe("GoogleProvider", () => {
       },
       {
         kind: "json",
-        body: { candidates: [{ content: { parts: [{ inlineData: { data: PNG_B64 } }] } }] }
+        body: { predictions: [{ bytesBase64Encoded: PNG_B64 }] }
       },
       {
         kind: "json",
-        body: { candidates: [{ content: { parts: [{ inlineData: { data: PNG_B64 } }] } }] }
+        body: { predictions: [{ bytesBase64Encoded: PNG_B64 }] }
       },
       {
         kind: "json",
-        body: { candidates: [{ content: { parts: [{ inlineData: { data: PNG_B64 } }] } }] }
+        body: { predictions: [{ bytesBase64Encoded: PNG_B64 }] }
       }
     );
     try {
@@ -358,10 +410,10 @@ describe("GoogleProvider", () => {
       await GoogleProvider.generate("imagen-4", baseReq);
       await GoogleProvider.generate("imagen-4", { ...baseReq, width: 1900, height: 1000 });
       expect(calls[0]!.url).toContain("gemini-3-pro-image-preview");
-      expect(calls[1]!.url).toContain("imagen-3.0-generate-002");
-      expect(calls[2]!.url).toContain("imagen-4.0-generate-001");
-      expect(JSON.parse(calls[1]!.body!).generationConfig.imageConfig.aspectRatio).toBe("4:3");
-      expect(JSON.parse(calls[3]!.body!).generationConfig.imageConfig.aspectRatio).toBe("16:9");
+      expect(calls[1]!.url).toContain("imagen-3.0-generate-002:predict");
+      expect(calls[2]!.url).toContain("imagen-4.0-generate-001:predict");
+      expect(JSON.parse(calls[1]!.body!).parameters.aspectRatio).toBe("4:3");
+      expect(JSON.parse(calls[3]!.body!).parameters.aspectRatio).toBe("16:9");
     } finally {
       restore();
     }
@@ -369,16 +421,14 @@ describe("GoogleProvider", () => {
 
   it("surfaces the free-tier hint on 429 limit:0 and on empty response", async () => {
     setKey("google", "goog-xxx");
-    // Imagen 4 has a 25 RPD free tier — limit:0 means project misconfigured or quota exhausted.
+    // Imagen 4 image output is paid API; limit:0 should not trigger retry loops.
     let handle = installFetch({
       kind: "text",
       status: 429,
       body: JSON.stringify({ error: { details: [{ quotaValue: "limit: 0" }] } })
     });
     try {
-      await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(
-        /Imagen 4.*25 RPD/
-      );
+      await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(/Imagen 4.*paid API/);
     } finally {
       handle.restore();
     }
@@ -395,9 +445,9 @@ describe("GoogleProvider", () => {
     } finally {
       handle.restore();
     }
-    handle = installFetch({ kind: "json", body: { candidates: [] } });
+    handle = installFetch({ kind: "json", body: { predictions: [] } });
     try {
-      await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(/no inline image/);
+      await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(/no Imagen image/);
     } finally {
       handle.restore();
     }
@@ -1388,15 +1438,72 @@ describe("paste-only providers", () => {
   });
 });
 
+// ── Free/free-trial provider adapters ─────────────────────────────────────────
+
+describe("free and trial provider adapters", () => {
+  it("Freepik remove-background uses the synchronous beta form endpoint", async () => {
+    setKey("freepik", "fp-xxx");
+    const { calls, restore } = installFetch({ kind: "buffer", body: PNG_BYTES });
+    try {
+      const result = await FreepikProvider.generate("freepik-remove-bg", {
+        ...baseReq,
+        reference_images: ["https://example.com/source.png"]
+      });
+      expect(result.native_rgba).toBe(true);
+      expect(result.image.equals(PNG_BYTES)).toBe(true);
+      expect(calls[0]!.url).toBe("https://api.freepik.com/v1/ai/beta/remove-background");
+      expect(calls[0]!.headers["Content-Type"]).toBe("application/x-www-form-urlencoded");
+      expect(calls[0]!.body).toContain("image=https%3A%2F%2Fexample.com%2Fsource.png");
+    } finally {
+      restore();
+    }
+  });
+
+  it("Pixazo Flux Schnell uses the documented get-image operation", async () => {
+    setKey("pixazo", "pix-xxx");
+    const { calls, restore } = installFetch(
+      { kind: "json", body: { output: "https://pixazo/out.png" } },
+      { kind: "buffer", body: PNG_BYTES }
+    );
+    try {
+      const result = await PixazoProvider.generate("pixazo-flux-schnell", baseReq);
+      expect(result.image.equals(PNG_BYTES)).toBe(true);
+      expect(calls[0]!.url).toBe("https://gateway.pixazo.ai/flux-1-schnell/v1/get-image");
+    } finally {
+      restore();
+    }
+  });
+});
+
 // ── Registry / dispatcher ─────────────────────────────────────────────────────
 
 describe("provider registry", () => {
   it("findProvider routes ids to owning providers", () => {
+    expect(findProvider("gpt-image-2")?.name).toBe("openai");
     expect(findProvider("gpt-image-1")?.name).toBe("openai");
     expect(findProvider("imagen-4")?.name).toBe("google");
     expect(findProvider("recraft-v4")?.name).toBe("recraft");
+    expect(findProvider("freepik-text-to-icon")?.name).toBe("freepik");
+    expect(findProvider("pixazo-flux-schnell")?.name).toBe("pixazo");
+    expect(findProvider("nim-flux-1-dev")?.name).toBe("nvidia-nim");
     expect(findProvider("midjourney-v7")?.name).toBe("midjourney");
     expect(findProvider("unknown-foo")).toBeUndefined();
+  });
+
+  it("new free/trial provider adapters expose availability and dry-run behavior", async () => {
+    expect(FreepikProvider.supportsModel("freepik-text-to-icon")).toBe(true);
+    expect(PixazoProvider.supportsModel("pixazo-flux-schnell")).toBe(true);
+    expect(NvidiaNimProvider.supportsModel("nim-flux-1-dev")).toBe(true);
+    (CONFIG as { dryRun: boolean }).dryRun = true;
+    await expect(FreepikProvider.generate("freepik-text-to-icon", baseReq)).resolves.toMatchObject({
+      model: "freepik-text-to-icon"
+    });
+    await expect(PixazoProvider.generate("pixazo-flux-schnell", baseReq)).resolves.toMatchObject({
+      model: "pixazo-flux-schnell"
+    });
+    await expect(NvidiaNimProvider.generate("nim-flux-1-dev", baseReq)).resolves.toMatchObject({
+      model: "nim-flux-1-dev"
+    });
   });
 
   it("generate() surfaces ProviderError for unknown model ids", async () => {
@@ -1411,6 +1518,7 @@ describe("provider registry", () => {
     expect(isPasteOnlyModel("nonexistent")).toBe(false);
     expect(new Set(PASTE_ONLY_PROVIDERS)).toEqual(new Set(["midjourney", "adobe", "krea"]));
     expect(FREE_TIER_PROVIDERS).toContain("pollinations");
+    expect(FREE_TIER_PROVIDERS).toContain("nvidia-nim");
   });
 
   it("resolveGenerateTarget picks the first available non-paste-only model", () => {
@@ -1435,6 +1543,9 @@ describe("provider registry", () => {
   it("providerAvailability returns one entry per provider", () => {
     const avail = providerAvailability();
     expect(typeof avail["openai"]).toBe("boolean");
+    expect(typeof avail["freepik"]).toBe("boolean");
+    expect(typeof avail["pixazo"]).toBe("boolean");
+    expect(typeof avail["nvidia-nim"]).toBe("boolean");
     expect(typeof avail["pollinations"]).toBe("boolean");
   });
 });

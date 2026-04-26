@@ -79,6 +79,7 @@ export interface CapabilitiesResult {
     id: string;
     family: string;
     provider_key_env: string | null;
+    provider_key_env_aliases?: string[];
     key_set: boolean;
     native_rgba: boolean | "partial";
     native_svg: boolean;
@@ -98,6 +99,7 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
       id: m.id,
       family: m.family,
       provider_key_env: pkey ? envVarForKey(pkey) : null,
+      ...(pkey ? { provider_key_env_aliases: envAliasesForKey(pkey) } : {}),
       key_set: pkey ? api[pkey] : false,
       native_rgba: m.native_rgba,
       native_svg: m.native_svg,
@@ -180,10 +182,10 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
     },
     {
       id: "google-ai-studio",
-      how: "Paste-only free path: generate interactively in the AI Studio web UI (https://aistudio.google.com), download the PNG, then call asset_ingest_external. Programmatic image-gen via GEMINI_API_KEY requires billing as of 2025-12.",
+      how: "Paste-only free path: generate interactively in the AI Studio web UI (https://aistudio.google.com), download the PNG, then call asset_ingest_external. Programmatic image-gen via GEMINI_API_KEY requires billing.",
       quality: "Good (Gemini 3 Pro/Flash Image, Nano Banana, Imagen 4) — web UI only",
       catch:
-        "No free API tier for image-gen (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026); an unbilled GEMINI_API_KEY hitting image endpoints returns HTTP 429 with limit:0. Paid prices: gemini-2.5-flash-image (Nano Banana) $0.039/img; gemini-3.1-flash-image-preview (Nano Banana 2) $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K; gemini-3-pro-image-preview (Nano Banana Pro) $0.134 at 1K/2K, $0.24 at 4K + $0.0011 per input image; Imagen 4 Fast $0.02, Standard $0.04, Ultra $0.06. Batch API is 50% off. RGB only — matte post-generation.",
+        "No free API tier for image output (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026); an unbilled GEMINI_API_KEY hitting image endpoints returns HTTP 429 with limit:0. Paid prices: gemini-2.5-flash-image (Nano Banana) $0.039/img; gemini-3.1-flash-image-preview (Nano Banana 2) $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K; gemini-3-pro-image-preview (Nano Banana Pro) $0.134 at 1K/2K, $0.24 at 4K + $0.0011 per input image; Imagen 4 Fast $0.02, Standard $0.04, Ultra $0.06. Batch API is 50% off. RGB only — matte post-generation.",
       url: "https://aistudio.google.com"
     },
     {
@@ -230,16 +232,16 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
   );
   hints.push(
     "free api routes work WITHOUT paying, ranked best-first: (1) Cloudflare Workers AI (Flux-1-Schnell, " +
-      "10k neurons/day on a free CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID), (2) Imagen 4 via GEMINI_API_KEY " +
-      "(Generate / Fast / Ultra each at 25 RPD on the free tier — verified from the user's AI Studio dashboard 2026-04-26), " +
+      "10k neurons/day on a free CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID), (2) NVIDIA NIM " +
+      "(1k requests/month on a free NVIDIA_API_KEY, no credit card), " +
       "(3) Hugging Face Inference (SDXL/SD3/Flux-schnell on a free HF_TOKEN, no credit card), " +
       "(4) Stable Horde (anonymous queue). " +
       "Pollinations is available as a last resort but quality is poor — it silently swaps models (requesting " +
       "Flux can return SANA), silently downsizes resolution (request 1024² and get 768²), and produces unusable " +
       "output for logos. Use only for throwaway prototypes when nothing else is reachable. " +
-      "Nano Banana family stays paid-only on the Gemini free tier (gemini-2.5-flash-image, gemini-3.1-flash-image-preview, " +
-      "gemini-3-pro-image-preview all show 0/0 RPD); the AI Studio web UI is still free for interactive Nano-Banana " +
-      "generation (paste-only: generate, download, call asset_ingest_external). These are the recommended starting " +
+      "Google image APIs (Imagen 4 and Nano Banana family) are paid-only for programmatic image output; the AI Studio " +
+      "web UI is still free for interactive generation (paste-only: generate, download, call asset_ingest_external). " +
+      "These are the recommended starting " +
       "points before you spend anything."
   );
   if (anyPaidApi) {
@@ -297,14 +299,14 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
       notes: anyPaidApi
         ? "At least one paid provider key is configured."
         : anyFreeApi
-          ? "No paid keys set, but zero-key/free-tier routes (Pollinations, Stable Horde, HF) are live — api mode works."
+          ? "No paid keys set, but zero-key/free-tier routes are live — api mode works with Cloudflare, NVIDIA NIM, HF, Horde, or Pollinations depending on configured keys."
           : "No provider adapters reachable. Set one of the listed env vars to enable api mode, or stick with inline_svg / external_prompt_only."
     },
     free_api: {
       available: anyFreeApi,
       routes: freeRoutes,
       notes: anyFreeApi
-        ? "Zero-key and free-tier routes are live. Pollinations needs no signup at all; HF free tier needs only a read token."
+        ? "Zero-key and free-tier routes are live. Cloudflare/NVIDIA/HF need free tokens; Horde and Pollinations can run without signup."
         : "Free-tier routes are currently gated (POLLINATIONS_DISABLED / HORDE_DISABLED set, or no HF_TOKEN)."
     },
     modes_by_asset_type: narrowed,
@@ -349,5 +351,14 @@ function envVarForKey(k: keyof ApiAvailability): string {
       return "REPLICATE_API_TOKEN";
     case "comfyui":
       return "PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL (+ optional PROMPT_TO_BUNDLE_MODAL_COMFYUI_TOKEN)";
+  }
+}
+
+function envAliasesForKey(k: keyof ApiAvailability): string[] | undefined {
+  switch (k) {
+    case "nvidia":
+      return ["NIM_API_KEY"];
+    default:
+      return undefined;
   }
 }

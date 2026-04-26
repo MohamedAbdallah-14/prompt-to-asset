@@ -224,8 +224,10 @@ export function selectMode(
       throw new Error(
         `mode=api requested but no provider API key is configured for the routed models ` +
           `(primary=${ctx.primary_model}, fallback=${ctx.fallback_models.join(",") || "—"}). ` +
-          `Set one of OPENAI_API_KEY / IDEOGRAM_API_KEY / RECRAFT_API_KEY / BFL_API_KEY / ` +
-          `GEMINI_API_KEY, or pick a different mode (inline_svg or external_prompt_only).`
+          `Set the free or paid key for one routed provider (CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID, ` +
+          `NVIDIA_API_KEY, HF_TOKEN, OPENAI_API_KEY, IDEOGRAM_API_KEY, RECRAFT_API_KEY, BFL_API_KEY, ` +
+          `GEMINI_API_KEY, STABILITY_API_KEY, LEONARDO_API_KEY, FAL_API_KEY, FREEPIK_API_KEY, ` +
+          `PIXAZO_API_KEY, or REPLICATE_API_TOKEN), or pick inline_svg / external_prompt_only.`
       );
     }
     return { mode: requested, reason: `user requested ${requested}` };

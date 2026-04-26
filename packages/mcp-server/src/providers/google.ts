@@ -12,12 +12,10 @@ import { dummyPng } from "./openai.js";
  * send transparency-required requests here. If asked, we still generate on white
  * and let the pipeline matte post-hoc.
  *
- * BILLING (verified 2026-04-26 against the user's AI Studio rate-limit dashboard):
- * The free-tier picture is split. Imagen 4 is back on free tier at 25 RPD per
- * variant: `imagen-4.0-generate-preview`, `imagen-4.0-fast-generate-preview`,
- * `imagen-4.0-ultra-generate-preview` each show 0/25 RPD on the dashboard
- * (RPM/TPM dashes — only daily request counts apply). Total ~75 free
- * images/day across the Imagen 4 line on a single project.
+ * BILLING (verified 2026-04-26 against public Gemini API pricing):
+ * Image generation through the Gemini API is paid. Imagen 4 Fast / Standard /
+ * Ultra list "Free Tier: Not available" and cost $0.02 / $0.04 / $0.06 per
+ * image. Google AI Studio remains a free interactive paste-only path.
  *
  * Nano Banana family is paid-only: `gemini-2.5-flash-image`,
  * `gemini-3.1-flash-image-preview`, and `gemini-3-pro-image-preview` show 0/0
@@ -71,20 +69,29 @@ export const GoogleProvider: Provider = {
       throw new ProviderError("google", modelId, "GOOGLE_API_KEY / GEMINI_API_KEY not set");
     }
 
+    const isImagen = modelId.startsWith("imagen-");
     const modelPath = geminiModelPath(modelId);
     // Auth via `x-goog-api-key` header, NOT the `?key=` query string.
     // Query-string keys leak into error bodies, proxy logs, browser history,
     // and anywhere a URL gets echoed back (including prior provider code that
     // would concatenate the URL into a thrown error message).
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelPath}:generateContent`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelPath}:${isImagen ? "predict" : "generateContent"}`;
 
-    const body = {
-      contents: [{ parts: [{ text: req.prompt }] }],
-      generationConfig: {
-        responseModalities: ["IMAGE"],
-        imageConfig: { aspectRatio: aspectRatioOf(req.width, req.height) }
-      }
-    };
+    const body = isImagen
+      ? {
+          instances: [{ prompt: req.prompt }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: aspectRatioOf(req.width, req.height)
+          }
+        }
+      : {
+          contents: [{ parts: [{ text: req.prompt }] }],
+          generationConfig: {
+            responseModalities: ["IMAGE"],
+            imageConfig: { aspectRatio: aspectRatioOf(req.width, req.height) }
+          }
+        };
 
     const resp = await fetch(url, {
       method: "POST",
@@ -100,19 +107,18 @@ export const GoogleProvider: Provider = {
       // Redact defensively in case Google echoes back anything key-shaped
       // (older deployments that still accept ?key= would echo the URL).
       let hint = "";
-      // 429 with limit:0 on an image endpoint means the project shows zero
-      // free-tier allowance for this specific model. Imagen 4 has a 25 RPD
-      // free tier on most projects (verified 2026-04-26); Nano Banana family
-      // does not. Tailor the hint by model so the LLM host doesn't retry or
-      // mis-blame rate-limiting.
+      // 429 with limit:0 on an image endpoint means the project has no
+      // allowance for this model. Current public pricing marks Imagen 4 and
+      // Nano Banana image output as paid API usage, so do not retry as if a
+      // free quota is about to refill.
       if (resp.status === 429 && /limit[^0-9]*0/i.test(errText)) {
         const isImagen4 = /imagen-4/i.test(modelId);
         if (isImagen4) {
           hint =
-            " — this project shows 0 free-tier allowance for Imagen 4 even though Imagen 4 Generate/Fast/Ultra normally each get 25 RPD free. Either billing is disabled on a project that hasn't received the free tier yet, or the daily 25-request quota is exhausted. Enable billing on the GCP project, switch projects, or use the free AI Studio web UI (https://aistudio.google.com) + asset_ingest_external.";
+            " — Imagen 4 is a paid API image model (public pricing lists no free tier). Enable billing on the GCP project, switch to a free provider such as Cloudflare/HF/Horde/NVIDIA NIM, or use the free AI Studio web UI (https://aistudio.google.com) + asset_ingest_external.";
         } else {
           hint =
-            " — Nano Banana family (gemini-2.5-flash-image / gemini-3.1-flash-image-preview / gemini-3-pro-image-preview) has no free API tier — billing must be enabled on the GCP project. Imagen 4 is free at 25 RPD per variant if you can route there instead, or use the free AI Studio web UI (https://aistudio.google.com) + asset_ingest_external.";
+            " — Nano Banana family (gemini-2.5-flash-image / gemini-3.1-flash-image-preview / gemini-3-pro-image-preview) has no free API tier — billing must be enabled on the GCP project. Use Cloudflare/HF/Horde/NVIDIA NIM for free CLI generation, or use the free AI Studio web UI (https://aistudio.google.com) + asset_ingest_external.";
         }
       }
       throw new ProviderError(
@@ -126,7 +132,24 @@ export const GoogleProvider: Provider = {
       candidates?: Array<{
         content?: { parts?: Array<{ inlineData?: { data?: string; mimeType?: string } }> };
       }>;
+      predictions?: Array<{ bytesBase64Encoded?: string; mimeType?: string }>;
     };
+    if (isImagen) {
+      const image = json.predictions?.[0]?.bytesBase64Encoded;
+      if (!image) {
+        throw new ProviderError("google", modelId, "no Imagen image data in response");
+      }
+      return {
+        image: Buffer.from(image, "base64"),
+        format: "png",
+        model: modelId,
+        seed: req.seed,
+        raw_response: json,
+        native_rgba: false,
+        native_svg: false
+      };
+    }
+
     const part = json.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
     if (!part?.inlineData?.data) {
       throw new ProviderError("google", modelId, "no inline image data in response");

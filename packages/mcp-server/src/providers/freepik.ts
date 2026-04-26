@@ -50,6 +50,34 @@ export const FreepikProvider: Provider = {
 
     const body = route.buildBody(req);
     const submitUrl = `https://api.freepik.com${route.path}`;
+    if (route.sync === "form-urlencoded") {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(body)) {
+        if (value !== undefined) params.set(key, String(value));
+      }
+      const resp = await fetch(submitUrl, {
+        method: "POST",
+        headers: {
+          "x-freepik-api-key": CONFIG.apiKeys.freepik,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: params.toString()
+      });
+      if (!resp.ok) {
+        const errText = await resp.text();
+        throw new ProviderError("freepik", modelId, `sync HTTP ${resp.status}: ${errText}`);
+      }
+      const image = Buffer.from(await resp.arrayBuffer());
+      return {
+        image,
+        format: "png",
+        model: modelId,
+        seed: req.seed,
+        raw_response: { endpoint: route.path },
+        native_rgba: route.native_rgba ?? false,
+        native_svg: false
+      };
+    }
     const submitResp = await fetch(submitUrl, {
       method: "POST",
       headers: {
@@ -119,6 +147,8 @@ interface FreepikRoute {
   path: string;
   /** Whether the endpoint produces RGBA-transparent output. */
   native_rgba?: boolean;
+  /** Endpoint returns the image directly instead of async task metadata. */
+  sync?: "form-urlencoded";
   /** Build the JSON body from the generic GenerateRequest. */
   buildBody(req: GenerateRequest): Record<string, unknown>;
 }
@@ -260,8 +290,9 @@ const ROUTES: Record<string, FreepikRoute> = {
 
   // editing — all need reference_images[0]
   "freepik-remove-bg": {
-    path: "/v1/ai/remove-background",
+    path: "/v1/ai/beta/remove-background",
     native_rgba: true,
+    sync: "form-urlencoded",
     buildBody: buildEditBody()
   },
   "freepik-upscaler-creative": {

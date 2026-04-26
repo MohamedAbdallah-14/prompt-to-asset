@@ -139,7 +139,7 @@ const ROUTES: Record<string, PixazoRoute> = {
   // Flux 1 Schnell — confirmed shape from user-shared docs screenshot.
   // Free tier + cheapest paid tier on Pixazo ($0.0012/img).
   "pixazo-flux-schnell": {
-    path: "/flux-1-schnell/v1/getData",
+    path: "/flux-1-schnell/v1/get-image",
     buildBody: (req) => {
       const { width, height } = clampSize(req, 1024);
       return {

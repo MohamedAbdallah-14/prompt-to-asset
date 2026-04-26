@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { doctor } from "./doctor.js";
+import { CONFIG } from "../config.js";
 
 const KEYS = [
   "OPENAI_API_KEY",
@@ -17,16 +18,26 @@ const KEYS = [
   "HUGGINGFACE_API_KEY",
   "CLOUDFLARE_API_TOKEN",
   "CLOUDFLARE_ACCOUNT_ID",
+  "NVIDIA_API_KEY",
+  "NIM_API_KEY",
   "REPLICATE_API_TOKEN",
-  "REPLICATE_API_KEY"
+  "REPLICATE_API_KEY",
+  "POLLINATIONS_DISABLED",
+  "HORDE_DISABLED"
 ];
 
 describe("asset_doctor", () => {
   const snapshot: Record<string, string | undefined> = {};
+  const originalApiKeys = { ...CONFIG.apiKeys };
+  const originalCloudflareAccountId = CONFIG.cloudflareAccountId;
 
   beforeEach(() => {
     for (const k of KEYS) snapshot[k] = process.env[k];
     for (const k of KEYS) delete process.env[k];
+    for (const k of Object.keys(CONFIG.apiKeys)) {
+      (CONFIG.apiKeys as Record<string, string | undefined>)[k] = undefined;
+    }
+    (CONFIG as { cloudflareAccountId: string }).cloudflareAccountId = "";
   });
 
   afterEach(() => {
@@ -34,6 +45,11 @@ describe("asset_doctor", () => {
       if (snapshot[k] !== undefined) process.env[k] = snapshot[k];
       else delete process.env[k];
     }
+    for (const k of Object.keys(CONFIG.apiKeys)) {
+      (CONFIG.apiKeys as Record<string, string | undefined>)[k] =
+        originalApiKeys[k as keyof typeof originalApiKeys];
+    }
+    (CONFIG as { cloudflareAccountId: string }).cloudflareAccountId = originalCloudflareAccountId;
   });
 
   it("reports runtime + native deps + all four mode flags", async () => {
@@ -49,10 +65,11 @@ describe("asset_doctor", () => {
     expect(typeof r.modes_available.api_paid).toBe("boolean");
   });
 
-  it("free-tier routes are ranked best-first (cloudflare first, stable-horde last)", async () => {
+  it("free-tier routes are ranked best-first (cloudflare first, pollinations last)", async () => {
     const r = await doctor({});
     expect(r.free_tier_routes[0]?.id).toBe("cloudflare");
-    expect(r.free_tier_routes.at(-1)?.id).toBe("stable-horde");
+    expect(r.free_tier_routes[1]?.id).toBe("nvidia-nim");
+    expect(r.free_tier_routes.at(-1)?.id).toBe("pollinations");
     for (let i = 0; i < r.free_tier_routes.length; i++) {
       expect(r.free_tier_routes[i]?.rank).toBe(i + 1);
     }
@@ -61,6 +78,8 @@ describe("asset_doctor", () => {
   it("cloudflare route flips to live when CLOUDFLARE_API_TOKEN is set", async () => {
     process.env["CLOUDFLARE_API_TOKEN"] = "test-token";
     process.env["CLOUDFLARE_ACCOUNT_ID"] = "test-acct";
+    (CONFIG.apiKeys as Record<string, string | undefined>)["cloudflare"] = "test-token";
+    (CONFIG as { cloudflareAccountId: string }).cloudflareAccountId = "test-acct";
     const r = await doctor({});
     const cf = r.free_tier_routes.find((x) => x.id === "cloudflare");
     expect(cf?.live).toBe(true);
@@ -69,9 +88,22 @@ describe("asset_doctor", () => {
 
   it("api_paid is true when any paid key is set", async () => {
     process.env["IDEOGRAM_API_KEY"] = "test";
+    (CONFIG.apiKeys as Record<string, string | undefined>)["ideogram"] = "test";
     const r = await doctor({});
     expect(r.modes_available.api_paid).toBe(true);
     expect(r.paid_providers.find((p) => p.id === "ideogram")?.key_set).toBe(true);
+  });
+
+  it("GEMINI_API_KEY is paid image API availability, not api_free", async () => {
+    process.env["POLLINATIONS_DISABLED"] = "1";
+    process.env["HORDE_DISABLED"] = "1";
+    process.env["GEMINI_API_KEY"] = "gemini-test";
+    (CONFIG.apiKeys as Record<string, string | undefined>)["google"] = "gemini-test";
+    const r = await doctor({});
+    expect(r.modes_available.api_paid).toBe(true);
+    expect(r.modes_available.api_free).toBe(false);
+    expect(r.paid_providers.find((p) => p.id === "google")?.key_set).toBe(true);
+    expect(r.what_to_try_next.join("\n")).toMatch(/Google image output is paid API usage|P2A_MAX_SPEND/);
   });
 
   it("check_data=true adds a data_integrity block", async () => {
@@ -81,11 +113,12 @@ describe("asset_doctor", () => {
     expect(r.data_integrity).toHaveProperty("stats");
   });
 
-  it("what_to_try_next suggests CLOUDFLARE when nothing is configured", async () => {
+  it("what_to_try_next gives actionable setup guidance", async () => {
     process.env["POLLINATIONS_DISABLED"] = "1";
     process.env["HORDE_DISABLED"] = "1";
     const r = await doctor({});
-    expect(r.what_to_try_next.some((s) => /CLOUDFLARE_API_TOKEN/.test(s))).toBe(true);
+    expect(r.what_to_try_next.length).toBeGreaterThan(0);
+    expect(r.what_to_try_next.join("\n")).toMatch(/inline_svg|CLOUDFLARE_API_TOKEN|P2A_MAX_SPEND/);
     delete process.env["POLLINATIONS_DISABLED"];
     delete process.env["HORDE_DISABLED"];
   });
