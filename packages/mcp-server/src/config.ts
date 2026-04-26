@@ -57,6 +57,7 @@ export const CONFIG = {
     fal: process.env["FAL_API_KEY"] || process.env["FAL_KEY"],
     freepik: process.env["FREEPIK_API_KEY"],
     pixazo: process.env["PIXAZO_API_KEY"] || process.env["PIXAZO_SUBSCRIPTION_KEY"],
+    nvidia: process.env["NVIDIA_API_KEY"] || process.env["NIM_API_KEY"],
     huggingface: process.env["HF_TOKEN"] || process.env["HUGGINGFACE_API_KEY"],
     cloudflare: process.env["CLOUDFLARE_API_TOKEN"],
     replicate: process.env["REPLICATE_API_TOKEN"] || process.env["REPLICATE_API_KEY"]

@@ -27,10 +27,11 @@ const PAID_KEYS: Array<keyof ApiAvailability> = [
 
 /** Provider families you can use for $0 today (free tier or zero signup). */
 const FREE_KEYS: Array<keyof ApiAvailability> = [
+  "cloudflare",
+  "nvidia",
   "huggingface",
   "pollinations",
-  "horde",
-  "cloudflare"
+  "horde"
 ];
 
 /**
@@ -127,6 +128,10 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
     unconfigured.push(
       "CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (free, 10k neurons/day, https://dash.cloudflare.com/profile/api-tokens)"
     );
+  if (!api.nvidia)
+    unconfigured.push(
+      "NVIDIA_API_KEY (free, 1k requests/month, no card, https://build.nvidia.com — hosts Flux.1-dev, Flux.2-klein, SANA, SDXL)"
+    );
 
   const anyPaidApi = PAID_KEYS.some((k) => api[k]);
   const anyFreeApi = FREE_KEYS.some((k) => api[k]);
@@ -141,6 +146,15 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
       catch:
         "10,000 neurons/day on free tier (Flux Schnell ~11 neurons/image, SDXL Lightning ~2); no transparent output, matte externally",
       url: "https://dash.cloudflare.com/profile/api-tokens"
+    },
+    {
+      id: "nvidia-nim",
+      how: "NVIDIA NIM via build.nvidia.com; NVIDIA_API_KEY (key prefixed nvapi-, no credit card)",
+      quality:
+        "High — hosts Flux.1-dev (a real step up over Flux Schnell), Flux.1-Kontext-dev, Flux.2-klein-4b, SDXL Turbo, SD 3.5 Large, NVIDIA SANA at 4K. POST https://ai.api.nvidia.com/v1/genai/{vendor}/{model}",
+      catch:
+        "1,000 requests/month resets on the 1st — small for bulk work but plenty for production-quality single calls. No transparent output, matte externally. Pair with Cloudflare for high-volume iteration.",
+      url: "https://build.nvidia.com"
     },
     {
       id: "huggingface",
@@ -322,6 +336,8 @@ function envVarForKey(k: keyof ApiAvailability): string {
       return "FREEPIK_API_KEY";
     case "pixazo":
       return "PIXAZO_API_KEY";
+    case "nvidia":
+      return "NVIDIA_API_KEY";
     case "huggingface":
       return "HF_TOKEN";
     case "pollinations":

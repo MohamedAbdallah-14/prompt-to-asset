@@ -76,6 +76,8 @@ export interface ApiAvailability {
   freepik: boolean;
   /** Pixazo — Azure APIM gateway. Free tier is real but transfers IP ownership to Appy Pie LLP. */
   pixazo: boolean;
+  /** NVIDIA NIM — 1,000 requests/month free, no card. Hosts Flux.1-dev, Flux.2-klein, SANA, SDXL. */
+  nvidia: boolean;
   huggingface: boolean;
   /** Pollinations is zero-key; true unless explicitly disabled. */
   pollinations: boolean;
@@ -101,6 +103,7 @@ export function detectApiAvailability(): ApiAvailability {
     fal: Boolean(process.env["FAL_API_KEY"] || process.env["FAL_KEY"]),
     freepik: Boolean(process.env["FREEPIK_API_KEY"]),
     pixazo: Boolean(process.env["PIXAZO_API_KEY"] || process.env["PIXAZO_SUBSCRIPTION_KEY"]),
+    nvidia: Boolean(process.env["NVIDIA_API_KEY"] || process.env["NIM_API_KEY"]),
     huggingface: Boolean(process.env["HF_TOKEN"] || process.env["HUGGINGFACE_API_KEY"]),
     pollinations: process.env["POLLINATIONS_DISABLED"] !== "1",
     horde: process.env["HORDE_DISABLED"] !== "1",
@@ -131,6 +134,7 @@ export function providerKeyForModel(modelId: string): keyof ApiAvailability | nu
   if (modelId.startsWith("fal-")) return "fal";
   if (modelId.startsWith("freepik-")) return "freepik";
   if (modelId.startsWith("pixazo-")) return "pixazo";
+  if (modelId.startsWith("nim-")) return "nvidia";
   if (modelId.startsWith("hf-")) return "huggingface";
   if (modelId.startsWith("pollinations-")) return "pollinations";
   if (modelId.startsWith("horde-")) return "horde";

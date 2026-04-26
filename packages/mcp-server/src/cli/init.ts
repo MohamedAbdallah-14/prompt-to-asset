@@ -415,6 +415,9 @@ function printNextSteps(d: Detected, assetsDir: string): void {
   );
   lines.push(`  export CLOUDFLARE_ACCOUNT_ID=...  # same dashboard, account sidebar`);
   lines.push(
+    `  export NVIDIA_API_KEY=nvapi-...   # https://build.nvidia.com — Flux.1-dev / Flux.2-klein / SDXL / SANA at 4K, 1k req/month free, no card`
+  );
+  lines.push(
     `  export HF_TOKEN=...               # https://huggingface.co/settings/tokens — SDXL / SD3 / Flux dev+schnell`
   );
   lines.push(

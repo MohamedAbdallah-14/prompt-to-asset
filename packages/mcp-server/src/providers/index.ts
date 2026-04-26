@@ -8,6 +8,7 @@ import { LeonardoProvider } from "./leonardo.js";
 import { FalProvider } from "./fal.js";
 import { FreepikProvider } from "./freepik.js";
 import { PixazoProvider } from "./pixazo.js";
+import { NvidiaNimProvider } from "./nvidia-nim.js";
 import { HuggingFaceProvider } from "./huggingface.js";
 import { PollinationsProvider } from "./pollinations.js";
 import { StableHordeProvider } from "./stable-horde.js";
@@ -53,6 +54,7 @@ const PROVIDERS: Provider[] = [
   // PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL. Unlocks brand-LoRA + custom workflows.
   ComfyUiProvider,
   // Free-tier paths
+  NvidiaNimProvider,
   HuggingFaceProvider,
   PollinationsProvider,
   StableHordeProvider,
@@ -143,10 +145,11 @@ export const PASTE_ONLY_PROVIDERS: readonly string[] = ["midjourney", "adobe", "
  * before spending a cent.
  */
 export const FREE_TIER_PROVIDERS: readonly string[] = [
-  "pollinations",
-  "stable-horde",
+  "cloudflare",
+  "nvidia-nim",
   "huggingface",
-  "cloudflare"
+  "stable-horde",
+  "pollinations"
 ];
 
 export { ProviderError } from "./types.js";

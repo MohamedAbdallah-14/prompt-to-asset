@@ -158,22 +158,28 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
       note: "Cloudflare Workers AI — Flux-1-Schnell + SDXL, 10k neurons/day free. Needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID."
     },
     {
-      key: "huggingface",
+      key: "nvidia-nim",
       rank: 2,
-      live: avail["huggingface"] ?? false,
-      note: "HF Inference — hosted SD/SDXL/Flux-schnell on a free read token. HF_TOKEN, no credit card."
+      live: avail["nvidia"] ?? false,
+      note: "NVIDIA NIM — Flux.1-dev / Flux.2-klein / SDXL Turbo / SD 3.5 Large / SANA at 4K, 1k requests/month free. NVIDIA_API_KEY (key prefix nvapi-), no credit card. Sign up at https://build.nvidia.com."
     },
     {
-      key: "pollinations",
+      key: "huggingface",
       rank: 3,
-      live: avail["pollinations"] ?? false,
-      note: "Pollinations — zero signup, rate-limited (~1 req/15s anonymous). Silently swaps models per request."
+      live: avail["huggingface"] ?? false,
+      note: "HF Inference — hosted SD/SDXL/Flux-schnell on a free read token. HF_TOKEN, no credit card."
     },
     {
       key: "stable-horde",
       rank: 4,
       live: avail["stable-horde"] ?? false,
       note: "Stable Horde — community GPUs, queue can be long. Anonymous or free API key."
+    },
+    {
+      key: "pollinations",
+      rank: 5,
+      live: avail["pollinations"] ?? false,
+      note: "Pollinations — zero signup but quality is poor. Verified 2026-04-26: silently serves SANA when you request Flux, downsizes 1024² to 768², logo output unusable. Last-resort only."
     }
   ];
   for (const r of rankedFree) {
@@ -259,6 +265,11 @@ export async function doctorCommand(argv: string[] = []): Promise<void> {
     if (!avail["cloudflare"]) {
       lines.push(
         "    export CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=...  # unlocks Flux-1-Schnell (10k neurons/day free)"
+      );
+    }
+    if (!avail["nvidia"]) {
+      lines.push(
+        "    export NVIDIA_API_KEY=nvapi-...     # https://build.nvidia.com — Flux.1-dev / Flux.2-klein / SANA, 1k req/month free"
       );
     }
   } else {

@@ -279,12 +279,22 @@ function envForKey(k: ReturnType<typeof providerKeyForModel>): string {
       return "LEONARDO_API_KEY";
     case "fal":
       return "FAL_API_KEY";
+    case "freepik":
+      return "FREEPIK_API_KEY";
+    case "pixazo":
+      return "PIXAZO_API_KEY";
+    case "nvidia":
+      return "NVIDIA_API_KEY";
     case "huggingface":
       return "HF_TOKEN";
     case "pollinations":
       return "POLLINATIONS_TOKEN (optional)";
     case "horde":
       return "HORDE_API_KEY (optional)";
+    case "cloudflare":
+      return "CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID";
+    case "replicate":
+      return "REPLICATE_API_TOKEN";
     default:
       return "—";
   }
