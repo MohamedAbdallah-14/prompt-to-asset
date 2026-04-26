@@ -65,11 +65,7 @@ export const NvidiaNimProvider: Provider = {
 
     if (!resp.ok) {
       const errText = await resp.text();
-      throw new ProviderError(
-        "nvidia-nim",
-        modelId,
-        `HTTP ${resp.status}: ${errText}`
-      );
+      throw new ProviderError("nvidia-nim", modelId, `HTTP ${resp.status}: ${errText}`);
     }
 
     const json = (await resp.json()) as NimResponse;

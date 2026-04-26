@@ -38,7 +38,13 @@ export interface ModelInfo {
   native_rgba: boolean | "partial";
   native_svg: boolean;
   text_ceiling_chars: number;
-  negative_prompt_support: "native" | "supported" | "ignored" | "error" | "--no flag" | "vertex_only";
+  negative_prompt_support:
+    | "native"
+    | "supported"
+    | "ignored"
+    | "error"
+    | "--no flag"
+    | "vertex_only";
   ref_image_support: boolean | string;
   dialect: Dialect;
   strengths: string[];

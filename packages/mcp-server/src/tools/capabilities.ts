@@ -115,8 +115,7 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
   if (!api.stability) unconfigured.push("STABILITY_API_KEY");
   if (!api.leonardo) unconfigured.push("LEONARDO_API_KEY");
   if (!api.fal) unconfigured.push("FAL_API_KEY (or FAL_KEY)");
-  if (!api.freepik)
-    unconfigured.push("FREEPIK_API_KEY (5 EUR free trial, no credit card)");
+  if (!api.freepik) unconfigured.push("FREEPIK_API_KEY (5 EUR free trial, no credit card)");
   if (!api.pixazo)
     unconfigured.push(
       "PIXAZO_API_KEY (free tier exists but Appy Pie LLP claims output ownership — paid tier transfers ownership)"

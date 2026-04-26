@@ -101,11 +101,12 @@ export const PixazoProvider: Provider = {
     }
     const image = Buffer.from(await fileResp.arrayBuffer());
     const lower = imageUrl.toLowerCase();
-    const format: GenerateResult["format"] = lower.endsWith(".jpg") || lower.endsWith(".jpeg")
-      ? "jpeg"
-      : lower.endsWith(".webp")
-        ? "webp"
-        : "png";
+    const format: GenerateResult["format"] =
+      lower.endsWith(".jpg") || lower.endsWith(".jpeg")
+        ? "jpeg"
+        : lower.endsWith(".webp")
+          ? "webp"
+          : "png";
 
     return {
       image,

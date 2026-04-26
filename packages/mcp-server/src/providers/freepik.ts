@@ -61,11 +61,7 @@ export const FreepikProvider: Provider = {
 
     if (!submitResp.ok) {
       const errText = await submitResp.text();
-      throw new ProviderError(
-        "freepik",
-        modelId,
-        `submit HTTP ${submitResp.status}: ${errText}`
-      );
+      throw new ProviderError("freepik", modelId, `submit HTTP ${submitResp.status}: ${errText}`);
     }
 
     const submitJson = (await submitResp.json()) as FreepikTaskResponse;

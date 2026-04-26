@@ -18,13 +18,9 @@ export const OpenAIProvider: Provider = {
   name: "openai",
 
   supportsModel(modelId: string): boolean {
-    return [
-      "gpt-image-2",
-      "gpt-image-1.5",
-      "gpt-image-1",
-      "gpt-image-1-mini",
-      "dall-e-3"
-    ].includes(modelId);
+    return ["gpt-image-2", "gpt-image-1.5", "gpt-image-1", "gpt-image-1-mini", "dall-e-3"].includes(
+      modelId
+    );
   },
 
   isAvailable(): boolean {
@@ -101,7 +97,8 @@ function sizeFor(w: number, h: number, modelId: string): string {
   const aspect = w / h;
   if (modelId === "gpt-image-2") {
     const longest = Math.max(w, h);
-    if (longest > 2048) return aspect > 1.2 ? "4096x2048" : aspect < 0.83 ? "2048x4096" : "4096x4096";
+    if (longest > 2048)
+      return aspect > 1.2 ? "4096x2048" : aspect < 0.83 ? "2048x4096" : "4096x4096";
     if (longest > 1536) return "2048x2048";
     if (aspect > 1.2) return "1536x1024";
     if (aspect < 0.83) return "1024x1536";

@@ -73,7 +73,7 @@
         { "model": "flux-2", "postprocess": ["birefnet_matte"] },
         { "model": "fal-flux-2", "postprocess": ["birefnet_matte"] }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-2.5-flash-image", "sd-1.5", "sdxl", "flux-schnell", "flux-dev", "flux-pro", "flux-1.1-pro", "pollinations-flux"],
+      "never": ["imagen-3", "imagen-4", "sd-1.5", "sdxl", "flux-schnell", "flux-dev", "flux-pro", "pollinations-flux"],
       "postprocess": ["birefnet_matte", "validate_alpha", "ocr_wordmark_check"],
       "research_sources": [
         "docs/research/08-logo-generation/8c-text-rendering-in-logos.md",

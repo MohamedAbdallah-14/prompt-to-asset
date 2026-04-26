@@ -389,9 +389,9 @@ describe("GoogleProvider", () => {
       body: JSON.stringify({ error: { details: [{ quotaValue: "limit: 0" }] } })
     });
     try {
-      await expect(
-        GoogleProvider.generate("gemini-3-pro-image", baseReq)
-      ).rejects.toThrow(/Nano Banana family.*no free API tier/);
+      await expect(GoogleProvider.generate("gemini-3-pro-image", baseReq)).rejects.toThrow(
+        /Nano Banana family.*no free API tier/
+      );
     } finally {
       handle.restore();
     }
