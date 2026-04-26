@@ -65,11 +65,7 @@ function matchesRule(rule: RoutingRule, input: RouteInput): boolean {
   if (w["text_length"] !== undefined) {
     const tl = w["text_length"];
     if (typeof tl === "number" && input.text_length !== tl) return false;
-    if (typeof tl === "string") {
-      if (tl === "1..3" && !(input.text_length >= 1 && input.text_length <= 3)) return false;
-      if (tl === ">3" && !(input.text_length > 3)) return false;
-      if (tl === "0" && input.text_length !== 0) return false;
-    }
+    if (typeof tl === "string" && !textLengthMatches(tl, input.text_length)) return false;
   }
 
   if (w["vector_required"] !== undefined && w["vector_required"] !== input.vector_required)
@@ -87,6 +83,35 @@ function matchesRule(rule: RoutingRule, input: RouteInput): boolean {
   if (w["style"] !== undefined && w["style"] !== input.style) return false;
 
   return true;
+}
+
+/**
+ * Parse a text_length predicate string and check if `len` matches.
+ * Supported forms:
+ *   - "N"        exact match
+ *   - "N..M"     inclusive range (e.g. "1..3", "4..10")
+ *   - ">N" / ">=N" / "<N" / "<=N"
+ * Anything unrecognized fails the rule. Earlier versions silently accepted
+ * unknown predicates — that let new rules match every text_length.
+ */
+function textLengthMatches(predicate: string, len: number): boolean {
+  const range = predicate.match(/^(\d+)\.\.(\d+)$/);
+  if (range) {
+    const lo = Number(range[1]);
+    const hi = Number(range[2]);
+    return len >= lo && len <= hi;
+  }
+  const cmp = predicate.match(/^(>=|<=|>|<)(\d+)$/);
+  if (cmp) {
+    const op = cmp[1];
+    const n = Number(cmp[2]);
+    if (op === ">") return len > n;
+    if (op === ">=") return len >= n;
+    if (op === "<") return len < n;
+    if (op === "<=") return len <= n;
+  }
+  if (/^\d+$/.test(predicate)) return len === Number(predicate);
+  return false;
 }
 
 function defaultRoute(input: RouteInput): RouteDecision {
