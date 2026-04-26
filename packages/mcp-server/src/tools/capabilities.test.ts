@@ -101,9 +101,11 @@ describe("asset_capabilities", () => {
 
   it("does not advertise Imagen 4 as a free programmatic API route", async () => {
     const caps = await capabilities({});
-    const joined = [caps.free_api.notes, ...caps.hints, ...caps.free_api.routes.map((r) => r.how + r.catch)].join(
-      "\n"
-    );
+    const joined = [
+      caps.free_api.notes,
+      ...caps.hints,
+      ...caps.free_api.routes.map((r) => r.how + r.catch)
+    ].join("\n");
     expect(joined).not.toMatch(/Imagen 4 via GEMINI_API_KEY.*25 RPD/i);
     const studio = caps.free_api.routes.find((r) => r.id === "google-ai-studio");
     expect(studio?.how).toMatch(/paste-only/i);
@@ -118,11 +120,15 @@ describe("asset_capabilities", () => {
     expect(caps.api.available).toBe(true);
     expect(caps.api.providers.google).toBe(true);
     expect(caps.free_api.available).toBe(false);
-    const joined = [caps.free_api.notes, ...caps.hints, ...caps.free_api.routes.map((r) => r.how + r.catch)].join(
-      "\n"
-    );
+    const joined = [
+      caps.free_api.notes,
+      ...caps.hints,
+      ...caps.free_api.routes.map((r) => r.how + r.catch)
+    ].join("\n");
     expect(joined).not.toMatch(/Imagen 4 via GEMINI_API_KEY.*free/i);
-    expect(joined).toMatch(/Google image APIs.*paid-only|Programmatic image-gen via GEMINI_API_KEY requires billing/i);
+    expect(joined).toMatch(
+      /Google image APIs.*paid-only|Programmatic image-gen via GEMINI_API_KEY requires billing/i
+    );
   });
 
   it("providers_registered mirrors the model registry and reports key_set", async () => {

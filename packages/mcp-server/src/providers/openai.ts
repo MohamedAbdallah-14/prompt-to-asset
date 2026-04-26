@@ -125,7 +125,10 @@ function sizeFor(w: number, h: number, modelId: string): string {
   return "1024x1024";
 }
 
-async function buildEditForm(body: Record<string, unknown>, referenceImages: string[]): Promise<FormData> {
+async function buildEditForm(
+  body: Record<string, unknown>,
+  referenceImages: string[]
+): Promise<FormData> {
   const form = new FormData();
   for (const [key, value] of Object.entries(body)) {
     if (value !== undefined) form.append(key, String(value));
@@ -144,7 +147,11 @@ async function referenceImageToBlob(
   if (/^https?:\/\//i.test(reference)) {
     const resp = await fetch(reference);
     if (!resp.ok) {
-      throw new ProviderError("openai", "reference_image", `failed to fetch reference image: HTTP ${resp.status}`);
+      throw new ProviderError(
+        "openai",
+        "reference_image",
+        `failed to fetch reference image: HTTP ${resp.status}`
+      );
     }
     const contentType = resp.headers.get("content-type") ?? "image/png";
     const arrayBuffer = await resp.arrayBuffer();

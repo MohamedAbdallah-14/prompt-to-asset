@@ -15,8 +15,8 @@
 // Usage:
 //   node evals/scripts/run.mjs                 # run, write snapshot
 //   node evals/scripts/run.mjs --baseline      # (re)set the baseline
-//   node evals/scripts/run.mjs --check         # compare against baseline and exit 1 on regression (CI)
-//   node evals/scripts/run.mjs --out <path>    # custom snapshot path
+//   node evals/scripts/run.mjs --check         # compare against baseline and exit 1 on regression (CI, no write)
+//   node evals/scripts/run.mjs --out <path>    # custom snapshot path; with --check, writes that snapshot too
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -191,7 +191,9 @@ if (!baseline) {
   process.exit(1);
 }
 
-writeSnapshot(snapshotPath);
+if (outOverride) {
+  writeSnapshot(snapshotPath);
+}
 
 // Regression gate. Current run must not do worse than baseline on the two
 // metrics that matter: total pass count, and per-brief pass status (so we

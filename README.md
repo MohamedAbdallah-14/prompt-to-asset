@@ -248,17 +248,17 @@ The **Never** column matters. It's why `prompt-to-asset` refuses to render wordm
 
 ## Free paths beyond Pollinations
 
-| Option                     | How                                            | Best at                           | Catch                                                                |
-| -------------------------- | ---------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- |
-| **Cloudflare Workers AI**  | Free API token + account ID                    | Flux-1-Schnell, SDXL, DreamShaper | 10k neurons/day cap (~900 Flux-Schnell or 5k SDXL-Lightning)         |
-| **NVIDIA NIM**             | Free API token, no card                        | Flux.1-dev, Flux.2-klein, SDXL, SANA | 1k requests/month; strong free CLI route                         |
-| **HF Inference**           | Free read token                                | SDXL, SD3, Flux dev + schnell     | Rate-limited, cold-start latency                                     |
-| **Stable Horde**           | Anonymous kudos queue                          | SDXL, Flux community GPUs         | Minutes of queue on the free lane                                    |
-| **Pollinations.ai**        | `curl` → HTTP GET. No signup.                  | Throwaway raster                  | Last resort: silent model swaps, downsizing, RGB only                |
-| **Google AI Studio (UI)**  | Free interactive web UI at aistudio.google.com | Nano Banana / Nano Banana Pro     | No free API — paste-only; download PNG, call `asset_ingest_external` |
-| **Local ComfyUI**          | Community `comfyui-mcp` adapter                | Full fidelity, no caps            | You bring the GPU                                                    |
-| **`inline_svg`**           | Host LLM emits `<svg>` in chat                 | Logos, favicons, simple icons     | ≤40 paths; simple geometry                                           |
-| **`external_prompt_only`** | Paste into any web UI                          | Whatever that UI gives you        | Manual save, then `asset_ingest_external`                            |
+| Option                     | How                                            | Best at                              | Catch                                                                |
+| -------------------------- | ---------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------- |
+| **Cloudflare Workers AI**  | Free API token + account ID                    | Flux-1-Schnell, SDXL, DreamShaper    | 10k neurons/day cap (~900 Flux-Schnell or 5k SDXL-Lightning)         |
+| **NVIDIA NIM**             | Free API token, no card                        | Flux.1-dev, Flux.2-klein, SDXL, SANA | 1k requests/month; strong free CLI route                             |
+| **HF Inference**           | Free read token                                | SDXL, SD3, Flux dev + schnell        | Rate-limited, cold-start latency                                     |
+| **Stable Horde**           | Anonymous kudos queue                          | SDXL, Flux community GPUs            | Minutes of queue on the free lane                                    |
+| **Pollinations.ai**        | `curl` → HTTP GET. No signup.                  | Throwaway raster                     | Last resort: silent model swaps, downsizing, RGB only                |
+| **Google AI Studio (UI)**  | Free interactive web UI at aistudio.google.com | Nano Banana / Nano Banana Pro        | No free API — paste-only; download PNG, call `asset_ingest_external` |
+| **Local ComfyUI**          | Community `comfyui-mcp` adapter                | Full fidelity, no caps               | You bring the GPU                                                    |
+| **`inline_svg`**           | Host LLM emits `<svg>` in chat                 | Logos, favicons, simple icons        | ≤40 paths; simple geometry                                           |
+| **`external_prompt_only`** | Paste into any web UI                          | Whatever that UI gives you           | Manual save, then `asset_ingest_external`                            |
 
 <details>
 <summary><b>Google Gemini / Imagen — verified pricing (Apr 2026)</b></summary>

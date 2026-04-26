@@ -428,7 +428,9 @@ describe("GoogleProvider", () => {
       body: JSON.stringify({ error: { details: [{ quotaValue: "limit: 0" }] } })
     });
     try {
-      await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(/Imagen 4.*paid API/);
+      await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(
+        /Imagen 4.*paid API/
+      );
     } finally {
       handle.restore();
     }

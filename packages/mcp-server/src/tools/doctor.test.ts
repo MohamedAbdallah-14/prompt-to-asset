@@ -103,7 +103,9 @@ describe("asset_doctor", () => {
     expect(r.modes_available.api_paid).toBe(true);
     expect(r.modes_available.api_free).toBe(false);
     expect(r.paid_providers.find((p) => p.id === "google")?.key_set).toBe(true);
-    expect(r.what_to_try_next.join("\n")).toMatch(/Google image output is paid API usage|P2A_MAX_SPEND/);
+    expect(r.what_to_try_next.join("\n")).toMatch(
+      /Google image output is paid API usage|P2A_MAX_SPEND/
+    );
   });
 
   it("check_data=true adds a data_integrity block", async () => {
