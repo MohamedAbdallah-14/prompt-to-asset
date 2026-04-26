@@ -2,6 +2,12 @@ import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import type { ModelInfo, RoutingRule } from "./types.js";
+import { hydrateEnv } from "./security/secrets-store.js";
+
+// Pull stored secrets/config into process.env BEFORE the CONFIG literal
+// reads from process.env below. Env vars set in the shell still win —
+// hydrateEnv only fills the gaps.
+hydrateEnv();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,6 +55,8 @@ export const CONFIG = {
     stability: process.env["STABILITY_API_KEY"],
     leonardo: process.env["LEONARDO_API_KEY"],
     fal: process.env["FAL_API_KEY"] || process.env["FAL_KEY"],
+    freepik: process.env["FREEPIK_API_KEY"],
+    pixazo: process.env["PIXAZO_API_KEY"] || process.env["PIXAZO_SUBSCRIPTION_KEY"],
     huggingface: process.env["HF_TOKEN"] || process.env["HUGGINGFACE_API_KEY"],
     cloudflare: process.env["CLOUDFLARE_API_TOKEN"],
     replicate: process.env["REPLICATE_API_TOKEN"] || process.env["REPLICATE_API_KEY"]

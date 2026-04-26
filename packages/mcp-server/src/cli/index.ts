@@ -20,6 +20,7 @@ import { spriteSheetCommand } from "./sprite-sheet.js";
 import { nineSliceCommand } from "./nine-slice.js";
 import { modelsCommand } from "./models.js";
 import { pickCommand } from "./pick.js";
+import { configCommand } from "./config.js";
 import { runMcp } from "./mcp.js";
 
 const USAGE = `prompt-to-asset (p2a)
@@ -42,6 +43,12 @@ Usage:
                                --quiet        Suppress per-file logging.
   p2a init                   Interactive setup: detect framework, write brand.json,
                              offer MCP registration for your IDE.
+  p2a config                 Interactive TUI for API keys + config. Stores at
+                             $XDG_CONFIG_HOME/prompt-to-asset/secrets.json
+                             (default ~/.config/prompt-to-asset/secrets.json),
+                             dir 0700 / file 0600. Avoids leaking keys via
+                             ~/.zshrc, shell history, or 'env' dumps.
+                             Shell env vars still override the file at runtime.
   p2a models list            Print the model registry. Flags:
                                --free         only zero-key / free-tier models
                                --paid         only paid direct-API models
@@ -104,6 +111,11 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
   if (cmd === "init") {
     await initCommand(rest);
+    return;
+  }
+
+  if (cmd === "config") {
+    await configCommand(rest);
     return;
   }
 
