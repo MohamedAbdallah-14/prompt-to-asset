@@ -41,6 +41,9 @@ eng.traineddata
 # Per-user scratch — brainstorm / ideation notes, not part of the shipped repo.
 /ideations/
 
+# Per-user scratch — launch assets, drafts, anything you don't want committed.
+/ignore/
+
 # Claude Code runtime state. Skill sources under .claude/skills/ stay tracked;
 # everything below is per-session state the CLI writes itself.
 .claude/*.lock

@@ -20,6 +20,8 @@ const PAID_KEYS: Array<keyof ApiAvailability> = [
   "stability",
   "leonardo",
   "fal",
+  "freepik",
+  "pixazo",
   "replicate"
 ];
 
@@ -112,6 +114,12 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
   if (!api.stability) unconfigured.push("STABILITY_API_KEY");
   if (!api.leonardo) unconfigured.push("LEONARDO_API_KEY");
   if (!api.fal) unconfigured.push("FAL_API_KEY (or FAL_KEY)");
+  if (!api.freepik)
+    unconfigured.push("FREEPIK_API_KEY (5 EUR free trial, no credit card)");
+  if (!api.pixazo)
+    unconfigured.push(
+      "PIXAZO_API_KEY (free tier exists but Appy Pie LLP claims output ownership — paid tier transfers ownership)"
+    );
   if (!api.replicate) unconfigured.push("REPLICATE_API_TOKEN (signup trial credit)");
   if (!api.huggingface)
     unconfigured.push("HF_TOKEN (free, https://huggingface.co/settings/tokens)");
@@ -126,18 +134,13 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
 
   const freeRoutes = [
     {
-      id: "pollinations",
-      how: "HTTP GET — zero signup. curl -o out.png 'https://image.pollinations.ai/prompt/<url-encoded-prompt>?model=flux&width=1024&height=1024&nologo=true'",
-      quality: "Good (Flux / Turbo / Kontext / SD backends)",
-      catch: "~1 req/15s anonymous, RGB only (no alpha — matte post-generation)",
-      url: "https://image.pollinations.ai/"
-    },
-    {
-      id: "stable-horde",
-      how: "REST API, anonymous kudos bucket or free account",
-      quality: "Variable (community GPUs)",
-      catch: "Queue-based — anonymous can wait minutes; HORDE_API_KEY gives priority",
-      url: "https://aihorde.net/api/"
+      id: "cloudflare",
+      how: "Cloudflare Workers AI; CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (both free, no paid plan)",
+      quality:
+        "Strong — hosts Flux.2 klein/dev, Flux-1 Schnell, SDXL base + Lightning, DreamShaper, Leonardo Phoenix + Lucid Origin",
+      catch:
+        "10,000 neurons/day on free tier (Flux Schnell ~11 neurons/image, SDXL Lightning ~2); no transparent output, matte externally",
+      url: "https://dash.cloudflare.com/profile/api-tokens"
     },
     {
       id: "huggingface",
@@ -147,13 +150,20 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
       url: "https://huggingface.co/settings/tokens"
     },
     {
-      id: "cloudflare",
-      how: "Cloudflare Workers AI; CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (both free, no paid plan)",
+      id: "stable-horde",
+      how: "REST API, anonymous kudos bucket or free account",
+      quality: "Variable (community GPUs)",
+      catch: "Queue-based — anonymous can wait minutes; HORDE_API_KEY gives priority",
+      url: "https://aihorde.net/api/"
+    },
+    {
+      id: "pollinations",
+      how: "HTTP GET — zero signup. curl -o out.png 'https://image.pollinations.ai/prompt/<url-encoded-prompt>?model=flux&width=1024&height=1024&nologo=true'",
       quality:
-        "Strong — hosts Flux.2 klein/dev, Flux-1 Schnell, SDXL base + Lightning, DreamShaper, Leonardo Phoenix + Lucid Origin",
+        "POOR — last-resort. Verified 2026-04-26: requesting model=flux returns SANA (model param ignored), 1024² downsizes to 768², and logo output is unusable. OK for throwaway article art only.",
       catch:
-        "10,000 neurons/day on free tier (Flux Schnell ~11 neurons/image, SDXL Lightning ~2); no transparent output, matte externally",
-      url: "https://dash.cloudflare.com/profile/api-tokens"
+        "Silent model swap, silent downsize, RGB only. Do not use for production assets. Prefer Cloudflare/HF/Horde first.",
+      url: "https://image.pollinations.ai/"
     },
     {
       id: "google-ai-studio",
@@ -207,11 +217,16 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
   );
   hints.push(
     "free api routes work WITHOUT paying, ranked best-first: (1) Cloudflare Workers AI (Flux-1-Schnell, " +
-      "10k neurons/day on a free CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID), (2) Hugging Face Inference " +
-      "(SDXL/SD3/Flux-schnell on a free HF_TOKEN, no credit card), (3) Pollinations (zero signup, HTTP GET — " +
-      "silently swaps models), (4) Stable Horde (anonymous queue). Google removed Gemini/Imagen image-gen " +
-      "from the free API tier in 2025-12 — the AI Studio web UI is still free for interactive use " +
-      "(paste-only: generate, download, call asset_ingest_external). These are the recommended starting " +
+      "10k neurons/day on a free CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID), (2) Imagen 4 via GEMINI_API_KEY " +
+      "(Generate / Fast / Ultra each at 25 RPD on the free tier — verified from the user's AI Studio dashboard 2026-04-26), " +
+      "(3) Hugging Face Inference (SDXL/SD3/Flux-schnell on a free HF_TOKEN, no credit card), " +
+      "(4) Stable Horde (anonymous queue). " +
+      "Pollinations is available as a last resort but quality is poor — it silently swaps models (requesting " +
+      "Flux can return SANA), silently downsizes resolution (request 1024² and get 768²), and produces unusable " +
+      "output for logos. Use only for throwaway prototypes when nothing else is reachable. " +
+      "Nano Banana family stays paid-only on the Gemini free tier (gemini-2.5-flash-image, gemini-3.1-flash-image-preview, " +
+      "gemini-3-pro-image-preview all show 0/0 RPD); the AI Studio web UI is still free for interactive Nano-Banana " +
+      "generation (paste-only: generate, download, call asset_ingest_external). These are the recommended starting " +
       "points before you spend anything."
   );
   if (anyPaidApi) {
@@ -303,6 +318,10 @@ function envVarForKey(k: keyof ApiAvailability): string {
       return "LEONARDO_API_KEY";
     case "fal":
       return "FAL_API_KEY";
+    case "freepik":
+      return "FREEPIK_API_KEY";
+    case "pixazo":
+      return "PIXAZO_API_KEY";
     case "huggingface":
       return "HF_TOKEN";
     case "pollinations":

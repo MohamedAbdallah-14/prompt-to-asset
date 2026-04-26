@@ -5,8 +5,11 @@ import { dummyPng } from "./openai.js";
 
 /**
  * Black Forest Labs (Flux) provider — Flux Pro, Flux.1, Flux.2, Kontext.
- * CRITICAL: Flux rejects `negative_prompt` field — we DO NOT send it.
- * See: https://docs.bfl.ai/
+ * CRITICAL: Flux does not support `negative_prompt`. Per BFL's Flux 2
+ * prompting guide: "FLUX.2 does not support negative prompts." On 1.x the
+ * BFL/fal schemas reject it; on 2.x fal silently no-ops. Either way we
+ * DO NOT send it. Use positive anchors ("pure white background") instead.
+ * See: https://docs.bfl.ml/guides/prompting_guide_flux2
  */
 export const BflProvider: Provider = {
   name: "bfl",
@@ -37,7 +40,7 @@ export const BflProvider: Provider = {
       throw new ProviderError("bfl", modelId, "BFL_API_KEY / TOGETHER_API_KEY not set");
     }
 
-    // IMPORTANT: never send negative_prompt — Flux errors on it.
+    // IMPORTANT: never send negative_prompt — officially unsupported per BFL guide.
     const body: Record<string, unknown> = {
       prompt: req.prompt,
       width: req.width,

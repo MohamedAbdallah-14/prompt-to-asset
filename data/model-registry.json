@@ -1,9 +1,43 @@
 {
   "$schema": "./schemas/model-registry.schema.json",
-  "version": "1.2.2",
-  "updated": "2026-04-22",
+  "version": "1.4.0",
+  "updated": "2026-04-26",
   "source": "docs/research/SYNTHESIS.md § Model Capability Matrix",
   "models": [
+    {
+      "id": "gpt-image-2",
+      "provider": "openai",
+      "family": "gpt-image",
+      "version": "gpt-image-2-2026-04-21",
+      "text_encoder": "gpt-4-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 80,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "4096x4096",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "best-in-class text rendering — third-party tests cite ~99% character accuracy across Latin/CJK/Hindi/Bengali (number is third-party, not OpenAI-published)",
+        "up to 4K native output",
+        "multi-image output (up to 8)",
+        "context-aware multi-turn editing",
+        "QR-code generation",
+        "Thinking mode for multi-panel reasoning (15-30s+)"
+      ],
+      "weaknesses": [
+        "REGRESSION vs 1.5: `background:\"transparent\"` is NOT supported and 400s — route transparent jobs to gpt-image-1.5",
+        "active noise-artifact bug on structured surfaces (clouds, skin, panels) per OpenAI Community thread",
+        "pricing not yet on OpenAI's pricing page — cost_hint is third-party",
+        "no streaming, no function calling, no fine-tuning, no structured outputs",
+        "same moderation stack as gpt-image-1.5"
+      ],
+      "never_use_for": ["transparent_mark", "favicon", "any asset requiring native RGBA"],
+      "cost_hint": "TBD — OpenAI's pricing page does not yet list gpt-image-2 (verified 2026-04-26). Third-party aggregators report ~$0.21/img high-quality 1024² mirroring gpt-image-1; treat as unverified placeholder."
+    },
     {
       "id": "gpt-image-1",
       "provider": "openai",
@@ -148,28 +182,30 @@
       "text_encoder": "T5",
       "native_rgba": false,
       "native_svg": false,
-      "text_ceiling_chars": 15,
-      "negative_prompt_support": "ignored",
+      "text_ceiling_chars": 25,
+      "negative_prompt_support": "vertex_only",
       "ref_image_support": "limited",
       "dialect": "prose",
       "mode": "text-to-image",
       "api": "REST",
       "paste_only": false,
-      "deprecated": "2026-06-30",
-      "successor": "gemini-3-flash-image",
+      "deprecated": "2026-06-24",
+      "successor": "gemini-2.5-flash-image",
       "strengths": [
-        "strongest Google photoreal"
+        "strongest Google photoreal — industry leader per Q1 2026 roundups",
+        "Vertex AI endpoint accepts `negativePrompt` (Gemini API endpoint silently ignores it)"
       ],
       "weaknesses": [
-        "same transparency failure as 3",
-        "deprecated — EOL June 30, 2026"
+        "no native RGBA (renders checkerboard as RGB pixels)",
+        "deprecated — model endpoints shut down 2026-06-24, broader cutoff 2026-06-30",
+        "Google's own guidance: keep text ≤25 chars for reliable rendering"
       ],
       "never_use_for": [
         "transparent background",
-        "wordmark >15 chars",
+        "wordmark >25 chars",
         "new integrations (deprecated)"
       ],
-      "cost_hint": "No free API tier (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026). Paid: Imagen 4 Fast $0.02/img, Imagen 4 Standard $0.04/img, Imagen 4 Ultra $0.06/img. DEPRECATED — EOL June 30, 2026. Migrate to gemini-3.1-flash-image-preview."
+      "cost_hint": "No free API tier (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026). Paid: Imagen 4 Fast $0.02/img (1K only), Imagen 4 Standard $0.04/img (1K+2K), Imagen 4 Ultra $0.06/img (1K+2K, single-image only). DEPRECATED — endpoint shutdown 2026-06-24. Google recommends migrating to gemini-2.5-flash-image."
     },
     {
       "id": "gemini-3-flash-image",
@@ -178,7 +214,7 @@
       "text_encoder": "gemini-class",
       "native_rgba": false,
       "native_svg": false,
-      "text_ceiling_chars": 20,
+      "text_ceiling_chars": 50,
       "negative_prompt_support": "ignored",
       "ref_image_support": true,
       "dialect": "prose",
@@ -192,17 +228,23 @@
       ],
       "canonical_api_id": "gemini-3.1-flash-image-preview",
       "strengths": [
-        "multimodal edit with in-context image refs",
-        "turn-by-turn coherence",
-        "up to 3 ref images"
+        "ranked #1 on Artificial Analysis Image Arena at launch (Elo 1302)",
+        "~90% character-level text accuracy — strong-text renderer",
+        "multimodal edit with in-context image refs (up to 14)",
+        "multi-subject consistency (5 chars / 14 objects)",
+        "14 aspect ratios, 512px–4K",
+        "4-6s end-to-end latency"
       ],
       "weaknesses": [
-        "same checkerboard failure as Imagen"
+        "no native RGBA (renders checkerboard as RGB)",
+        "preview model — no SLA",
+        "i18n languages have higher error rates than English"
       ],
       "never_use_for": [
         "transparent background"
       ],
-      "cost_hint": "No free API tier as of 2025-12; paid via gemini-3.1-flash-image-preview (Nano Banana 2): $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K. Legacy gemini-2.5-flash-image (original Nano Banana): $0.039/img at 1K. Both are paid-only. AI Studio web UI (https://aistudio.google.com) is free for interactive use (Google does not publish a hard daily cap; community-observed 500–1,000 images/day dynamic on server load)."
+      "cost_hint": "No free API tier as of 2025-12; paid via gemini-3.1-flash-image-preview (Nano Banana 2): $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K. Legacy gemini-2.5-flash-image (original Nano Banana): $0.039/img at 1K. Both are paid-only. AI Studio web UI (https://aistudio.google.com) is free for interactive use (Google does not publish a hard daily cap; community-observed 500–1,000 images/day dynamic on server load).",
+      "notes": "text_ceiling_chars set to 50 — reflects ~90% accuracy benchmarks; the older 'garbles past 3 words' rule applied to gemini-2.5-flash-image, not to this 3.1 preview."
     },
     {
       "id": "gemini-3-pro-image",
@@ -211,7 +253,7 @@
       "text_encoder": "gemini-class",
       "native_rgba": false,
       "native_svg": false,
-      "text_ceiling_chars": 30,
+      "text_ceiling_chars": 200,
       "negative_prompt_support": "ignored",
       "ref_image_support": true,
       "dialect": "prose",
@@ -225,19 +267,26 @@
       "canonical_api_id": "gemini-3-pro-image-preview",
       "max_reference_images": 4,
       "strengths": [
-        "strongest text rendering in Google family (~50 chars reliable)",
+        "paragraph-length text reliable (~94-96% accuracy per benchmark roundups)",
+        "best Google model for legible long-form text — single-line error rate <10% across 15 supported languages",
         "multi-ref brand lock up to 4 images",
         "high-res up to 4K",
-        "Vertex AI surface"
+        "Vertex AI surface",
+        "9 aspect ratios from 9:16 to 4:1"
       ],
       "weaknesses": [
-        "same transparency failure as Imagen/Gemini family"
+        "no native RGBA (renders checkerboard as RGB)",
+        "tightened Jan 2026 IMAGE_SAFETY filter — false positives on swimwear/form-fitting apparel",
+        "small faces and fine details degrade",
+        "RLHF 'too realistic' bias hurts surreal prompts",
+        "TTFT ~3.4s, full gen 20-40s; rate-limit incidents observed Jan 2026",
+        "character drift after multiple iterative edits"
       ],
       "never_use_for": [
         "transparent background"
       ],
       "cost_hint": "No free API tier as of 2025-12; Nano Banana Pro paid (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026): $0.134/img at 1K and 2K, $0.24/img at 4K. Plus $0.0011 per input image (560 tokens). AI Studio web UI (https://aistudio.google.com) is free for interactive use; Gemini consumer app Basic: 20 images/day, AI Plus: 50/day, AI Pro: 100/day (Google help page, Mar 2026).",
-      "notes": "text_ceiling_chars set conservatively at 30; Google documents reliable rendering up to ~50 chars."
+      "notes": "text_ceiling_chars set to 200 — Google's marketing covers 'short tagline or long paragraph' and benchmark accuracy holds across paragraph-length text. Earlier conservative ~30/50 estimates were wrong."
     },
     {
       "id": "sd-1.5",
@@ -418,30 +467,122 @@
       "id": "flux-2",
       "provider": "bfl",
       "family": "flux",
-      "text_encoder": "T5-XXL",
+      "text_encoder": "T5-XXL + Mistral-3 24B VLM",
       "native_rgba": false,
       "native_svg": false,
-      "text_ceiling_chars": 25,
+      "text_ceiling_chars": 60,
       "token_budget": 512,
       "cfg_default": 3.5,
-      "max_reference_images": 8,
-      "negative_prompt_support": "error",
-      "ref_image_support": "up_to_8_refs",
+      "max_reference_images": 10,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": "up_to_10_refs",
       "dialect": "prose",
       "mode": "text-to-image",
       "api": "REST",
       "paste_only": false,
       "strengths": [
-        "multi-ref brand consistency (up to 8 refs)",
-        "improved prompt adherence"
+        "5-10 words / one tagline reliable per BFL prompting guide and third-party tests (~92% accuracy on complex layouts)",
+        "multi-ref brand consistency (up to 10 refs)",
+        "edits up to 4MP",
+        "supports JSON-structured prompts, HEX colors, @-image refs",
+        "released 2025-11-25"
       ],
       "weaknesses": [
-        "early platform; SDK variance"
+        "small glitches in long non-Latin passages",
+        "trails Nano Banana Pro on dense copy and trails Ideogram on pure typography",
+        "BFL Flux 2 prompting guide: 'FLUX.2 does not support negative prompts'",
+        "no native RGBA — matte after generation"
       ],
       "never_use_for": [
-        "tag-salad prompts"
+        "tag-salad prompts",
+        "transparent background"
       ],
-      "cost_hint": "$0.05/img (BFL Flux.2)"
+      "cost_hint": "$0.03 first MP + $0.015/extra MP on fal (1024² = $0.03, 1920×1080 = $0.045). BFL Playground similar tier. Use flux-2-flex if you need steps+guidance control (BFL claims strongest text in the line)."
+    },
+    {
+      "id": "flux-2-flex",
+      "provider": "bfl",
+      "family": "flux",
+      "text_encoder": "T5-XXL + Mistral-3 24B VLM",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 80,
+      "token_budget": 512,
+      "cfg_default": 3.5,
+      "max_reference_images": 10,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": "up_to_10_refs",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "BFL claims strongest text rendering in the Flux 2 line",
+        "exposes step-count + guidance-scale parameters (pro variants don't)",
+        "up to 10 reference images"
+      ],
+      "weaknesses": [
+        "no native RGBA",
+        "no negative_prompt support (BFL Flux 2 family)"
+      ],
+      "never_use_for": ["transparent background"],
+      "cost_hint": "$0.05/MP (fal flux-2-flex) — pricier than pro for the parameter knobs"
+    },
+    {
+      "id": "flux-2-dev",
+      "provider": "bfl",
+      "family": "flux",
+      "text_encoder": "T5-XXL + Mistral-3 24B VLM",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 60,
+      "token_budget": 512,
+      "cfg_default": 3.5,
+      "max_reference_images": 10,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": "up_to_10_refs",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "license": "Flux-Dev-Non-Commercial",
+      "strengths": [
+        "32B open weights on HF, NVIDIA + ComfyUI optimized",
+        "consumer-GPU runnable"
+      ],
+      "weaknesses": [
+        "non-commercial license",
+        "no native RGBA"
+      ],
+      "never_use_for": ["commercial use without BFL Dev license"],
+      "cost_hint": "$0.012/MP (fal) / open weights (HF: black-forest-labs/FLUX.2-dev)"
+    },
+    {
+      "id": "flux-2-klein",
+      "provider": "bfl",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 25,
+      "cfg_default": 3.5,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "license": "Apache-2.0",
+      "strengths": [
+        "Apache 2.0 distilled Flux 2 — sub-second inference",
+        "cheapest Flux 2 SKU"
+      ],
+      "weaknesses": [
+        "distillation degrades complex prompt adherence",
+        "weakest Flux 2 text rendering"
+      ],
+      "never_use_for": ["wordmarks >3 words"],
+      "cost_hint": "$0.005/MP (fal) — cheapest Flux 2 path"
     },
     {
       "id": "flux-kontext-pro",
@@ -534,7 +675,7 @@
       "text_encoder": "ideogram-class",
       "native_rgba": true,
       "native_svg": false,
-      "text_ceiling_chars": 80,
+      "text_ceiling_chars": 50,
       "negative_prompt_support": "supported",
       "ref_image_support": true,
       "dialect": "prose+quoted",
@@ -542,16 +683,19 @@
       "api": "REST",
       "paste_only": false,
       "strengths": [
-        "best-in-class typography",
-        "strong wordmark fidelity",
-        "style presets"
+        "~90-95% character accuracy on short-to-mid wordmarks",
+        "strongest pure-typography model in the registry",
+        "style presets (AUTO/GENERAL/REALISTIC/DESIGN/FICTION)"
       ],
       "weaknesses": [
-        "Magic Prompt expands literal prompts",
-        "non-Latin broken"
+        "photoreal humans weak — multi-person scenes get deformed faces/fingers",
+        "Magic Prompt expands literal prompts (set magic_prompt_option to OFF)",
+        "Chinese / Arabic / non-Latin still being refined per Ideogram",
+        "ceiling is realistically ~3-6 words reliable, ~10 with seed retries — earlier '~80 chars' claim was over-optimistic"
       ],
       "never_use_for": [
-        "non-Latin wordmarks"
+        "non-Latin wordmarks",
+        "photoreal portraits or hero humans"
       ],
       "cost_hint": "$0.06/img (direct API)"
     },
@@ -562,7 +706,7 @@
       "text_encoder": "ideogram-class",
       "native_rgba": true,
       "native_svg": false,
-      "text_ceiling_chars": 60,
+      "text_ceiling_chars": 40,
       "negative_prompt_support": "supported",
       "ref_image_support": true,
       "dialect": "prose+quoted",
@@ -570,16 +714,19 @@
       "api": "REST",
       "paste_only": false,
       "strengths": [
-        "fast + cheap",
-        "style:\"transparent\" for RGBA",
-        "posters/dense text"
+        "fast + cheap ($0.03/img)",
+        "RGBA via dedicated POST /v1/ideogram-v3/generate-transparent endpoint with rendering_speed:TURBO (no style:transparent param exists)",
+        "posters/dense short text"
       ],
       "weaknesses": [
+        "photoreal humans weak (same as Ideogram 3)",
         "Magic Prompt expands literal prompts",
-        "non-Latin broken"
+        "non-Latin still being refined",
+        "~3-6 words reliable in practice"
       ],
       "never_use_for": [
-        "non-Latin wordmarks"
+        "non-Latin wordmarks",
+        "photoreal portraits"
       ],
       "cost_hint": "$0.03/img direct; free: 10/wk on web (watermark)"
     },
@@ -623,17 +770,22 @@
       "api": "REST",
       "paste_only": false,
       "strengths": [
+        "current SOTA native SVG (Feb 2026 release) — only paid model besides freepik-text-to-icon that emits real vector",
         "HuggingFace T2I Arena #1 (ELO 1172)",
-        "native SVG output (higher quality than V3)",
-        "controls.colors palette enforcement"
+        "4 SKUs: V4 (1024² raster), V4 Vector, V4 Pro (2048² raster), V4 Pro Vector",
+        "controls.colors palette enforcement",
+        "exports SVG/PNG/JPG/PDF/TIFF/Lottie"
       ],
       "weaknesses": [
-        "NO style_id or predefined style support — use V3 for brand pipelines"
+        "NO style_id or predefined style support — use V3 for brand pipelines requiring style presets",
+        "dropped style creation, prompt-based editing, image sets, artistic-level control vs V3",
+        "slower than V3: ~10s standard, ~15s Vector, ~30s Pro, ~45s Pro Vector",
+        "V4 raster transparency not explicitly enumerated in docs — verify before relying (SVG path is the safe transparent route)"
       ],
       "never_use_for": [
         "brand-style pipelines requiring style_id (use recraft-v3)"
       ],
-      "cost_hint": "$0.08/img (vector), $0.30/img (pro vector)"
+      "cost_hint": "$0.08/img (vector), $0.30/img (pro vector). Subscription credit model: $10/1K → $48/8.4K credits."
     },
     {
       "id": "playground-v3",
@@ -796,26 +948,29 @@
       "id": "fal-flux-2",
       "provider": "fal",
       "family": "flux",
-      "text_encoder": "T5-XXL",
+      "text_encoder": "T5-XXL + Mistral-3 24B VLM",
       "native_rgba": false,
       "native_svg": false,
-      "text_ceiling_chars": 25,
+      "text_ceiling_chars": 60,
       "cfg_default": 3.5,
-      "max_reference_images": 8,
-      "negative_prompt_support": "error",
-      "ref_image_support": "up_to_8_refs",
+      "max_reference_images": 10,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": "up_to_10_refs",
       "dialect": "prose",
       "mode": "text-to-image",
       "api": "REST",
       "paste_only": false,
       "strengths": [
-        "fal aggregator path to Flux.2"
+        "fal aggregator path to Flux 2 Pro",
+        "5-10 words / one tagline reliable",
+        "10 reference images"
       ],
       "weaknesses": [
-        "relayed latency"
+        "relayed latency",
+        "fal schema lists negative_prompt but it's a no-op (BFL Flux 2 has no negative-conditioning path)"
       ],
-      "never_use_for": [],
-      "cost_hint": "$0.06/img (fal.ai)"
+      "never_use_for": ["transparent background"],
+      "cost_hint": "$0.03 first MP + $0.015/extra MP (fal flux-2-pro)"
     },
     {
       "id": "fal-sdxl",
@@ -1620,6 +1775,364 @@
       ],
       "never_use_for": ["one-off assets with no brand history"],
       "cost_hint": "user-owned (+ one-time LoRA training cost ~$2-4)"
+    },
+    {
+      "id": "freepik-mystic",
+      "provider": "freepik",
+      "family": "mystic",
+      "text_encoder": "T5-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 12,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "4096x4096",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": [
+        "Freepik flagship; realism preset by default",
+        "1k/2k/4k native resolutions",
+        "structure_reference and style_reference inputs",
+        "13 aspect ratio presets"
+      ],
+      "weaknesses": [
+        "no transparency",
+        "weak text-in-image rendering",
+        "async/poll only — adds 5-30s latency"
+      ],
+      "never_use_for": ["transparent_mark", "wordmarks > 1 word"],
+      "cost_hint": "~$0.03/img (Freepik 5 EUR free trial covers ~125 creations)"
+    },
+    {
+      "id": "freepik-mystic-fluid",
+      "provider": "freepik",
+      "family": "mystic",
+      "text_encoder": "T5-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 12,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "4096x4096",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": ["best prompt adherence of the Mystic family"],
+      "weaknesses": ["no transparency", "async/poll"],
+      "never_use_for": ["transparent_mark"],
+      "cost_hint": "~$0.03/img"
+    },
+    {
+      "id": "freepik-mystic-zen",
+      "provider": "freepik",
+      "family": "mystic",
+      "text_encoder": "T5-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 12,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "4096x4096",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": ["minimalist / clean aesthetic preset"],
+      "weaknesses": ["no transparency", "async/poll"],
+      "never_use_for": ["transparent_mark"],
+      "cost_hint": "~$0.03/img"
+    },
+    {
+      "id": "freepik-flux-2-pro",
+      "provider": "freepik",
+      "family": "flux",
+      "text_encoder": "T5-XXL + Mistral-3 24B VLM",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 60,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "max_size": "2048x2048",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": [
+        "Flux 2 Pro hosted via Freepik (no BFL key required)",
+        "5-10 words / one tagline reliable",
+        "covered by Freepik 5 EUR free trial"
+      ],
+      "weaknesses": [
+        "no transparency",
+        "async/poll",
+        "Freepik passes negative_prompt to BFL but BFL Flux 2 has no negative-conditioning path — silently ignored"
+      ],
+      "never_use_for": ["transparent_mark"],
+      "cost_hint": "~75 credits/img on Freepik Essential (~$0.07)"
+    },
+    {
+      "id": "freepik-flux-kontext-pro",
+      "provider": "freepik",
+      "family": "flux",
+      "text_encoder": "T5-XXL",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 20,
+      "negative_prompt_support": "supported",
+      "ref_image_support": true,
+      "max_size": "2048x2048",
+      "dialect": "prose",
+      "mode": "image-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": ["context-aware editing with image guidance"],
+      "weaknesses": ["no transparency", "async/poll"],
+      "never_use_for": ["transparent_mark"],
+      "cost_hint": "~$0.05/img"
+    },
+    {
+      "id": "freepik-text-to-icon",
+      "provider": "freepik",
+      "family": "icon",
+      "text_encoder": "proprietary",
+      "native_rgba": true,
+      "native_svg": true,
+      "text_ceiling_chars": 0,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "max_size": "1024x1024",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": [
+        "native SVG output (joins recraft-v4 + inline_svg as the third real vector route)",
+        "5 styles: solid, outline, color, flat, sticker",
+        "infinite scalability for icon packs"
+      ],
+      "weaknesses": ["icon-only — not for hero/illustration", "async/poll"],
+      "never_use_for": ["hero_image", "illustration", "og_image"],
+      "cost_hint": "~$0.04/icon"
+    },
+    {
+      "id": "freepik-remove-bg",
+      "provider": "freepik",
+      "family": "edit",
+      "text_encoder": "n/a",
+      "native_rgba": true,
+      "native_svg": false,
+      "text_ceiling_chars": 0,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "source",
+      "dialect": "prose",
+      "mode": "image-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": [
+        "produces RGBA — alternative to BiRefNet/BRIA matte for cases where the local matte fails"
+      ],
+      "weaknesses": ["requires reference_images[0]", "async/poll"],
+      "never_use_for": [],
+      "cost_hint": "~$0.04/op"
+    },
+    {
+      "id": "freepik-upscaler-creative",
+      "provider": "freepik",
+      "family": "edit",
+      "text_encoder": "n/a",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 0,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "16384x16384",
+      "dialect": "prose",
+      "mode": "image-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": ["AI upscaler for hero/marketing assets"],
+      "weaknesses": ["requires reference_images[0]", "Premium API users only"],
+      "never_use_for": [],
+      "cost_hint": "~$0.10/op"
+    },
+    {
+      "id": "freepik-image-relight",
+      "provider": "freepik",
+      "family": "edit",
+      "text_encoder": "prompt-conditioned",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 0,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "source",
+      "dialect": "prose",
+      "mode": "image-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": [
+        "rebuild scene lighting via prompt, reference image, or lightmap (Magnific.ai tech)"
+      ],
+      "weaknesses": ["requires reference_images[0]", "fixed €0.10 per op"],
+      "never_use_for": [],
+      "cost_hint": "€0.10/op (~$0.11)"
+    },
+    {
+      "id": "freepik-image-style-transfer",
+      "provider": "freepik",
+      "family": "edit",
+      "text_encoder": "prompt-conditioned",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 0,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "source",
+      "dialect": "prose",
+      "mode": "image-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": ["apply artistic style with intensity control (Magnific.ai tech)"],
+      "weaknesses": ["requires reference_images[0]", "fixed €0.10 per op"],
+      "never_use_for": [],
+      "cost_hint": "€0.10/op (~$0.11)"
+    },
+    {
+      "id": "freepik-image-expand-flux",
+      "provider": "freepik",
+      "family": "edit",
+      "text_encoder": "prompt-conditioned",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 0,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "source+2048",
+      "dialect": "prose",
+      "mode": "image-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": ["outpaint up to 2048px per edge using Flux Pro"],
+      "weaknesses": ["requires reference_images[0]"],
+      "never_use_for": [],
+      "cost_hint": "~$0.05/op"
+    },
+    {
+      "id": "freepik-image-expand-seedream",
+      "provider": "freepik",
+      "family": "edit",
+      "text_encoder": "prompt-conditioned",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 0,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": true,
+      "max_size": "source+2048",
+      "dialect": "prose",
+      "mode": "image-to-image",
+      "api": "REST-async",
+      "paste_only": false,
+      "strengths": ["outpaint with Seedream 4.5 — strong reference consistency"],
+      "weaknesses": ["requires reference_images[0]"],
+      "never_use_for": [],
+      "cost_hint": "~$0.04/op"
+    },
+    {
+      "id": "pixazo-flux-schnell",
+      "provider": "pixazo",
+      "family": "flux",
+      "text_encoder": "T5-XXL + CLIP-L",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 6,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "max_size": "1024x1024",
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "free tier (no credit card)",
+        "cheapest paid Flux Schnell on the market: $0.0012/img",
+        "sync response (no polling)"
+      ],
+      "weaknesses": [
+        "FREE TIER: outputs owned by Appy Pie LLP with mandatory attribution — unsuitable for production brand assets",
+        "no transparency, no SVG",
+        "weak text rendering (Flux Schnell ceiling)",
+        "Cloudflare/Pollinations cover the same model with no IP clawback — prefer those for free use"
+      ],
+      "never_use_for": [
+        "production logos / app icons / brand marks on the FREE tier (IP clawback)",
+        "transparent_mark"
+      ],
+      "cost_hint": "$0 free tier (with IP clawback) / $0.0012 paid tier (full ownership)"
+    },
+    {
+      "id": "pixazo-sdxl-base",
+      "provider": "pixazo",
+      "family": "sdxl",
+      "text_encoder": "CLIP-L + CLIP-G",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 1,
+      "negative_prompt_support": "supported",
+      "ref_image_support": false,
+      "max_size": "1024x1024",
+      "dialect": "tag-soup",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "free tier (no credit card)",
+        "supports negative_prompt natively",
+        "sync response"
+      ],
+      "weaknesses": [
+        "FREE TIER: outputs owned by Appy Pie LLP — unsuitable for production brand assets",
+        "no transparency, no SVG",
+        "garbled text past 1 glyph (SDXL ceiling)",
+        "Cloudflare Workers AI hosts SDXL Base/Lightning with no IP clawback"
+      ],
+      "never_use_for": [
+        "production assets on the FREE tier",
+        "transparent_mark",
+        "logos with text"
+      ],
+      "cost_hint": "$0 free tier (with IP clawback)"
+    },
+    {
+      "id": "pixazo-sd15-inpainting",
+      "provider": "pixazo",
+      "family": "stable-diffusion",
+      "text_encoder": "CLIP-L",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 0,
+      "negative_prompt_support": "supported",
+      "ref_image_support": true,
+      "max_size": "512x512",
+      "dialect": "tag-soup",
+      "mode": "image-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "strengths": [
+        "free tier (no credit card)",
+        "inpainting use case — useful for asset_validate repair primitive when the subject mask is known"
+      ],
+      "weaknesses": [
+        "FREE TIER: outputs owned by Appy Pie LLP — unsuitable for production",
+        "512x512 resolution cap",
+        "requires reference_images[0] + mask",
+        "URL pattern best-guess from operation slug — may need fixing on first call (see provider source)"
+      ],
+      "never_use_for": ["production assets on the FREE tier"],
+      "cost_hint": "$0 free tier (with IP clawback)"
     }
   ]
 }

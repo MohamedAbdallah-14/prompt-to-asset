@@ -369,6 +369,7 @@ describe("GoogleProvider", () => {
 
   it("surfaces the free-tier hint on 429 limit:0 and on empty response", async () => {
     setKey("google", "goog-xxx");
+    // Imagen 4 has a 25 RPD free tier — limit:0 means project misconfigured or quota exhausted.
     let handle = installFetch({
       kind: "text",
       status: 429,
@@ -376,8 +377,21 @@ describe("GoogleProvider", () => {
     });
     try {
       await expect(GoogleProvider.generate("imagen-4", baseReq)).rejects.toThrow(
-        /no free API tier/
+        /Imagen 4.*25 RPD/
       );
+    } finally {
+      handle.restore();
+    }
+    // Nano Banana has no free API tier — limit:0 is expected without billing.
+    handle = installFetch({
+      kind: "text",
+      status: 429,
+      body: JSON.stringify({ error: { details: [{ quotaValue: "limit: 0" }] } })
+    });
+    try {
+      await expect(
+        GoogleProvider.generate("gemini-3-pro-image", baseReq)
+      ).rejects.toThrow(/Nano Banana family.*no free API tier/);
     } finally {
       handle.restore();
     }

@@ -3,17 +3,28 @@ import type { Provider, GenerateRequest, GenerateResult } from "./types.js";
 import { ProviderError } from "./types.js";
 
 /**
- * OpenAI provider — gpt-image-1, gpt-image-1.5, dall-e-3.
+ * OpenAI provider — gpt-image-2, gpt-image-1.5, gpt-image-1, gpt-image-1-mini, dall-e-3.
  * Uses fetch; no OpenAI SDK dependency (keeps install footprint tiny).
  *
  * API reference: https://platform.openai.com/docs/api-reference/images
- * Key fact: `background: "transparent"` on gpt-image-1 returns true RGBA PNG.
+ * Key fact: `background: "transparent"` returns true RGBA PNG on gpt-image-1
+ * and gpt-image-1.5. **gpt-image-2 dropped this param** — verified via the
+ * OpenAI Community thread + Replicate's gpt-image-2 docs. Sending it 400s.
+ * Route transparent requests to gpt-image-1.5 (or gpt-image-1).
+ * gpt-image-2 (released 2026-04-21) supports native sizes up to 4096x4096 plus
+ * the existing 1024² / 1024×1536 / 1536×1024 set.
  */
 export const OpenAIProvider: Provider = {
   name: "openai",
 
   supportsModel(modelId: string): boolean {
-    return ["gpt-image-1", "gpt-image-1.5", "dall-e-3"].includes(modelId);
+    return [
+      "gpt-image-2",
+      "gpt-image-1.5",
+      "gpt-image-1",
+      "gpt-image-1-mini",
+      "dall-e-3"
+    ].includes(modelId);
   },
 
   isAvailable(): boolean {
@@ -35,12 +46,13 @@ export const OpenAIProvider: Provider = {
     };
 
     if (modelId.startsWith("gpt-image")) {
-      if (req.transparency) {
+      // gpt-image-2 does not accept the `background` param — it 400s.
+      // Only gpt-image-1 / gpt-image-1.5 / gpt-image-1-mini support it.
+      const supportsTransparentBg = modelId !== "gpt-image-2";
+      if (req.transparency && supportsTransparentBg) {
         body["background"] = "transparent";
-        body["output_format"] = req.output_format ?? "png";
-      } else {
-        body["output_format"] = req.output_format ?? "png";
       }
+      body["output_format"] = req.output_format ?? "png";
       if (req.reference_images && req.reference_images.length > 0) {
         body["input_image"] = req.reference_images;
       }
@@ -76,16 +88,25 @@ export const OpenAIProvider: Provider = {
       seed: req.seed,
       raw_response: json,
       ...(first.revised_prompt && { provider_revised_prompt: first.revised_prompt }),
-      native_rgba: Boolean(req.transparency),
+      native_rgba: Boolean(req.transparency) && modelId !== "gpt-image-2",
       native_svg: false
     };
   }
 };
 
 function sizeFor(w: number, h: number, modelId: string): string {
-  // gpt-image-1: 1024x1024, 1024x1536, 1536x1024, auto
+  // gpt-image-1 / 1.5 / mini: 1024x1024, 1024x1536, 1536x1024, auto
+  // gpt-image-2: same set + 2048x2048 + 4096x4096 (per developers.openai.com docs)
   // dall-e-3: 1024x1024, 1024x1792, 1792x1024
   const aspect = w / h;
+  if (modelId === "gpt-image-2") {
+    const longest = Math.max(w, h);
+    if (longest > 2048) return aspect > 1.2 ? "4096x2048" : aspect < 0.83 ? "2048x4096" : "4096x4096";
+    if (longest > 1536) return "2048x2048";
+    if (aspect > 1.2) return "1536x1024";
+    if (aspect < 0.83) return "1024x1536";
+    return "1024x1024";
+  }
   if (modelId.startsWith("gpt-image")) {
     if (aspect > 1.2) return "1536x1024";
     if (aspect < 0.83) return "1024x1536";

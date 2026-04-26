@@ -12,15 +12,18 @@ import { dummyPng } from "./openai.js";
  * send transparency-required requests here. If asked, we still generate on white
  * and let the pipeline matte post-hoc.
  *
- * BILLING (verified 2026-04-22 against ai.google.dev/gemini-api/docs/pricing):
- * Google removed Gemini / Imagen image-generation from its universal free API
- * tier in Dec 2025. `gemini-3.1-flash-image-preview`, `gemini-3-pro-image-preview`,
- * `gemini-2.5-flash-image`, and every `imagen-4.0-*` variant show
- * "Not available" in the Free Tier column of the official pricing page. An
- * unbilled GEMINI_API_KEY hitting these endpoints returns HTTP 429 with
- * `limit: 0` on `GenerateRequestsPerDayPerProjectPerModel-FreeTier` — a daily
- * quota of zero, not a rate limit. Billing must be enabled on the GCP project
- * for programmatic access.
+ * BILLING (verified 2026-04-26 against the user's AI Studio rate-limit dashboard):
+ * The free-tier picture is split. Imagen 4 is back on free tier at 25 RPD per
+ * variant: `imagen-4.0-generate-preview`, `imagen-4.0-fast-generate-preview`,
+ * `imagen-4.0-ultra-generate-preview` each show 0/25 RPD on the dashboard
+ * (RPM/TPM dashes — only daily request counts apply). Total ~75 free
+ * images/day across the Imagen 4 line on a single project.
+ *
+ * Nano Banana family is paid-only: `gemini-2.5-flash-image`,
+ * `gemini-3.1-flash-image-preview`, and `gemini-3-pro-image-preview` show 0/0
+ * across RPM/TPM/RPD on the free-tier dashboard. Billing must be enabled on
+ * the GCP project for programmatic access. Lyria 3 (Clip/Pro) and Veo 3
+ * (Generate/Fast/Lite) are also paid-only.
  *
  * Paid per-image prices (standard rate; batch API is 50% off):
  *   - Nano Banana (gemini-2.5-flash-image)            $0.039 @ 1K
@@ -97,12 +100,20 @@ export const GoogleProvider: Provider = {
       // Redact defensively in case Google echoes back anything key-shaped
       // (older deployments that still accept ?key= would echo the URL).
       let hint = "";
-      // 429 with limit:0 on an image endpoint is the distinctive "no free
-      // tier" signature Google started returning in Dec 2025. Flag it so the
-      // LLM host doesn't retry or blame rate-limiting.
+      // 429 with limit:0 on an image endpoint means the project shows zero
+      // free-tier allowance for this specific model. Imagen 4 has a 25 RPD
+      // free tier on most projects (verified 2026-04-26); Nano Banana family
+      // does not. Tailor the hint by model so the LLM host doesn't retry or
+      // mis-blame rate-limiting.
       if (resp.status === 429 && /limit[^0-9]*0/i.test(errText)) {
-        hint =
-          " — Gemini/Imagen image-gen has no free API tier as of 2025-12. Enable billing on the GCP project or use the free AI Studio web UI (https://aistudio.google.com) + asset_ingest_external.";
+        const isImagen4 = /imagen-4/i.test(modelId);
+        if (isImagen4) {
+          hint =
+            " — this project shows 0 free-tier allowance for Imagen 4 even though Imagen 4 Generate/Fast/Ultra normally each get 25 RPD free. Either billing is disabled on a project that hasn't received the free tier yet, or the daily 25-request quota is exhausted. Enable billing on the GCP project, switch projects, or use the free AI Studio web UI (https://aistudio.google.com) + asset_ingest_external.";
+        } else {
+          hint =
+            " — Nano Banana family (gemini-2.5-flash-image / gemini-3.1-flash-image-preview / gemini-3-pro-image-preview) has no free API tier — billing must be enabled on the GCP project. Imagen 4 is free at 25 RPD per variant if you can route there instead, or use the free AI Studio web UI (https://aistudio.google.com) + asset_ingest_external.";
+        }
       }
       throw new ProviderError(
         "google",

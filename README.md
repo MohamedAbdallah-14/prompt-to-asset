@@ -260,11 +260,12 @@ The **Never** column matters. It's why `prompt-to-asset` refuses to render wordm
 <details>
 <summary><b>Google Gemini / Imagen — verified pricing (Apr 2026)</b></summary>
 
-Verified against [ai.google.dev/gemini-api/docs/pricing](https://ai.google.dev/gemini-api/docs/pricing):
+Verified 2026-04-26 against the AI Studio rate-limit dashboard:
 
-- **No Gemini or Imagen image model has a public API free tier.** `gemini-3.1-flash-image-preview` (Nano Banana 2), `gemini-3-pro-image-preview` (Nano Banana Pro), `gemini-2.5-flash-image` (original Nano Banana), and all `imagen-4.0-*` variants show `Free Tier: Not available` on Google's own pricing page. An unbilled `GEMINI_API_KEY` returns HTTP 429 with `limit: 0` on every image endpoint.
+- **Imagen 4 has a free API tier.** `imagen-4.0-generate-preview`, `imagen-4.0-fast-generate-preview`, and `imagen-4.0-ultra-generate-preview` each show 0/25 RPD on the free tier (RPM/TPM not capped — only daily request count). Total ~75 free images/day across the Imagen 4 line on a single project. Imagen 4 Fast is the cheapest free Gemini illustration route.
+- **Nano Banana family is paid-only.** `gemini-3.1-flash-image-preview` (Nano Banana 2), `gemini-3-pro-image-preview` (Nano Banana Pro), `gemini-2.5-flash-image` (original Nano Banana) all show 0/0 across RPM/TPM/RPD on the free tier dashboard. Lyria 3 (Clip/Pro) and Veo 3 (Generate/Fast/Lite) are also 0/0. Billing must be enabled on the GCP project to use these via API.
 - **Free for text, multimodal understanding, and embeddings.** The Gemini text-out models still have `Free of charge` input + output on the free tier.
-- **Free interactive image generation is only via the AI Studio web UI** at [aistudio.google.com](https://aistudio.google.com). Community-observed limit 500–1,000 images/day, dynamic. Use `external_prompt_only` + `asset_ingest_external`.
+- **Free interactive image generation is also via the AI Studio web UI** at [aistudio.google.com](https://aistudio.google.com). Community-observed limit 500–1,000 images/day, dynamic. Use `external_prompt_only` + `asset_ingest_external` if you want Nano Banana quality without billing.
 - **Free image generation via the Gemini consumer app** at [gemini.google.com](https://gemini.google.com): Basic 20/day, AI Plus 50/day, AI Pro 100/day, Ultra 1,000/day.
 - **Paid API pricing (per image, standard):** Nano Banana (`gemini-2.5-flash-image`) $0.039; Nano Banana 2 Flash (`gemini-3.1-flash-image-preview`) $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K; Nano Banana Pro (`gemini-3-pro-image-preview`) $0.134/1K-2K, $0.24/4K (+ $0.0011 per input image); Imagen 4 Fast $0.02, Standard $0.04, Ultra $0.06. Batch API is 50% off.
 

@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "run_at": "2026-04-21T23:57:08.300Z",
+  "run_at": "2026-04-24T21:54:51.913Z",
   "total": 9,
   "pass": 9,
   "fail": 0,
@@ -87,8 +87,7 @@
       "target_model": "recraft-v4",
       "modes_available": [
         "inline_svg",
-        "external_prompt_only",
-        "api"
+        "external_prompt_only"
       ],
       "clarifying_question_ids": [],
       "transparency_required": true,
@@ -102,8 +101,7 @@
           ],
           "actual": [
             "inline_svg",
-            "external_prompt_only",
-            "api"
+            "external_prompt_only"
           ],
           "pass": true
         },
@@ -198,8 +196,7 @@
       "id": "illustration-empty-state",
       "target_model": "flux-pro",
       "modes_available": [
-        "external_prompt_only",
-        "api"
+        "external_prompt_only"
       ],
       "clarifying_question_ids": [],
       "transparency_required": false,
@@ -211,8 +208,7 @@
             "external_prompt_only"
           ],
           "actual": [
-            "external_prompt_only",
-            "api"
+            "external_prompt_only"
           ],
           "pass": true
         },
@@ -222,8 +218,7 @@
             "inline_svg"
           ],
           "actual": [
-            "external_prompt_only",
-            "api"
+            "external_prompt_only"
           ],
           "pass": true
         }
@@ -288,8 +283,7 @@
       "target_model": "recraft-v4",
       "modes_available": [
         "inline_svg",
-        "external_prompt_only",
-        "api"
+        "external_prompt_only"
       ],
       "clarifying_question_ids": [
         "no_brand_palette"

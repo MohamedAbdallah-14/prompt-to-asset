@@ -6,6 +6,8 @@ import { BflProvider } from "./bfl.js";
 import { StabilityProvider } from "./stability.js";
 import { LeonardoProvider } from "./leonardo.js";
 import { FalProvider } from "./fal.js";
+import { FreepikProvider } from "./freepik.js";
+import { PixazoProvider } from "./pixazo.js";
 import { HuggingFaceProvider } from "./huggingface.js";
 import { PollinationsProvider } from "./pollinations.js";
 import { StableHordeProvider } from "./stable-horde.js";
@@ -44,6 +46,8 @@ const PROVIDERS: Provider[] = [
   StabilityProvider,
   LeonardoProvider,
   FalProvider,
+  FreepikProvider,
+  PixazoProvider,
   ReplicateProvider,
   // User-owned infra (Modal / Runpod / self-hosted ComfyUI). Opt-in via
   // PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL. Unlocks brand-LoRA + custom workflows.

@@ -21,6 +21,9 @@ const KEYS = [
   "LEONARDO_API_KEY",
   "FAL_API_KEY",
   "FAL_KEY",
+  "FREEPIK_API_KEY",
+  "PIXAZO_API_KEY",
+  "PIXAZO_SUBSCRIPTION_KEY",
   "HF_TOKEN",
   "HUGGINGFACE_API_KEY",
   "POLLINATIONS_DISABLED",
@@ -28,7 +31,8 @@ const KEYS = [
   "CLOUDFLARE_API_TOKEN",
   "CLOUDFLARE_ACCOUNT_ID",
   "REPLICATE_API_TOKEN",
-  "REPLICATE_API_KEY"
+  "REPLICATE_API_KEY",
+  "PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL"
 ];
 
 describe("MODES_BY_ASSET_TYPE", () => {
@@ -127,6 +131,8 @@ describe("availability + selectMode", () => {
       stability: false,
       leonardo: false,
       fal: false,
+      freepik: false,
+      pixazo: false,
       huggingface: false,
       // Pollinations + Stable Horde are zero-key — on by default.
       pollinations: true,

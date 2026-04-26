@@ -29,6 +29,9 @@
 // model-registry.json which is versioned heavily.
 export const PRICE_TABLE_USD_PER_IMAGE: Record<string, number> = {
   // OpenAI — IDs must match data/model-registry.json exactly.
+  // gpt-image-2 high-quality 1024²: ~$0.21 per third-party reporting; verify
+  // against api.openai.com/pricing once OpenAI publishes the calculator output.
+  "gpt-image-2": 0.21,
   "gpt-image-1": 0.19,
   "gpt-image-1.5": 0.19,
   "gpt-image-1-mini": 0.008,
@@ -76,6 +79,31 @@ export const PRICE_TABLE_USD_PER_IMAGE: Record<string, number> = {
   "fal-flux-pro": 0.05,
   "fal-flux-2": 0.08,
   "fal-sdxl": 0.01,
+
+  // Freepik — 5 EUR (~$5.40) free trial, paid pay-as-you-go after.
+  // Per-creation prices are best-effort; Freepik dashboard is the source of truth.
+  // €→$ at 1.08; rounded conservatively up to avoid undercharging the guard.
+  "freepik-mystic": 0.04,
+  "freepik-mystic-realism": 0.04,
+  "freepik-mystic-fluid": 0.04,
+  "freepik-mystic-zen": 0.04,
+  "freepik-flux-2-pro": 0.05,
+  "freepik-flux-kontext-pro": 0.05,
+  "freepik-text-to-icon": 0.04,
+  "freepik-remove-bg": 0.04,
+  "freepik-upscaler-creative": 0.1,
+  "freepik-image-relight": 0.11,
+  "freepik-image-style-transfer": 0.11,
+  "freepik-image-expand-flux": 0.05,
+  "freepik-image-expand-ideogram": 0.05,
+  "freepik-image-expand-seedream": 0.04,
+
+  // Pixazo — Azure APIM gateway. Free tier $0 but transfers IP ownership
+  // to Appy Pie LLP (the parent company). Paid tier transfers ownership
+  // back to the user. Flux Schnell paid is the cheapest in the registry.
+  "pixazo-flux-schnell": 0.0012,
+  "pixazo-sdxl-base": 0,
+  "pixazo-sd15-inpainting": 0,
 
   // Free tier / zero key — must match registry ids in data/model-registry.json
   "pollinations-flux": 0,

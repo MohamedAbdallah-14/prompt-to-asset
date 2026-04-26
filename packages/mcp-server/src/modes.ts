@@ -72,6 +72,10 @@ export interface ApiAvailability {
   stability: boolean;
   leonardo: boolean;
   fal: boolean;
+  /** Freepik — Mystic, Flux 2 Pro, AI Icon (SVG), editing surface. 5 EUR free trial. */
+  freepik: boolean;
+  /** Pixazo — Azure APIM gateway. Free tier is real but transfers IP ownership to Appy Pie LLP. */
+  pixazo: boolean;
   huggingface: boolean;
   /** Pollinations is zero-key; true unless explicitly disabled. */
   pollinations: boolean;
@@ -95,6 +99,8 @@ export function detectApiAvailability(): ApiAvailability {
     stability: Boolean(process.env["STABILITY_API_KEY"]),
     leonardo: Boolean(process.env["LEONARDO_API_KEY"]),
     fal: Boolean(process.env["FAL_API_KEY"] || process.env["FAL_KEY"]),
+    freepik: Boolean(process.env["FREEPIK_API_KEY"]),
+    pixazo: Boolean(process.env["PIXAZO_API_KEY"] || process.env["PIXAZO_SUBSCRIPTION_KEY"]),
     huggingface: Boolean(process.env["HF_TOKEN"] || process.env["HUGGINGFACE_API_KEY"]),
     pollinations: process.env["POLLINATIONS_DISABLED"] !== "1",
     horde: process.env["HORDE_DISABLED"] !== "1",
@@ -123,6 +129,8 @@ export function providerKeyForModel(modelId: string): keyof ApiAvailability | nu
   if (modelId.startsWith("sd") || modelId.startsWith("playground")) return "stability";
   if (modelId.startsWith("leonardo")) return "leonardo";
   if (modelId.startsWith("fal-")) return "fal";
+  if (modelId.startsWith("freepik-")) return "freepik";
+  if (modelId.startsWith("pixazo-")) return "pixazo";
   if (modelId.startsWith("hf-")) return "huggingface";
   if (modelId.startsWith("pollinations-")) return "pollinations";
   if (modelId.startsWith("horde-")) return "horde";
