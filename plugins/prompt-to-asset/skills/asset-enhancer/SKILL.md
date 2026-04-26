@@ -117,12 +117,13 @@ The routing table lives in `data/routing-table.json`. Summary:
 | Need | Primary | Fallback | Never |
 |---|---|---|---|
 | Transparent PNG mark | `gpt-image-1` (`background:"transparent"`) | Ideogram 3 Turbo `style:"transparent"` → Recraft V3 | Imagen any, Gemini any, SD 1.5 |
-| Logo with 1–3 word text | Ideogram 3 → `gpt-image-1` → Recraft V3 | Composite real SVG type over mark | Imagen, SD 1.5, Flux schnell |
-| Logo with >3 word text | Text-free mark + composite SVG type | — | Any diffusion sampler for the text |
-| Native SVG | Recraft V3 | LLM-author SVG (simple geometry) — **this is `inline_svg` mode** | Everyone else |
-| Photoreal hero | Flux Pro / Flux.2 → `gpt-image-1` → Imagen 4 | SDXL + brand LoRA | DALL·E 3 |
-| Empty-state illustration | Flux Pro + brand LoRA/IP-Adapter | SDXL + LoRA → Recraft brand style | One-off Ideogram/MJ (style drift) |
-| App icon | Recraft V3 or Ideogram 3 for mark → packaging pipeline | `gpt-image-1` mark → packaging | Full-bleed Imagen 4 as final |
+| Logo with 1–3 word text | Ideogram 3 → `gpt-image-1.5` → Recraft V4 | Composite real SVG type over mark | Imagen 4, SD 1.5, Flux Schnell |
+| Logo with 4–10 word text | `flux-2` / `gpt-image-2` / Nano Banana Pro | `gpt-image-1.5` | SD, Flux Schnell, Pollinations |
+| Logo with paragraph-length text | Nano Banana Pro / `gpt-image-2` (model can render); composite stays safer for pixel-exact UI | — | All weak-text models |
+| Native SVG | Recraft V4 | LLM-author SVG (simple geometry) — **this is `inline_svg` mode** | Everyone else |
+| Photoreal hero | Flux 2 / `gpt-image-2` / Imagen 4 Ultra | SDXL + brand LoRA | DALL·E 3 |
+| Empty-state illustration | Flux 2 + brand refs (up to 10) / IP-Adapter | SDXL + LoRA → Recraft brand style | One-off Ideogram/MJ (style drift) |
+| App icon | Recraft V4 or Ideogram 3 for mark → packaging pipeline | `gpt-image-1.5` mark → packaging | Full-bleed Imagen 4 as final |
 | Favicon | SVG first (LLM-author or Recraft V3) | Raster 512 → vectorize | — |
 | OG image | Satori + `@resvg/resvg-js` template (no diffusion) | Diffusion **only** for hero image inside OG template | — |
 
@@ -130,17 +131,23 @@ The routing table lives in `data/routing-table.json`. Summary:
 
 Prompts are **never** forwarded verbatim. Rewrite per target family. See the per-angle research under `docs/research/` for derivations; implementation is in `packages/mcp-server/src/rewriter.ts`.
 
-### `gpt-image-1` / `gpt-image-1.5` (OpenAI)
+### `gpt-image-2` / `gpt-image-1.5` / `gpt-image-1` (OpenAI)
 - Prose sentences. Subject → Context → Style → Constraints.
-- For transparency: **set API param `background: "transparent"`**, do not rely on prompt.
-- For text: `"Acme"` in double quotes. Ceiling ~30–50 chars.
-- Never rely on `negative_prompt` field — silently ignored.
+- **Transparency:** `gpt-image-1.5` and `gpt-image-1` accept `background: "transparent"`. **`gpt-image-2` does NOT — the param 400s** (regression). Route transparent jobs to gpt-image-1.5.
+- For text: `"Acme"` in double quotes. Ceilings: gpt-image-2 ~80 chars / paragraph (~99% per third-party); gpt-image-1.5 dense text (~60 chars, LM Arena #1); gpt-image-1 ~50 chars.
+- Never rely on `negative_prompt` field — silently ignored across all three.
+- gpt-image-2 has an active noise-artifact bug on structured surfaces (clouds, skin, panels). Pricing is not yet on OpenAI's pricing page.
 
-### Imagen 3 / 4 (Google) & Gemini 2.5/3 Flash Image ("Nano Banana")
+### Imagen 3 / 4 (Google) & Gemini 2.5 / 3.1 / 3 Pro Flash Image ("Nano Banana")
 - Narrative prose. Imagen has a default rewriter for prompts <30 words, so write ≥30 words of concrete description to suppress it.
-- **Do not ask for transparency in the prompt** — the model renders a checkerboard visual. Ask for `"solid pure white background"` and matte externally.
-- Text ceiling ~10–20 chars; anything longer → composite.
-- Gemini supports multimodal edit (in-context image refs); Imagen does not.
+- **Do not ask for transparency in the prompt** — RGB-only VAE renders a checkerboard. Ask for `"solid pure white background"` and matte externally.
+- **Per-model text ceilings:**
+  - Imagen 4 family: ≤25 chars / ~3-4 short words per Google's own guidance. Photoreal leaders, not text.
+  - `gemini-2.5-flash-image` (original Nano Banana 1): ~80% accuracy, degrades past 1-3 words.
+  - `gemini-3.1-flash-image-preview` (Nano Banana 2): ~90% accuracy, ranked #1 on Artificial Analysis Image Arena at launch — **strong-text, not weak**.
+  - `gemini-3-pro-image-preview` (Nano Banana Pro): paragraph-length reliable, ~94-96% accuracy.
+- **`negative_prompt`:** Imagen 4 accepts `negativePrompt` on the **Vertex AI** endpoint; the Gemini API surface ignores it. All Nano Banana variants ignore it.
+- Gemini supports multimodal edit (in-context image refs, up to 14 on 3.1); Imagen does not.
 
 ### Stable Diffusion 1.5 / SDXL
 - Tag-soup: comma-separated descriptors. `"masterpiece, 8k, studio lighting"`.
@@ -148,10 +155,12 @@ Prompts are **never** forwarded verbatim. Rewrite per target family. See the per
 - `negative_prompt` **is** a real CFG sampler feature; use it.
 - For transparency: LayerDiffuse adapter, or matte after.
 
-### Flux.1 / Flux.2 / Flux Pro / Kontext
-- Prose narrative. T5 + VLM text encoder — long-form sentences work.
-- **Never send `negative_prompt` — errors out.** Use positive anchors.
-- Flux.2 accepts up to 8 brand reference images.
+### Flux 1 / Flux 2 / Flux Pro / Kontext
+- Prose narrative. T5 + (Mistral-3 24B VLM on Flux 2) — long-form sentences work; Flux 2 also accepts JSON-structured prompts and `@`-image refs.
+- **Never send `negative_prompt`.** Per BFL's Flux 2 prompting guide: "FLUX.2 does not support negative prompts." On 1.x the fal schema rejects it; on 2.x fal silently no-ops. Use positive anchors instead.
+- **Text ceilings:** Flux 1.1 Pro / Pro: 1–3 words. Flux Schnell / Klein: 1–2 words. Flux 2 (pro/dev): ~5–10 words / one tagline reliable. Flux 2 Flex: BFL claims strongest text in the Flux 2 line.
+- Flux 2 accepts up to **10** brand reference images (was 8 on Flux 1).
+- Flux 2 family has 5 SKUs: pro / flex (steps+guidance control) / max / dev (32B open weights, non-commercial) / klein (Apache 2.0 distilled).
 
 ### Midjourney v6 / v7
 - Prose + `--` flags. `--sref`, `--cref`, `--mref` for consistency.

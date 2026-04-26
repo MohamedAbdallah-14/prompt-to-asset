@@ -13,10 +13,15 @@ import { findModel } from "./config.js";
  *   - Recraft: prose + style_id reference
  *   - MJ: prose + --flags
  *
- * For text:
- *   - 0 words   → "no text, no labels, no wordmark"
- *   - 1-3 words → "WORDMARK" in double quotes (native text renderers only)
- *   - >3 words  → never — drop from prompt, composite later
+ * For text — per-model ceiling drives the decision, not a blanket rule:
+ *   - 0 words           → "no text, no labels, no wordmark"
+ *   - text.length ≤ model.text_ceiling_chars → "WORDMARK" in double quotes
+ *   - text.length > ceiling → drop from prompt with warning, composite later
+ *
+ * Per-model ceilings are verified Apr 2026 (memory: model_capabilities_apr_2026.md).
+ * Strong-text models (gpt-image-2, Nano Banana Pro, gpt-image-1.5, Ideogram 3,
+ * Nano Banana 2, Flux 2 family) handle multi-word and even paragraph-length text;
+ * SDXL / Flux Schnell / SD 1.5 cannot render legible text at all.
  */
 export interface RewriteInput {
   brief: string;
@@ -132,11 +137,22 @@ export function rewrite(input: RewriteInput): RewriteOutput {
       ].filter(Boolean);
       prompt = parts.join(" ");
 
-      // Warn if Flux and negative_prompt would be attempted
-      if (model?.negative_prompt_support === "error") {
-        warnings.push(
-          `${model.id} rejects negative_prompt field; ${doNot.length} do-not clauses rewritten as positive anchors in prompt body.`
-        );
+      // Warn if the model can't accept negative_prompt — split by failure mode.
+      if (model && doNot.length > 0) {
+        const npSupport = model.negative_prompt_support;
+        if (npSupport === "error") {
+          warnings.push(
+            `${model.id} rejects the negative_prompt field at the API schema; ${doNot.length} do-not clauses rewritten as positive anchors in prompt body.`
+          );
+        } else if (npSupport === "ignored") {
+          warnings.push(
+            `${model.id} silently ignores negative_prompt (officially unsupported); ${doNot.length} do-not clauses rewritten as positive anchors in prompt body.`
+          );
+        } else if (npSupport === "vertex_only") {
+          warnings.push(
+            `${model.id} accepts negativePrompt only on the Vertex AI endpoint; on the Gemini API surface it is silently ignored. ${doNot.length} do-not clauses rewritten as positive anchors as the safe default.`
+          );
+        }
       }
       break;
     }
@@ -240,17 +256,17 @@ function buildTextClause(
   if (!text || text.trim().length === 0) {
     return "No text, no labels, no wordmark, no typography.";
   }
-  const words = text.trim().split(/\s+/).length;
-  if (words > 3) {
+  // Per-model ceiling decides — strong-text models (gpt-image-2, Nano Banana
+  // Pro, gpt-image-1.5, Ideogram 3, Nano Banana 2, Flux 2) render multi-word
+  // and paragraph-length text reliably. SDXL/SD 1.5/Flux Schnell cannot render
+  // legible text and have ceilings ≤8 chars.
+  if (text.length > ceiling) {
+    const words = text.trim().split(/\s+/).length;
     warnings.push(
-      `Text content has ${words} words (>3). Diffusion samplers reliably render only 1-3 words. Strongly recommend generating a text-free mark and compositing SVG/Canvas typography. Wordmark has been dropped from the prompt.`
+      `Text "${text}" (${text.length} chars / ${words} words) exceeds the target model's text_ceiling_chars=${ceiling}. ` +
+        `Generating text-free mark and dropping wordmark from the prompt — composite SVG/Canvas typography in the application layer using BrandBundle.typography.`
     );
     return "No text, no labels, no wordmark, no typography.";
-  }
-  if (text.length > ceiling) {
-    warnings.push(
-      `Text length ${text.length} chars > model ceiling ${ceiling}. Will likely garble. Consider compositing.`
-    );
   }
   return `The wordmark text "${text}" in clean sans-serif typography with tight tracking.`;
 }

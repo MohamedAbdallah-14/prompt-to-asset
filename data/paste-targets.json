@@ -9,7 +9,7 @@
       {
         "name": "ChatGPT (image generation)",
         "url": "https://chatgpt.com",
-        "notes": "Plus / Pro account only. Supports in-conversation generation and basic transparency. Validate alpha after download — text >3 words may still garble."
+        "notes": "Plus / Pro account only. Backed by gpt-image-2 since 2026-04-21 — paragraph-length text renders reliably (~99% character accuracy across Latin/CJK/Hindi/Bengali per third-party tests). Note: gpt-image-2 has no native RGBA — Plus/Pro UI returns opaque PNG; use platform Playground with gpt-image-1 / 1.5 if you need transparency."
       },
       {
         "name": "OpenAI Platform Playground",
@@ -54,7 +54,7 @@
       {
         "name": "Google AI Studio (Nano Banana) — FREE interactive web UI only",
         "url": "https://aistudio.google.com",
-        "notes": "Free interactive web UI only — API requires billing since 2025-12. Paid (verified at ai.google.dev/gemini-api/docs/pricing Apr 2026): gemini-3.1-flash-image-preview (current canonical, Nano Banana 2) $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K; legacy gemini-2.5-flash-image (original Nano Banana) $0.039/img at 1K. The Gemini 2.5/3 Flash Image model is nicknamed 'Nano Banana' in the community. Strong multimodal-edit (attach reference images, up to 3); no transparent output — matte afterwards via asset_remove_background. Text ceiling ~3 words on the original, improved on 3.1."
+        "notes": "Free interactive web UI only — API requires billing since 2025-12. Paid (verified at ai.google.dev/gemini-api/docs/pricing Apr 2026): gemini-3.1-flash-image-preview (current canonical, Nano Banana 2) $0.045/0.5K, $0.067/1K, $0.101/2K, $0.151/4K; legacy gemini-2.5-flash-image (original Nano Banana) $0.039/img at 1K. The Gemini 2.5/3 Flash Image model is nicknamed 'Nano Banana' in the community. Strong multimodal-edit (up to 14 reference images on 3.1); no transparent output — matte afterwards via asset_remove_background. Text rendering: Nano Banana 2 is ~90% accuracy and ranked #1 on Artificial Analysis Image Arena at launch — strong-text, not weak. The legacy gemini-2.5-flash-image is the one that garbles past 1-3 words."
       },
       {
         "name": "Gemini app",
@@ -66,7 +66,7 @@
       {
         "name": "Google AI Studio (Nano Banana Pro) — FREE interactive web UI only",
         "url": "https://aistudio.google.com",
-        "notes": "Free interactive web UI only — API requires billing since 2025-12 (paid Nano Banana Pro: $0.134/img at 1K and 2K, $0.24/img at 4K, plus $0.0011 per input image; verified at ai.google.dev/gemini-api/docs/pricing Apr 2026). The Pro variant of Nano Banana with higher aesthetic than the Flash tier. Selectable as gemini-3-pro-image-preview when available in your region. Text ceiling ~50 chars (better than Flash). Still no transparent output; matte externally."
+        "notes": "Free interactive web UI only — API requires billing since 2025-12 (paid Nano Banana Pro: $0.134/img at 1K and 2K, $0.24/img at 4K, plus $0.0011 per input image; verified at ai.google.dev/gemini-api/docs/pricing Apr 2026). The Pro variant of Nano Banana with higher aesthetic than the Flash tier. Selectable as gemini-3-pro-image-preview when available in your region. Text ceiling: paragraph-length reliable (~94-96% character accuracy per benchmark roundups; single-line error rate <10% across 15 supported languages). Still no transparent output; matte externally. Heads-up: tightened Jan 2026 IMAGE_SAFETY filter false-positives on swimwear/form-fitting apparel."
       },
       {
         "name": "Vertex AI Studio (Nano Banana Pro)",
@@ -78,7 +78,7 @@
       {
         "name": "Google AI Studio (Nano Banana Pro preview) — FREE interactive web UI only",
         "url": "https://aistudio.google.com",
-        "notes": "Same surface as gemini-3-pro-image. Free interactive web UI only; API requires billing (paid Nano Banana Pro: $0.134/img at 1K and 2K, $0.24/img at 4K, plus $0.0011 per input image; verified at ai.google.dev/gemini-api/docs/pricing Apr 2026). Text ceiling ~50 chars per Google. No transparent output — matte externally."
+        "notes": "Same surface as gemini-3-pro-image. Free interactive web UI only; API requires billing (paid Nano Banana Pro: $0.134/img at 1K and 2K, $0.24/img at 4K, plus $0.0011 per input image; verified at ai.google.dev/gemini-api/docs/pricing Apr 2026). Text ceiling: paragraph-length reliable (~94-96% accuracy per third-party). No transparent output — matte externally."
       }
     ],
     "nano-banana-pro": [
@@ -180,7 +180,7 @@
       {
         "name": "BFL Playground",
         "url": "https://playground.bfl.ai",
-        "notes": "Official Flux UI. Paste prose narrative. Do NOT use negative_prompt — Flux errors on it."
+        "notes": "Official Flux UI. Paste prose narrative. Do NOT use negative_prompt — officially unsupported per BFL Flux 2 prompting guide; on 1.x the API rejects it, on 2.x it silently no-ops. Use positive anchors instead."
       },
       {
         "name": "fal.ai",

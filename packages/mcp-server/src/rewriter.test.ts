@@ -14,17 +14,20 @@ describe("rewrite", () => {
     expect(out.prompt.length).toBeGreaterThan(20);
   });
 
-  it("drops wordmark text longer than 3 words and emits a warning", () => {
+  it("drops wordmark text that exceeds the model's text_ceiling_chars", () => {
+    // ideogram-3-turbo has text_ceiling_chars=40 (verified Apr 2026, not the
+    // older 80-char claim). Use a string above the ceiling.
+    const longText = "This Wordmark Is Definitely Longer Than The Ideogram Turbo Ceiling";
     const out = rewrite({
       brief: "logo",
       asset_type: "logo",
       target_model: "ideogram-3-turbo",
-      text_content: "This Is Way Too Many Words",
+      text_content: longText,
       transparency_required: true,
       vector_required: false
     });
     expect(out.prompt.toLowerCase()).toContain("no text");
-    expect(out.warnings.some((w) => /wordmark|words/i.test(w))).toBe(true);
+    expect(out.warnings.some((w) => /text_ceiling_chars|exceeds/i.test(w))).toBe(true);
   });
 
   it("keeps a 1–3 word wordmark in quoted form", () => {

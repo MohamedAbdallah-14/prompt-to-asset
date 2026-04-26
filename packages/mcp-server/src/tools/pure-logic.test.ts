@@ -84,20 +84,22 @@ describe("rewriter.rewrite", () => {
     expect(wc).toBeGreaterThanOrEqual(30);
   });
 
-  it("text >3 words drops to no-text and warns", () => {
+  it("drops wordmark when text exceeds the model's text_ceiling_chars", () => {
+    // sd-1.5 has text_ceiling_chars=4 (per HF model card: 'cannot render
+    // legible text'). A few words easily blows past the ceiling.
     const r = rewrite({
       brief: "logo",
       asset_type: "logo",
-      target_model: "gpt-image-1",
+      target_model: "sd-1.5",
       text_content: "this is too many words for a mark",
       transparency_required: true,
       vector_required: true
     });
-    expect(r.prompt).toMatch(/No text/);
-    expect(r.warnings.some((w) => w.includes("Wordmark has been dropped"))).toBe(true);
+    expect(r.prompt).toMatch(/no text/i);
+    expect(r.warnings.some((w) => /text_ceiling_chars|exceeds/i.test(w))).toBe(true);
   });
 
-  it("flux-pro family emits negative_prompt rejection warning when do_not present", () => {
+  it("flux-pro emits negative_prompt rejection warning when do_not present", () => {
     const r = rewrite({
       brief: "a logo",
       asset_type: "logo",
@@ -106,7 +108,8 @@ describe("rewriter.rewrite", () => {
       transparency_required: true,
       vector_required: false
     });
-    expect(r.warnings.some((w) => w.includes("rejects negative_prompt"))).toBe(true);
+    // flux-pro keeps negative_prompt_support="error"; flux-2 family is "ignored".
+    expect(r.warnings.some((w) => /rejects the negative_prompt/i.test(w))).toBe(true);
   });
 
   it("transparency on non-native RGBA model warns + mattes later", () => {

@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/routing-table.schema.json",
-  "version": "1.2.1",
-  "updated": "2026-04-22",
+  "version": "1.3.0",
+  "updated": "2026-04-26",
   "source": "docs/research/SYNTHESIS.md § Model Capability Matrix and § Highest-Confidence Recommendations",
   "rules": [
     {
@@ -14,7 +14,7 @@
         { "model": "recraft-v4", "params": { "output_format": "svg" }, "postprocess": ["rasterize_svg"] },
         { "model": "recraft-v3", "params": { "output_format": "svg" }, "postprocess": ["rasterize_svg"] }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image", "sd-1.5", "dall-e-3", "flux-schnell", "flux-dev", "flux-pro", "flux-2"],
+      "never": ["gpt-image-2", "imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image", "sd-1.5", "dall-e-3", "flux-schnell", "flux-dev", "flux-pro", "flux-2", "flux-2-flex", "flux-2-dev", "flux-2-klein"],
       "postprocess": ["validate_alpha", "reject_checkerboard"],
       "research_sources": [
         "docs/research/04-gemini-imagen-prompting/4c-transparent-background-checkerboard.md",
@@ -49,28 +49,54 @@
         { "model": "gpt-image-1", "params": { "background": "transparent" } },
         { "model": "ideogram-3", "params": { "magic_prompt": "OFF" } },
         { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] },
+        { "model": "gemini-3-flash-image", "postprocess": ["birefnet_matte"] },
         { "model": "recraft-v4" }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "sd-1.5", "flux-schnell", "flux-dev", "flux-pro", "flux-2"],
+      "never": ["imagen-3", "imagen-4", "sd-1.5", "flux-schnell", "flux-dev", "flux-pro"],
       "postprocess": ["birefnet_matte", "validate_alpha", "ocr_wordmark_check"],
       "research_sources": [
         "docs/research/07-midjourney-ideogram-recraft/7b-ideogram-text-rendering-for-logos.md",
         "docs/research/05-openai-dalle-gpt-image/5c-logo-icon-generation.md",
         "docs/research/08-logo-generation/8c-text-rendering-in-logos.md"
-      ]
+      ],
+      "notes": "flux-2 dropped from never as of 2026-04-26 — verified ~5-10 word text capability. gemini-3-flash-image (Nano Banana 2) added as fallback — ~90% accuracy, ranked #1 on Image Arena at launch."
+    },
+    {
+      "id": "logo-with-text-4-10-words",
+      "when": { "asset_type": "logo", "text_length": "4..10" },
+      "primary": { "model": "gpt-image-2", "params": { "output_format": "png" }, "postprocess": ["birefnet_matte"] },
+      "fallback": [
+        { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] },
+        { "model": "gpt-image-1.5", "params": { "background": "transparent" } },
+        { "model": "ideogram-3", "params": { "magic_prompt": "OFF" } },
+        { "model": "flux-2-flex", "postprocess": ["birefnet_matte"] },
+        { "model": "flux-2", "postprocess": ["birefnet_matte"] },
+        { "model": "fal-flux-2", "postprocess": ["birefnet_matte"] }
+      ],
+      "never": ["imagen-3", "imagen-4", "gemini-2.5-flash-image", "sd-1.5", "sdxl", "flux-schnell", "flux-dev", "flux-pro", "flux-1.1-pro", "pollinations-flux"],
+      "postprocess": ["birefnet_matte", "validate_alpha", "ocr_wordmark_check"],
+      "research_sources": [
+        "docs/research/08-logo-generation/8c-text-rendering-in-logos.md",
+        "docs/research/SYNTHESIS.md"
+      ],
+      "notes": "New rule (2026-04-26). Strong-text models — gpt-image-2 (~99% Latin/CJK/Hindi/Bengali), Nano Banana Pro (paragraph-length), gpt-image-1.5 (LM Arena #1), Ideogram 3, Flux 2 (~5-10 words / one tagline). Compositing remains the safer default for pixel-exact UI copy."
     },
     {
       "id": "logo-with-text-many-words",
-      "when": { "asset_type": "logo", "text_length": ">3" },
-      "primary": { "strategy": "composite", "mark_model": "recraft-v3", "typography": "svg_composite" },
-      "fallback": [],
+      "when": { "asset_type": "logo", "text_length": ">10" },
+      "primary": { "strategy": "composite", "mark_model": "recraft-v4", "typography": "svg_composite" },
+      "fallback": [
+        { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] },
+        { "model": "gpt-image-2", "postprocess": ["birefnet_matte"] }
+      ],
       "never": [],
       "postprocess": ["validate_composite"],
       "research_sources": [
         "docs/research/08-logo-generation/8c-text-rendering-in-logos.md",
         "docs/research/23-combinations/",
         "docs/research/SYNTHESIS.md"
-      ]
+      ],
+      "notes": "Threshold lifted from >3 to >10 words on 2026-04-26. Nano Banana Pro (~94-96% accuracy) and gpt-image-2 (~99%) handle paragraph-length text — listed as fallbacks for cases where the brief explicitly wants the model to render the long text. Composite-via-Recraft V4 remains the default because pixel-exact UI copy needs a real font compositor."
     },
     {
       "id": "app-icon-mark",
@@ -145,13 +171,18 @@
     {
       "id": "illustration-no-brand",
       "when": { "asset_type": "illustration", "brand_bundle_present": false },
-      "primary": { "model": "flux-pro" },
+      "primary": { "model": "flux-2" },
       "fallback": [
-        { "model": "flux-2" },
+        { "model": "flux-2-flex" },
+        { "model": "flux-2-dev" },
+        { "model": "flux-pro" },
         { "model": "ideogram-3-turbo", "params": { "magic_prompt": "OFF" } },
+        { "model": "gpt-image-2" },
         { "model": "gpt-image-1.5" },
         { "model": "gpt-image-1" },
         { "model": "gemini-3-pro-image" },
+        { "model": "gemini-3-flash-image" },
+        { "model": "flux-2-klein" },
         { "model": "cf-flux-1-schnell" },
         { "model": "hf-flux-schnell" }
       ],
@@ -165,15 +196,16 @@
     {
       "id": "hero-photoreal",
       "when": { "asset_type": "hero", "style": "photoreal" },
-      "primary": { "model": "flux-pro" },
+      "primary": { "model": "flux-2" },
       "fallback": [
-        { "model": "flux-2" },
+        { "model": "flux-pro" },
+        { "model": "gpt-image-2" },
         { "model": "gpt-image-1.5" },
-        { "model": "gpt-image-1" },
+        { "model": "imagen-4" },
         { "model": "gemini-3-pro-image" },
         { "model": "cf-flux-1-schnell" }
       ],
-      "never": ["dall-e-3", "imagen-4"],
+      "never": ["dall-e-3"],
       "postprocess": ["upscale_if_under_2k", "validate_composition"],
       "research_sources": [
         "docs/research/06-stable-diffusion-flux/6b-flux-family-prompting.md",
