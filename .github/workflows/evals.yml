@@ -15,11 +15,6 @@ on:
       - ".github/workflows/evals.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "packages/mcp-server/src/**"
-      - "data/**"
-      - "evals/**"
-      - ".github/workflows/evals.yml"
   workflow_dispatch:
 
 permissions:
