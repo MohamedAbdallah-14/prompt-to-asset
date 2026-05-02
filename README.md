@@ -554,6 +554,17 @@ If this repo saved you from hand-crafting another AppIconSet, a star helps it re
 
 ---
 
+## Read more
+
+The thinking behind the design, in long-form:
+
+- **[Why I stopped picking image models and built a router instead](https://blog.mohamedabdallah.com/image-model-router)** — the case for routing across 30+ image models.
+- **[MCP server architecture: what's inside prompt-to-asset](https://blog.mohamedabdallah.com/mcp-server-architecture)** — architecture deep-dive.
+
+Cross-posted on [Medium](https://medium.com/@mohamedmabdallah14) and [dev.to](https://dev.to/mohamedabdallah14).
+
+---
+
 ## License
 
 [MIT](./LICENSE) © prompt-to-asset contributors.
