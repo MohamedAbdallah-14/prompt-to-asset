@@ -1,0 +1,33 @@
+{
+  "skill_name": "ui-mockup-prompt",
+  "evals": [
+    {
+      "id": 1,
+      "name": "pricing-page-saas",
+      "prompt": "ok i need you to give me a prompt for nano banana to imagine the pricing page for our product. it's called Ledger, a finance tool for indie founders to track recurring revenue and churn. we lean editorial-leaning, kind of magazine-y, our accent is a deep oxblood red around #7F1D1D and we use Söhne for headlines. three plans, monthly + yearly toggle, comparison against doing it manually in spreadsheets as one of the sections. give me the prompt please i'm going to paste it directly",
+      "expected_output": "Output should: pick gpt-image-2 or Nano Banana Pro (NOT Midjourney/Ideogram given the text density of pricing pages), explain why, emit a paste-ready prompt that respects the editorial direction, oxblood accent, Söhne headlines (NEVER Inter), avoids indigo/purple gradient/lorem ipsum/'10x faster' style invented metrics, includes the comparison-against-spreadsheets section as the unconventional break from the cliché Hero→Features→Pricing→FAQ template, and ends with a validation reminder.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "dashboard-with-brand-refs",
+      "prompt": "I have 3 reference images on my desktop: brand-screenshot.png (the existing app's home view), brand-logo.png, and palette-swatch.png. give me a prompt that uses all three to imagine our analytics dashboard. our product is Pulse, real-time analytics for product teams. we want to see KPI tiles, a line chart for visitors, a top-sources bar chart, and a top-pages list. dark mode. teal accent. show me how to wire the refs into the call too, not just the prompt text.",
+      "expected_output": "Output should pick Flux 2 Pro (the only model with explicit prompt-level ordinal indexing for 3 distinct refs), explain why over Nano Banana / gpt-image-2, emit a prompt that addresses refs by ordinal ('layout from image 1, palette from image 2, logo from image 3'), specify the dark-mode body as #0A0A0A or #0F0F0F (NOT pure black), include real placeholder content for the KPI tiles (real-feeling numbers and source names like 'Direct', 'Google', 'Twitter', 'Reddit'), name a non-Inter typography choice, and include the actual API call shape with input_image / input_image_2 / input_image_3 parameters.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "mobile-onboarding-empty-state",
+      "prompt": "im designing a mobile app called Streak (habit tracker) and i need to mock up the onboarding screen for first time users — like the very first screen they see, before any habits are added. should feel friendly and not corporate. emerald green accent. iOS. give me a prompt please",
+      "expected_output": "Output should pick Ideogram 3 Turbo (short hero copy + 1 CTA, ≤6 words per element fits its sweet spot) OR gpt-image-2 if the agent judges the copy might be longer. Either is acceptable. The prompt should depict a first-use empty state (illustration + headline + one-line value sentence + primary CTA per craft/state-coverage). Should specify emerald as resolved hex like #10B981, NOT just 'emerald green'. Should pick a non-Inter mobile-friendly type. Should request iOS device chassis (iPhone 15 Pro Max with Dynamic Island acceptable). Should specify ONE bold aesthetic direction (soft-organic / refined-minimal / playful-precision). If Ideogram, must include native negative_prompt with no-lorem-ipsum / no-checkerboard / no-watermark.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "settings-page-dense-form",
+      "prompt": "Mock up the settings/profile-edit screen for our iOS app. Light mode, system blue accent (#007AFF), classic iOS aesthetic but please don't make it look like every other AI-generated iOS settings screen — give it some editorial polish. fields: full name, display name, email, phone, date of birth, then address (street, city, state, zip), then preference toggles (email notifications, push, marketing).",
+      "expected_output": "Output should pick gpt-image-1.5 (cookbook recommends 'short labeled segments or line breaks' for dense forms — its specific UI strength) OR gpt-image-2 (acceptable). Should NOT pick Midjourney or Ideogram (text density too high). Should compose the prompt with section grouping (Personal info / Address / Preferences). Should request real placeholder values for every field (real first/last name, real-looking email, real-looking phone, real city, etc.) NEVER lorem ipsum or 'placeholder' text. Should specify a non-Inter / non-system-ui typeface despite the iOS context (the brief asks for editorial polish — explicit ask to break iOS default). Should resolve #007AFF and pair with non-pure-white surface (#FFFFFF on body #F2F2F7 — iOS standard). Should include visible labels above inputs (NOT placeholder-as-label per craft/accessibility-baseline). Should NOT include indigo, purple-to-cyan gradient, or 'feature 1/2/3'-style copy.",
+      "files": []
+    }
+  ]
+}

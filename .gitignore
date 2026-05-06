@@ -55,6 +55,10 @@ eng.traineddata
 # /graphify skill output — knowledge graph HTML/JSON/audit per run.
 /graphify-out/
 
+# Skill-creator eval workspaces — per-iteration eval runs, grading, benchmarks.
+# Reproducible by re-running the evals; not part of the shipped skill source.
+/skills/*-workspace/
+
 # Staged by `npm run prepack` right before npm publish; not committed.
 packages/mcp-server/data/
 packages/mcp-server/CHANGELOG.md
