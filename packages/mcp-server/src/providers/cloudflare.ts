@@ -61,33 +61,64 @@ export const CloudflareProvider: Provider = {
     }
 
     const cfModel = cloudflareModelPath(modelId);
-    const body: Record<string, unknown> = {
-      prompt: req.prompt,
-      width: Math.min(2048, req.width),
-      height: Math.min(2048, req.height),
-      seed: req.seed,
-      num_steps: stepsFor(modelId)
-    };
-    if (req.negative_prompt && supportsNegativePrompt(modelId)) {
-      body["negative_prompt"] = req.negative_prompt;
-    }
-    if (req.reference_images?.length && supportsRefs(modelId)) {
-      body["image_b64"] = req.reference_images;
-    }
-
     const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(
       CONFIG.cloudflareAccountId
     )}/ai/run/${cfModel}`;
 
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${CONFIG.apiKeys.cloudflare}`,
-        "Content-Type": "application/json",
-        Accept: "image/png"
-      },
-      body: JSON.stringify(body)
-    });
+    // CF migrated the Flux 2 endpoints (klein-4b, klein-9b, dev) to require
+    // multipart-form input; JSON 400s with "required properties at '/' are
+    // 'multipart'". flux-1-schnell, SDXL variants, dreamshaper, Leonardo
+    // remain JSON-only. Branch on the model.
+    let resp: Response;
+    if (usesMultipart(modelId)) {
+      const form = new FormData();
+      form.append("prompt", req.prompt);
+      form.append("width", String(Math.min(2048, req.width)));
+      form.append("height", String(Math.min(2048, req.height)));
+      form.append("num_steps", String(stepsFor(modelId)));
+      if (req.seed !== undefined) form.append("seed", String(req.seed));
+      if (req.negative_prompt && supportsNegativePrompt(modelId)) {
+        form.append("negative_prompt", req.negative_prompt);
+      }
+      // Flux 2 dev accepts image refs as base64 multipart fields too.
+      if (req.reference_images?.length && supportsRefs(modelId)) {
+        for (const ref of req.reference_images) {
+          form.append("image_b64", ref);
+        }
+      }
+      resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${CONFIG.apiKeys.cloudflare}`,
+          Accept: "image/png"
+          // Don't set Content-Type — fetch fills the multipart boundary.
+        },
+        body: form
+      });
+    } else {
+      const body: Record<string, unknown> = {
+        prompt: req.prompt,
+        width: Math.min(2048, req.width),
+        height: Math.min(2048, req.height),
+        seed: req.seed,
+        num_steps: stepsFor(modelId)
+      };
+      if (req.negative_prompt && supportsNegativePrompt(modelId)) {
+        body["negative_prompt"] = req.negative_prompt;
+      }
+      if (req.reference_images?.length && supportsRefs(modelId)) {
+        body["image_b64"] = req.reference_images;
+      }
+      resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${CONFIG.apiKeys.cloudflare}`,
+          "Content-Type": "application/json",
+          Accept: "image/png"
+        },
+        body: JSON.stringify(body)
+      });
+    }
 
     if (!resp.ok) {
       const errText = await resp.text().catch(() => "");
@@ -159,4 +190,17 @@ function supportsRefs(modelId: string): boolean {
   // Flux.2 dev is the one CF model that accepts reference images at the time
   // of writing. Klein variants are T2I-only.
   return modelId === "cf-flux-2-dev";
+}
+
+function usesMultipart(modelId: string): boolean {
+  // CF migrated the Flux 2 family (klein-4b, klein-9b, dev) to multipart-form
+  // input at some point in 2026. The error surface on JSON is HTTP 400
+  // "required properties at '/' are 'multipart'". Other CF image models
+  // (Flux 1 Schnell, SDXL variants, DreamShaper, Leonardo Phoenix/Lucid)
+  // still accept JSON. Keep the JSON path for those.
+  return (
+    modelId === "cf-flux-2-klein-4b" ||
+    modelId === "cf-flux-2-klein-9b" ||
+    modelId === "cf-flux-2-dev"
+  );
 }

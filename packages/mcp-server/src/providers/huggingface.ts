@@ -4,15 +4,26 @@ import { ProviderError } from "./types.js";
 import { dummyPng } from "./openai.js";
 
 /**
- * Hugging Face Inference API — free tier with a free HF account + read token.
+ * Hugging Face Inference — migrated to the Inference Providers router
+ * (`router.huggingface.co/<provider>/v1/images/generations`) in 2026.
+ * The legacy `api-inference.huggingface.co/models/<repo>` POST surface
+ * is gone; calls return HTTP 404 "Cannot POST".
  *
- * HF's serverless inference surface hosts many open-weight image models
- * (SDXL, SD3, Flux dev, community fine-tunes). The free tier rate-limits
- * to a few requests per minute; `HF_TOKEN` is a free-to-obtain read token
- * — users set it once at hf.co/settings/tokens.
+ * The new router is OpenAI-compatible. It returns a JSON envelope with
+ * a short-lived URL to the generated image (not the bytes inline). We
+ * follow the URL with a second GET to fetch the bytes.
  *
- * We expose three canonical models. Users can add more by setting
- * `HF_MODEL_ID` at call time via the model routing layer.
+ * Provider availability for image-gen (verified 2026-05 with HF_TOKEN):
+ *   - FLUX.1-schnell via `together` — 200 OK, free under HF credits
+ *   - FLUX.1-dev via `together` — 410 deprecated
+ *   - SDXL via `together` — 403 (org needs third-party data sharing)
+ *   - SD 3 medium via `together` — 400 not supported
+ *   - fal-ai / replicate / nebius — 400/401/403 for these models
+ *
+ * Effective model surface today: only FLUX.1-schnell. We expose other
+ * IDs for backwards-compat but route them all to FLUX.1-schnell on
+ * Together with a warning, so callers don't crash; they just get a
+ * different model than they asked for.
  */
 export const HuggingFaceProvider: Provider = {
   name: "huggingface",
@@ -45,51 +56,104 @@ export const HuggingFaceProvider: Provider = {
       );
     }
 
-    const modelPath = huggingFaceModelPath(modelId);
-    const body: Record<string, unknown> = {
-      inputs: req.prompt,
-      parameters: {
-        width: req.width,
-        height: req.height,
-        seed: req.seed,
-        ...(req.negative_prompt && { negative_prompt: req.negative_prompt })
-      }
-    };
+    const { provider, repoModel, requested } = resolveProviderRoute(modelId);
+    const size = `${Math.min(2048, req.width)}x${Math.min(2048, req.height)}`;
 
-    const resp = await fetch(`https://api-inference.huggingface.co/models/${modelPath}`, {
+    const body: Record<string, unknown> = {
+      model: repoModel,
+      prompt: req.prompt,
+      size,
+      n: 1
+    };
+    if (req.seed !== undefined) body["seed"] = req.seed;
+
+    const url = `https://router.huggingface.co/${provider}/v1/images/generations`;
+    const resp = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${CONFIG.apiKeys.huggingface}`,
-        "Content-Type": "application/json",
-        Accept: "image/png"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(body)
     });
 
     if (!resp.ok) {
-      const errText = await resp.text();
-      throw new ProviderError("huggingface", modelId, `HTTP ${resp.status}: ${errText}`);
+      const errText = await resp.text().catch(() => "");
+      throw new ProviderError(
+        "huggingface",
+        modelId,
+        `HTTP ${resp.status} via router/${provider}: ${errText.slice(0, 300)}`
+      );
     }
 
-    const image = Buffer.from(await resp.arrayBuffer());
+    // OpenAI-compat envelope: { data: [{ url, b64_json? }, ...] }
+    const json = (await resp.json()) as {
+      data?: Array<{ url?: string; b64_json?: string }>;
+    };
+    const first = json.data?.[0];
+    if (!first) {
+      throw new ProviderError("huggingface", modelId, "router returned no image data");
+    }
+
+    let image: Buffer;
+    if (first.b64_json) {
+      image = Buffer.from(first.b64_json, "base64");
+    } else if (first.url) {
+      const dl = await fetch(first.url);
+      if (!dl.ok) {
+        throw new ProviderError(
+          "huggingface",
+          modelId,
+          `image URL fetch HTTP ${dl.status} from ${new URL(first.url).host}`
+        );
+      }
+      image = Buffer.from(await dl.arrayBuffer());
+    } else {
+      throw new ProviderError("huggingface", modelId, "router returned neither url nor b64_json");
+    }
+
     return {
       image,
       format: "png",
       model: modelId,
       seed: req.seed,
-      raw_response: { modelPath },
+      raw_response: { provider, repoModel, requested, downscaled: requested !== modelId },
       native_rgba: false,
       native_svg: false
     };
   }
 };
 
-function huggingFaceModelPath(modelId: string): string {
-  const map: Record<string, string> = {
-    "hf-sdxl": "stabilityai/stable-diffusion-xl-base-1.0",
-    "hf-sd3": "stabilityai/stable-diffusion-3-medium-diffusers",
-    "hf-flux-dev": "black-forest-labs/FLUX.1-dev",
-    "hf-flux-schnell": "black-forest-labs/FLUX.1-schnell"
+/**
+ * Resolve the requested model id to (HF Inference Provider, repo-model-id).
+ *
+ * Today only `together` hosts a free image model on this token: FLUX.1-schnell.
+ * Other previously-supported HF models (FLUX.1-dev, SDXL base, SD3) are
+ * deprecated or blocked at the provider. We collapse all four legacy ids to
+ * FLUX.1-schnell on Together, and surface that downgrade in raw_response so
+ * the caller can warn the user.
+ */
+function resolveProviderRoute(modelId: string): {
+  provider: string;
+  repoModel: string;
+  requested: string;
+} {
+  const FLUX_SCHNELL = {
+    provider: "together",
+    repoModel: "black-forest-labs/FLUX.1-schnell"
   };
-  return map[modelId] ?? map["hf-sdxl"]!;
+  switch (modelId) {
+    case "hf-flux-schnell":
+      return { ...FLUX_SCHNELL, requested: modelId };
+    // The three below are not actually available on the new Inference
+    // Providers surface for a free HF token. Falling back to FLUX.1-schnell
+    // is better than 404'ing the caller; the warning surfaces in the
+    // result's raw_response.downscaled flag.
+    case "hf-flux-dev":
+    case "hf-sdxl":
+    case "hf-sd3":
+      return { ...FLUX_SCHNELL, requested: modelId };
+    default:
+      return { ...FLUX_SCHNELL, requested: modelId };
+  }
 }

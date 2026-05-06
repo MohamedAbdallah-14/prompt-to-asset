@@ -2,20 +2,75 @@
   "$schema": "./schemas/routing-table.schema.json",
   "version": "1.3.0",
   "updated": "2026-04-26",
-  "source": "docs/research/SYNTHESIS.md § Model Capability Matrix and § Highest-Confidence Recommendations",
+  "source": "docs/research/SYNTHESIS.md \u00a7 Model Capability Matrix and \u00a7 Highest-Confidence Recommendations",
   "rules": [
     {
       "id": "transparent-mark",
-      "when": { "asset_type": "transparent_mark" },
-      "primary": { "model": "gpt-image-1.5", "params": { "background": "transparent", "output_format": "png", "quality": "medium" } },
+      "when": {
+        "asset_type": "transparent_mark"
+      },
+      "primary": {
+        "model": "gpt-image-1.5",
+        "params": {
+          "background": "transparent",
+          "output_format": "png",
+          "quality": "medium"
+        }
+      },
       "fallback": [
-        { "model": "gpt-image-1", "params": { "background": "transparent", "output_format": "png" } },
-        { "model": "ideogram-3-turbo", "endpoint": "/ideogram-v3/generate-transparent", "params": { "rendering_speed": "TURBO" } },
-        { "model": "recraft-v4", "params": { "output_format": "svg" }, "postprocess": ["rasterize_svg"] },
-        { "model": "recraft-v3", "params": { "output_format": "svg" }, "postprocess": ["rasterize_svg"] }
+        {
+          "model": "gpt-image-1",
+          "params": {
+            "background": "transparent",
+            "output_format": "png"
+          }
+        },
+        {
+          "model": "ideogram-3-turbo",
+          "endpoint": "/ideogram-v3/generate-transparent",
+          "params": {
+            "rendering_speed": "TURBO"
+          }
+        },
+        {
+          "model": "recraft-v4",
+          "params": {
+            "output_format": "svg"
+          },
+          "postprocess": [
+            "rasterize_svg"
+          ]
+        },
+        {
+          "model": "recraft-v3",
+          "params": {
+            "output_format": "svg"
+          },
+          "postprocess": [
+            "rasterize_svg"
+          ]
+        }
       ],
-      "never": ["gpt-image-2", "imagen-3", "imagen-4", "gemini-3-flash-image", "gemini-3-pro-image", "sd-1.5", "dall-e-3", "flux-schnell", "flux-dev", "flux-pro", "flux-2", "flux-2-flex", "flux-2-dev", "flux-2-klein"],
-      "postprocess": ["validate_alpha", "reject_checkerboard"],
+      "never": [
+        "gpt-image-2",
+        "imagen-3",
+        "imagen-4",
+        "gemini-3-flash-image",
+        "gemini-3-pro-image",
+        "sd-1.5",
+        "dall-e-3",
+        "flux-schnell",
+        "flux-dev",
+        "flux-pro",
+        "flux-2",
+        "flux-2-flex",
+        "flux-2-dev",
+        "flux-2-klein"
+      ],
+      "postprocess": [
+        "validate_alpha",
+        "reject_checkerboard"
+      ],
       "research_sources": [
         "docs/research/04-gemini-imagen-prompting/4c-transparent-background-checkerboard.md",
         "docs/research/05-openai-dalle-gpt-image/5b-gpt-image-1-api.md",
@@ -25,15 +80,59 @@
     },
     {
       "id": "logo-text-free-vector",
-      "when": { "asset_type": "logo", "text_length": 0, "vector_required": true },
-      "primary": { "model": "recraft-v4", "params": { "output_format": "svg" } },
+      "when": {
+        "asset_type": "logo",
+        "text_length": 0,
+        "vector_required": true
+      },
+      "primary": {
+        "model": "recraft-v4",
+        "params": {
+          "output_format": "svg"
+        }
+      },
       "fallback": [
-        { "model": "recraft-v3", "params": { "output_format": "svg" } },
-        { "model": "gpt-image-1.5", "params": { "background": "transparent" }, "postprocess": ["birefnet_matte", "kmeans_quantize", "vtracer", "svgo"] },
-        { "model": "gpt-image-1", "params": { "background": "transparent" }, "postprocess": ["birefnet_matte", "kmeans_quantize", "vtracer", "svgo"] }
+        {
+          "model": "recraft-v3",
+          "params": {
+            "output_format": "svg"
+          }
+        },
+        {
+          "model": "gpt-image-1.5",
+          "params": {
+            "background": "transparent"
+          },
+          "postprocess": [
+            "birefnet_matte",
+            "kmeans_quantize",
+            "vtracer",
+            "svgo"
+          ]
+        },
+        {
+          "model": "gpt-image-1",
+          "params": {
+            "background": "transparent"
+          },
+          "postprocess": [
+            "birefnet_matte",
+            "kmeans_quantize",
+            "vtracer",
+            "svgo"
+          ]
+        }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "sd-1.5"],
-      "postprocess": ["svgo_conservative", "validate_svg_path_count"],
+      "never": [
+        "imagen-3",
+        "imagen-4",
+        "gemini-3-flash-image",
+        "sd-1.5"
+      ],
+      "postprocess": [
+        "svgo_conservative",
+        "validate_svg_path_count"
+      ],
       "research_sources": [
         "docs/research/07-midjourney-ideogram-recraft/7c-recraft-v3-native-svg.md",
         "docs/research/08-logo-generation/8e-svg-vector-logo-pipeline.md",
@@ -42,75 +141,201 @@
     },
     {
       "id": "logo-with-text-1-3-words",
-      "when": { "asset_type": "logo", "text_length": "1..3", "vector_required": false },
-      "primary": { "model": "ideogram-3-turbo", "params": { "magic_prompt": "OFF" } },
+      "when": {
+        "asset_type": "logo",
+        "text_length": "1..3",
+        "vector_required": false
+      },
+      "primary": {
+        "model": "ideogram-3-turbo",
+        "params": {
+          "magic_prompt": "OFF"
+        }
+      },
       "fallback": [
-        { "model": "gpt-image-1.5", "params": { "background": "transparent" } },
-        { "model": "gpt-image-1", "params": { "background": "transparent" } },
-        { "model": "ideogram-3", "params": { "magic_prompt": "OFF" } },
-        { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] },
-        { "model": "gemini-3-flash-image", "postprocess": ["birefnet_matte"] },
-        { "model": "recraft-v4" }
+        {
+          "model": "gpt-image-1.5",
+          "params": {
+            "background": "transparent"
+          }
+        },
+        {
+          "model": "gpt-image-1",
+          "params": {
+            "background": "transparent"
+          }
+        },
+        {
+          "model": "ideogram-3",
+          "params": {
+            "magic_prompt": "OFF"
+          }
+        },
+        {
+          "model": "recraft-v4"
+        }
       ],
-      "never": ["imagen-3", "imagen-4", "sd-1.5", "flux-schnell", "flux-dev", "flux-pro"],
-      "postprocess": ["birefnet_matte", "validate_alpha", "ocr_wordmark_check"],
+      "never": [
+        "imagen-3",
+        "imagen-4",
+        "sd-1.5",
+        "flux-schnell",
+        "flux-dev",
+        "flux-pro"
+      ],
+      "postprocess": [
+        "birefnet_matte",
+        "validate_alpha",
+        "ocr_wordmark_check"
+      ],
       "research_sources": [
         "docs/research/07-midjourney-ideogram-recraft/7b-ideogram-text-rendering-for-logos.md",
         "docs/research/05-openai-dalle-gpt-image/5c-logo-icon-generation.md",
         "docs/research/08-logo-generation/8c-text-rendering-in-logos.md"
       ],
-      "notes": "flux-2 dropped from never as of 2026-04-26 — verified ~5-10 word text capability. gemini-3-flash-image (Nano Banana 2) added as fallback — ~90% accuracy, ranked #1 on Image Arena at launch."
+      "notes": "flux-2 dropped from never as of 2026-04-26 \u2014 verified ~5-10 word text capability. gemini-3-flash-image (Nano Banana 2) added as fallback \u2014 ~90% accuracy, ranked #1 on Image Arena at launch."
     },
     {
       "id": "logo-with-text-4-10-words",
-      "when": { "asset_type": "logo", "text_length": "4..10" },
-      "primary": { "model": "gpt-image-2", "params": { "output_format": "png" }, "postprocess": ["birefnet_matte"] },
+      "when": {
+        "asset_type": "logo",
+        "text_length": "4..10"
+      },
+      "primary": {
+        "model": "gpt-image-2",
+        "params": {
+          "output_format": "png"
+        },
+        "postprocess": [
+          "birefnet_matte"
+        ]
+      },
       "fallback": [
-        { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] },
-        { "model": "gpt-image-1.5", "params": { "background": "transparent" } },
-        { "model": "ideogram-3", "params": { "magic_prompt": "OFF" } },
-        { "model": "flux-2-flex", "postprocess": ["birefnet_matte"] },
-        { "model": "flux-2", "postprocess": ["birefnet_matte"] },
-        { "model": "fal-flux-2", "postprocess": ["birefnet_matte"] }
+        {
+          "model": "gpt-image-1.5",
+          "params": {
+            "background": "transparent"
+          }
+        },
+        {
+          "model": "ideogram-3",
+          "params": {
+            "magic_prompt": "OFF"
+          }
+        },
+        {
+          "model": "flux-2-flex",
+          "postprocess": [
+            "birefnet_matte"
+          ]
+        },
+        {
+          "model": "flux-2",
+          "postprocess": [
+            "birefnet_matte"
+          ]
+        },
+        {
+          "model": "fal-flux-2",
+          "postprocess": [
+            "birefnet_matte"
+          ]
+        }
       ],
-      "never": ["imagen-3", "imagen-4", "sd-1.5", "sdxl", "flux-schnell", "flux-dev", "flux-pro", "pollinations-flux"],
-      "postprocess": ["birefnet_matte", "validate_alpha", "ocr_wordmark_check"],
+      "never": [
+        "imagen-3",
+        "imagen-4",
+        "sd-1.5",
+        "sdxl",
+        "flux-schnell",
+        "flux-dev",
+        "flux-pro",
+        "pollinations-flux"
+      ],
+      "postprocess": [
+        "birefnet_matte",
+        "validate_alpha",
+        "ocr_wordmark_check"
+      ],
       "research_sources": [
         "docs/research/08-logo-generation/8c-text-rendering-in-logos.md",
         "docs/research/SYNTHESIS.md"
       ],
-      "notes": "New rule (2026-04-26). Strong-text models — gpt-image-2 (~99% Latin/CJK/Hindi/Bengali), Nano Banana Pro (paragraph-length), gpt-image-1.5 (LM Arena #1), Ideogram 3, Flux 2 (~5-10 words / one tagline). Compositing remains the safer default for pixel-exact UI copy."
+      "notes": "New rule (2026-04-26). Strong-text models \u2014 gpt-image-2 (~99% Latin/CJK/Hindi/Bengali), Nano Banana Pro (paragraph-length), gpt-image-1.5 (LM Arena #1), Ideogram 3, Flux 2 (~5-10 words / one tagline). Compositing remains the safer default for pixel-exact UI copy."
     },
     {
       "id": "logo-with-text-many-words",
-      "when": { "asset_type": "logo", "text_length": ">10" },
-      "primary": { "strategy": "composite", "mark_model": "recraft-v4", "typography": "svg_composite" },
+      "when": {
+        "asset_type": "logo",
+        "text_length": ">10"
+      },
+      "primary": {
+        "strategy": "composite",
+        "mark_model": "recraft-v4",
+        "typography": "svg_composite"
+      },
       "fallback": [
-        { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] },
-        { "model": "gpt-image-2", "postprocess": ["birefnet_matte"] }
+        {
+          "model": "gpt-image-2",
+          "postprocess": [
+            "birefnet_matte"
+          ]
+        }
       ],
       "never": [],
-      "postprocess": ["validate_composite"],
+      "postprocess": [
+        "validate_composite"
+      ],
       "research_sources": [
         "docs/research/08-logo-generation/8c-text-rendering-in-logos.md",
         "docs/research/23-combinations/",
         "docs/research/SYNTHESIS.md"
       ],
-      "notes": "Threshold lifted from >3 to >10 words on 2026-04-26. Nano Banana Pro (~94-96% accuracy) and gpt-image-2 (~99%) handle paragraph-length text — listed as fallbacks for cases where the brief explicitly wants the model to render the long text. Composite-via-Recraft V4 remains the default because pixel-exact UI copy needs a real font compositor."
+      "notes": "Threshold lifted from >3 to >10 words on 2026-04-26. Nano Banana Pro (~94-96% accuracy) and gpt-image-2 (~99%) handle paragraph-length text \u2014 listed as fallbacks for cases where the brief explicitly wants the model to render the long text. Composite-via-Recraft V4 remains the default because pixel-exact UI copy needs a real font compositor."
     },
     {
       "id": "app-icon-mark",
-      "when": { "asset_type": "app_icon" },
-      "primary": { "model": "recraft-v4" },
+      "when": {
+        "asset_type": "app_icon"
+      },
+      "primary": {
+        "model": "recraft-v4"
+      },
       "fallback": [
-        { "model": "recraft-v3" },
-        { "model": "ideogram-3-turbo", "params": { "magic_prompt": "OFF" } },
-        { "model": "gpt-image-1.5", "params": { "background": "transparent" } },
-        { "model": "gpt-image-1", "params": { "background": "transparent" } },
-        { "model": "gemini-3-pro-image", "postprocess": ["birefnet_matte"] }
+        {
+          "model": "recraft-v3"
+        },
+        {
+          "model": "ideogram-3-turbo",
+          "params": {
+            "magic_prompt": "OFF"
+          }
+        },
+        {
+          "model": "gpt-image-1.5",
+          "params": {
+            "background": "transparent"
+          }
+        },
+        {
+          "model": "gpt-image-1",
+          "params": {
+            "background": "transparent"
+          }
+        }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "flux-schnell", "flux-dev"],
-      "postprocess": ["birefnet_matte", "center_frame_check", "export_app_icon_set"],
+      "never": [
+        "imagen-3",
+        "imagen-4",
+        "gemini-3-flash-image",
+        "flux-schnell",
+        "flux-dev"
+      ],
+      "postprocess": [
+        "birefnet_matte",
+        "center_frame_check",
+        "export_app_icon_set"
+      ],
       "research_sources": [
         "docs/research/09-app-icon-generation/9a-ios-app-icon-hig-specs.md",
         "docs/research/09-app-icon-generation/9b-android-adaptive-themed.md",
@@ -119,32 +344,91 @@
     },
     {
       "id": "favicon",
-      "when": { "asset_type": "favicon" },
-      "primary": { "strategy": "svg_first", "model": "recraft-v4", "params": { "output_format": "svg" } },
+      "when": {
+        "asset_type": "favicon"
+      },
+      "primary": {
+        "strategy": "svg_first",
+        "model": "recraft-v4",
+        "params": {
+          "output_format": "svg"
+        }
+      },
       "fallback": [
-        { "strategy": "svg_first", "model": "recraft-v3", "params": { "output_format": "svg" } },
-        { "strategy": "llm_author_svg", "model": "claude-sonnet" },
-        { "model": "gpt-image-1.5", "postprocess": ["birefnet_matte", "kmeans_quantize", "potrace", "svgo"] },
-        { "model": "gpt-image-1", "postprocess": ["birefnet_matte", "kmeans_quantize", "potrace", "svgo"] }
+        {
+          "strategy": "svg_first",
+          "model": "recraft-v3",
+          "params": {
+            "output_format": "svg"
+          }
+        },
+        {
+          "strategy": "llm_author_svg",
+          "model": "claude-sonnet"
+        },
+        {
+          "model": "gpt-image-1.5",
+          "postprocess": [
+            "birefnet_matte",
+            "kmeans_quantize",
+            "potrace",
+            "svgo"
+          ]
+        },
+        {
+          "model": "gpt-image-1",
+          "postprocess": [
+            "birefnet_matte",
+            "kmeans_quantize",
+            "potrace",
+            "svgo"
+          ]
+        }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image"],
-      "postprocess": ["wcag_16px_check", "export_favicon_bundle"],
+      "never": [
+        "imagen-3",
+        "imagen-4",
+        "gemini-3-flash-image"
+      ],
+      "postprocess": [
+        "wcag_16px_check",
+        "export_favicon_bundle"
+      ],
       "research_sources": [
         "docs/research/11-favicon-web-assets/"
       ]
     },
     {
       "id": "og-image",
-      "when": { "asset_type": "og_image" },
-      "primary": { "strategy": "satori_template" },
+      "when": {
+        "asset_type": "og_image"
+      },
+      "primary": {
+        "strategy": "satori_template"
+      },
       "fallback": [
-        { "strategy": "satori_with_diffusion_hero", "hero_model": "flux-pro" },
-        { "strategy": "satori_with_diffusion_hero", "hero_model": "flux-2" },
-        { "strategy": "satori_with_diffusion_hero", "hero_model": "cf-flux-1-schnell" },
-        { "strategy": "satori_with_diffusion_hero", "hero_model": "hf-flux-schnell" }
+        {
+          "strategy": "satori_with_diffusion_hero",
+          "hero_model": "flux-pro"
+        },
+        {
+          "strategy": "satori_with_diffusion_hero",
+          "hero_model": "flux-2"
+        },
+        {
+          "strategy": "satori_with_diffusion_hero",
+          "hero_model": "cf-flux-1-schnell"
+        },
+        {
+          "strategy": "satori_with_diffusion_hero",
+          "hero_model": "hf-flux-schnell"
+        }
       ],
       "never": [],
-      "postprocess": ["validate_og_dimensions", "wcag_text_contrast"],
+      "postprocess": [
+        "validate_og_dimensions",
+        "wcag_text_contrast"
+      ],
       "research_sources": [
         "docs/research/11-favicon-web-assets/",
         "docs/research/18-asset-pipeline-tools/"
@@ -152,16 +436,47 @@
     },
     {
       "id": "illustration-branded",
-      "when": { "asset_type": "illustration", "brand_bundle_present": true },
-      "primary": { "model": "flux-2", "params": { "reference_images": "brand.style_refs" } },
+      "when": {
+        "asset_type": "illustration",
+        "brand_bundle_present": true
+      },
+      "primary": {
+        "model": "flux-2",
+        "params": {
+          "reference_images": "brand.style_refs"
+        }
+      },
       "fallback": [
-        { "model": "flux-pro", "params": { "lora": "brand.lora" } },
-        { "model": "recraft-v3", "params": { "style_id": "brand.style_id" } },
-        { "model": "sdxl", "params": { "lora": "brand.lora" } },
-        { "model": "cf-flux-1-schnell" }
+        {
+          "model": "flux-pro",
+          "params": {
+            "lora": "brand.lora"
+          }
+        },
+        {
+          "model": "recraft-v3",
+          "params": {
+            "style_id": "brand.style_id"
+          }
+        },
+        {
+          "model": "sdxl",
+          "params": {
+            "lora": "brand.lora"
+          }
+        },
+        {
+          "model": "cf-flux-1-schnell"
+        }
       ],
-      "never": ["imagen-3", "imagen-4"],
-      "postprocess": ["palette_delta_e_check", "set_coherence_check"],
+      "never": [
+        "imagen-3",
+        "imagen-4"
+      ],
+      "postprocess": [
+        "palette_delta_e_check",
+        "set_coherence_check"
+      ],
       "research_sources": [
         "docs/research/15-style-consistency-brand/",
         "docs/research/06-stable-diffusion-flux/6b-flux-family-prompting.md",
@@ -170,21 +485,47 @@
     },
     {
       "id": "illustration-no-brand",
-      "when": { "asset_type": "illustration", "brand_bundle_present": false },
-      "primary": { "model": "flux-2" },
+      "when": {
+        "asset_type": "illustration",
+        "brand_bundle_present": false
+      },
+      "primary": {
+        "model": "flux-2"
+      },
       "fallback": [
-        { "model": "flux-2-flex" },
-        { "model": "flux-2-dev" },
-        { "model": "flux-pro" },
-        { "model": "ideogram-3-turbo", "params": { "magic_prompt": "OFF" } },
-        { "model": "gpt-image-2" },
-        { "model": "gpt-image-1.5" },
-        { "model": "gpt-image-1" },
-        { "model": "gemini-3-pro-image" },
-        { "model": "gemini-3-flash-image" },
-        { "model": "flux-2-klein" },
-        { "model": "cf-flux-1-schnell" },
-        { "model": "hf-flux-schnell" }
+        {
+          "model": "flux-2-flex"
+        },
+        {
+          "model": "flux-2-dev"
+        },
+        {
+          "model": "flux-pro"
+        },
+        {
+          "model": "ideogram-3-turbo",
+          "params": {
+            "magic_prompt": "OFF"
+          }
+        },
+        {
+          "model": "gpt-image-2"
+        },
+        {
+          "model": "gpt-image-1.5"
+        },
+        {
+          "model": "gpt-image-1"
+        },
+        {
+          "model": "flux-2-klein"
+        },
+        {
+          "model": "cf-flux-1-schnell"
+        },
+        {
+          "model": "hf-flux-schnell"
+        }
       ],
       "never": [],
       "postprocess": [],
@@ -195,18 +536,37 @@
     },
     {
       "id": "hero-photoreal",
-      "when": { "asset_type": "hero", "style": "photoreal" },
-      "primary": { "model": "flux-2" },
+      "when": {
+        "asset_type": "hero",
+        "style": "photoreal"
+      },
+      "primary": {
+        "model": "flux-2"
+      },
       "fallback": [
-        { "model": "flux-pro" },
-        { "model": "gpt-image-2" },
-        { "model": "gpt-image-1.5" },
-        { "model": "imagen-4" },
-        { "model": "gemini-3-pro-image" },
-        { "model": "cf-flux-1-schnell" }
+        {
+          "model": "flux-pro"
+        },
+        {
+          "model": "gpt-image-2"
+        },
+        {
+          "model": "gpt-image-1.5"
+        },
+        {
+          "model": "imagen-4"
+        },
+        {
+          "model": "cf-flux-1-schnell"
+        }
       ],
-      "never": ["dall-e-3"],
-      "postprocess": ["upscale_if_under_2k", "validate_composition"],
+      "never": [
+        "dall-e-3"
+      ],
+      "postprocess": [
+        "upscale_if_under_2k",
+        "validate_composition"
+      ],
       "research_sources": [
         "docs/research/06-stable-diffusion-flux/6b-flux-family-prompting.md",
         "docs/research/04-gemini-imagen-prompting/",
@@ -215,14 +575,48 @@
     },
     {
       "id": "icon-pack",
-      "when": { "asset_type": "icon_pack" },
-      "primary": { "strategy": "llm_author_svg", "model": "claude-sonnet", "constraints": { "viewbox": "0 0 24 24", "stroke": 2, "fill": "currentColor", "max_paths": 12 } },
+      "when": {
+        "asset_type": "icon_pack"
+      },
+      "primary": {
+        "strategy": "llm_author_svg",
+        "model": "claude-sonnet",
+        "constraints": {
+          "viewbox": "0 0 24 24",
+          "stroke": 2,
+          "fill": "currentColor",
+          "max_paths": 12
+        }
+      },
       "fallback": [
-        { "model": "recraft-v4", "params": { "output_format": "svg" } },
-        { "model": "recraft-v3", "params": { "output_format": "svg" } }
+        {
+          "model": "recraft-v4",
+          "params": {
+            "output_format": "svg"
+          }
+        },
+        {
+          "model": "recraft-v3",
+          "params": {
+            "output_format": "svg"
+          }
+        }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image", "flux-schnell", "flux-dev", "flux-pro", "flux-2", "sd-1.5", "sdxl"],
-      "postprocess": ["svgo_conservative", "validate_svg_path_count"],
+      "never": [
+        "imagen-3",
+        "imagen-4",
+        "gemini-3-flash-image",
+        "flux-schnell",
+        "flux-dev",
+        "flux-pro",
+        "flux-2",
+        "sd-1.5",
+        "sdxl"
+      ],
+      "postprocess": [
+        "svgo_conservative",
+        "validate_svg_path_count"
+      ],
       "research_sources": [
         "docs/research/10-ui-illustrations-graphics/10c-spot-illustrations-and-icon-packs.md",
         "docs/research/12-vector-svg-generation/"
@@ -230,15 +624,49 @@
     },
     {
       "id": "splash-screen",
-      "when": { "asset_type": "splash_screen" },
-      "primary": { "strategy": "composite_mark_on_background", "mark_model": "recraft-v4" },
+      "when": {
+        "asset_type": "splash_screen"
+      },
+      "primary": {
+        "strategy": "composite_mark_on_background",
+        "mark_model": "recraft-v4"
+      },
       "fallback": [
-        { "model": "gpt-image-1.5", "params": { "background": "transparent" }, "postprocess": ["birefnet_matte"] },
-        { "model": "gpt-image-1", "params": { "background": "transparent" }, "postprocess": ["birefnet_matte"] },
-        { "model": "ideogram-3-turbo", "endpoint": "/ideogram-v3/generate-transparent", "params": { "rendering_speed": "TURBO" } }
+        {
+          "model": "gpt-image-1.5",
+          "params": {
+            "background": "transparent"
+          },
+          "postprocess": [
+            "birefnet_matte"
+          ]
+        },
+        {
+          "model": "gpt-image-1",
+          "params": {
+            "background": "transparent"
+          },
+          "postprocess": [
+            "birefnet_matte"
+          ]
+        },
+        {
+          "model": "ideogram-3-turbo",
+          "endpoint": "/ideogram-v3/generate-transparent",
+          "params": {
+            "rendering_speed": "TURBO"
+          }
+        }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image"],
-      "postprocess": ["center_frame_check", "export_splash_screen_bundle"],
+      "never": [
+        "imagen-3",
+        "imagen-4",
+        "gemini-3-flash-image"
+      ],
+      "postprocess": [
+        "center_frame_check",
+        "export_splash_screen_bundle"
+      ],
       "research_sources": [
         "docs/research/09-app-icon-generation/",
         "docs/research/18-asset-pipeline-tools/"
@@ -246,15 +674,45 @@
     },
     {
       "id": "sticker",
-      "when": { "asset_type": "sticker" },
-      "primary": { "model": "gpt-image-1.5", "params": { "background": "transparent" } },
+      "when": {
+        "asset_type": "sticker"
+      },
+      "primary": {
+        "model": "gpt-image-1.5",
+        "params": {
+          "background": "transparent"
+        }
+      },
       "fallback": [
-        { "model": "gpt-image-1", "params": { "background": "transparent" } },
-        { "model": "ideogram-3-turbo", "endpoint": "/ideogram-v3/generate-transparent", "params": { "rendering_speed": "TURBO" } },
-        { "model": "sdxl", "params": { "layerdiffuse": true } }
+        {
+          "model": "gpt-image-1",
+          "params": {
+            "background": "transparent"
+          }
+        },
+        {
+          "model": "ideogram-3-turbo",
+          "endpoint": "/ideogram-v3/generate-transparent",
+          "params": {
+            "rendering_speed": "TURBO"
+          }
+        },
+        {
+          "model": "sdxl",
+          "params": {
+            "layerdiffuse": true
+          }
+        }
       ],
-      "never": ["imagen-3", "imagen-4", "gemini-3-flash-image"],
-      "postprocess": ["validate_alpha", "tight_bbox"],
+      "never": [
+        "imagen-3",
+        "imagen-4",
+        "gemini-3-flash-image"
+      ],
+      "postprocess": [
+        "validate_alpha",
+        "tight_bbox"
+      ],
       "research_sources": [
         "docs/research/13-transparent-backgrounds/",
         "docs/research/05-openai-dalle-gpt-image/5b-gpt-image-1-api.md"
@@ -262,16 +720,39 @@
     },
     {
       "id": "ui-mockup-text-light",
-      "when": { "asset_type": "ui_mockup", "text_length": "1..5" },
-      "primary": { "model": "ideogram-3-turbo", "params": { "style_type": "DESIGN", "magic_prompt": "OFF" } },
+      "when": {
+        "asset_type": "ui_mockup",
+        "text_length": "1..5"
+      },
+      "primary": {
+        "model": "ideogram-3-turbo",
+        "params": {
+          "style_type": "DESIGN",
+          "magic_prompt": "OFF"
+        }
+      },
       "fallback": [
-        { "model": "gpt-image-2" },
-        { "model": "gpt-image-1.5" },
-        { "model": "gemini-3-pro-image" },
-        { "model": "gemini-3-flash-image" }
+        {
+          "model": "gpt-image-2"
+        },
+        {
+          "model": "gpt-image-1.5"
+        }
       ],
-      "never": ["midjourney-v7", "imagen-3", "imagen-4", "sdxl", "sd-1.5", "flux-schnell"],
-      "postprocess": ["ocr_levenshtein_check", "palette_delta_e_check"],
+      "never": [
+        "flux-schnell",
+        "gemini-3-flash-image",
+        "gemini-3-pro-image",
+        "imagen-3",
+        "imagen-4",
+        "midjourney-v7",
+        "sd-1.5",
+        "sdxl"
+      ],
+      "postprocess": [
+        "ocr_levenshtein_check",
+        "palette_delta_e_check"
+      ],
       "research_sources": [
         "docs/research/ui-mockup-prompting/REPORT.md",
         "docs/research/ui-mockup-prompting/findings/03-model-dialect.md",
@@ -281,18 +762,48 @@
     },
     {
       "id": "ui-mockup-default",
-      "when": { "asset_type": "ui_mockup" },
-      "primary": { "model": "gpt-image-2", "params": { "quality": "high" } },
+      "when": {
+        "asset_type": "ui_mockup"
+      },
+      "primary": {
+        "model": "gpt-image-2",
+        "params": {
+          "quality": "high"
+        }
+      },
       "fallback": [
-        { "model": "gpt-image-1.5", "params": { "quality": "high", "input_fidelity": "high" } },
-        { "model": "gemini-3-pro-image" },
-        { "model": "gemini-3-flash-image" },
-        { "model": "flux-2" },
-        { "model": "flux-2-flex" },
-        { "model": "ideogram-3-turbo", "params": { "style_type": "DESIGN", "magic_prompt": "OFF" } }
+        {
+          "model": "gpt-image-1.5",
+          "params": {
+            "quality": "high",
+            "input_fidelity": "high"
+          }
+        },
+        {
+          "model": "flux-2"
+        },
+        {
+          "model": "flux-2-flex"
+        },
+        {
+          "model": "ideogram-3-turbo",
+          "params": {
+            "style_type": "DESIGN",
+            "magic_prompt": "OFF"
+          }
+        }
       ],
-      "never": ["imagen-3", "sdxl", "flux-schnell"],
-      "postprocess": ["ocr_levenshtein_check", "palette_delta_e_check"],
+      "never": [
+        "flux-schnell",
+        "gemini-3-flash-image",
+        "gemini-3-pro-image",
+        "imagen-3",
+        "sdxl"
+      ],
+      "postprocess": [
+        "ocr_levenshtein_check",
+        "palette_delta_e_check"
+      ],
       "research_sources": [
         "docs/research/ui-mockup-prompting/REPORT.md",
         "docs/research/ui-mockup-prompting/findings/03-model-dialect.md",

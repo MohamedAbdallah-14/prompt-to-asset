@@ -944,16 +944,41 @@ describe("HuggingFaceProvider", () => {
     (CONFIG as { dryRun: boolean }).dryRun = false;
     await expect(HuggingFaceProvider.generate("hf-sdxl", baseReq)).rejects.toThrow(/HF_TOKEN/);
     setKey("huggingface", "hf_xxx");
-    const { calls, restore } = installFetch({ kind: "buffer", body: PNG_BYTES });
+    // 2-step flow on the new Inference Providers router: POST to
+    // router.huggingface.co/together/v1/images/generations returns an
+    // OpenAI-compat JSON envelope with a short-lived URL; second GET
+    // fetches the bytes.
+    const { calls, restore } = installFetch(
+      {
+        kind: "json",
+        body: { data: [{ url: "https://api.together.ai/shrt/abc123" }] }
+      },
+      { kind: "buffer", body: PNG_BYTES }
+    );
     try {
-      const r = await HuggingFaceProvider.generate("hf-flux-dev", {
+      const r = await HuggingFaceProvider.generate("hf-flux-schnell", {
         ...baseReq,
         negative_prompt: "blurry"
       });
       expect(r.image.equals(PNG_BYTES)).toBe(true);
-      expect(calls[0]!.url).toContain("black-forest-labs/FLUX.1-dev");
+      expect(calls[0]!.url).toContain("router.huggingface.co/together/v1/images/generations");
+      const body = JSON.parse(calls[0]!.body!);
+      expect(body.model).toBe("black-forest-labs/FLUX.1-schnell");
+      expect(body.prompt).toBe(baseReq.prompt);
+      expect(calls[1]!.url).toBe("https://api.together.ai/shrt/abc123");
     } finally {
       restore();
+    }
+    // b64_json envelope path (no follow-up download)
+    const h2 = installFetch({
+      kind: "json",
+      body: { data: [{ b64_json: PNG_BYTES.toString("base64") }] }
+    });
+    try {
+      const r = await HuggingFaceProvider.generate("hf-flux-schnell", baseReq);
+      expect(r.image.equals(PNG_BYTES)).toBe(true);
+    } finally {
+      h2.restore();
     }
     const handle = installFetch({ kind: "text", status: 503, body: "cold" });
     try {
@@ -983,12 +1008,10 @@ describe("CloudflareProvider", () => {
   it("handles both raw-bytes and JSON response shapes, with step math", async () => {
     setKey("cloudflare", "cf-xxx");
     (CONFIG as { cloudflareAccountId: string }).cloudflareAccountId = "acct123";
+    // cf-flux-1-schnell + cf-sdxl-lightning still use JSON. cf-flux-2-dev
+    // moved to multipart; covered in a separate test below.
     const { calls, restore } = installFetch(
       { kind: "buffer", body: PNG_BYTES },
-      {
-        kind: "json",
-        body: { result: { images: [PNG_BYTES.toString("base64")] } }
-      },
       {
         kind: "json",
         body: { result: { image: PNG_BYTES.toString("base64") } }
@@ -999,10 +1022,6 @@ describe("CloudflareProvider", () => {
         ...baseReq,
         negative_prompt: "ignored-for-flux"
       });
-      await CloudflareProvider.generate("cf-flux-2-dev", {
-        ...baseReq,
-        reference_images: ["b64ref"]
-      });
       await CloudflareProvider.generate("cf-sdxl-lightning", {
         ...baseReq,
         negative_prompt: "blurry"
@@ -1012,10 +1031,33 @@ describe("CloudflareProvider", () => {
       expect(b0.num_steps).toBe(4);
       expect(b0.negative_prompt).toBeUndefined(); // flux ignores negatives
       const b1 = JSON.parse(calls[1]!.body!);
-      expect(b1.image_b64).toEqual(["b64ref"]);
-      const b2 = JSON.parse(calls[2]!.body!);
-      expect(b2.negative_prompt).toBe("blurry");
-      expect(b2.num_steps).toBe(4);
+      expect(b1.negative_prompt).toBe("blurry");
+      expect(b1.num_steps).toBe(4);
+    } finally {
+      restore();
+    }
+  });
+
+  it("Flux 2 family uses multipart-form input (CF migrated 2026-04)", async () => {
+    setKey("cloudflare", "cf-xxx");
+    (CONFIG as { cloudflareAccountId: string }).cloudflareAccountId = "acct123";
+    const { calls, restore } = installFetch({ kind: "buffer", body: PNG_BYTES });
+    try {
+      await CloudflareProvider.generate("cf-flux-2-klein-9b", {
+        ...baseReq,
+        negative_prompt: "ignored-for-flux"
+      });
+      // The body is a FormData instance, not a JSON string. We can't
+      // introspect form fields without a real fetch implementation, but
+      // we can verify the Content-Type header is NOT explicitly set
+      // (so fetch fills the multipart boundary).
+      const headers = calls[0]!.headers as Record<string, string>;
+      const ct = Object.entries(headers).find(([k]) => k.toLowerCase() === "content-type")?.[1];
+      expect(ct).toBeUndefined();
+      expect(calls[0]!.rawBody).toBeInstanceOf(FormData);
+      const fd = calls[0]!.rawBody as FormData;
+      expect(fd.get("prompt")).toBe(baseReq.prompt);
+      expect(fd.get("num_steps")).toBe("8"); // klein → 8 steps
     } finally {
       restore();
     }
