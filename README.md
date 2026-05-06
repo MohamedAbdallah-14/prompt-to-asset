@@ -153,7 +153,7 @@ Details + quotas: [Free paths beyond Pollinations](#free-paths-beyond-pollinatio
 - [Free paths beyond Pollinations](#free-paths-beyond-pollinations)
 - [Install](#install)
 - [Models covered](#models-covered) — 60+
-- [MCP tools](#mcp-tools) — 24 tools
+- [MCP tools](#mcp-tools) — 25 tools
 - [CLI surface](#cli-surface)
 - [Brand bundle (`brand.json`)](#brand-bundle)
 - [Platform support](#platform-support)
@@ -347,7 +347,7 @@ Once registered, your assistant has the full **24 `asset_*` tool** surface.
 <a id="mcp-tools"></a>
 
 <details>
-<summary><b>🛠  MCP tool surface (24 tools)</b></summary>
+<summary><b>🛠  MCP tool surface (25 tools)</b></summary>
 
 | Tool                           | Purpose                                                                                                                                                                                                         |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
