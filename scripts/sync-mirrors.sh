@@ -12,8 +12,24 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-SKILLS=(asset-enhancer logo app-icon favicon og-image illustration transparent-bg vectorize svg-authoring t2i-prompt-dialect asset-validation-debug brand-consistency)
+SKILLS=(asset-enhancer logo app-icon favicon og-image illustration transparent-bg vectorize svg-authoring t2i-prompt-dialect asset-validation-debug brand-consistency ui-mockup-prompt)
 RULE_BODY="rules/asset-enhancer-activate.md"
+
+# Copy a skill's SKILL.md (and references/ if present) to a mirror location.
+# Newer skill-creator skills bundle reference files under references/; older
+# SKILL.md-only skills just copy the single file. The function handles both
+# without per-skill conditionals.
+copy_skill() {
+  local sk="$1"
+  local dest_root="$2"
+  local dest="$dest_root/$sk"
+  mkdir -p "$dest"
+  cp "skills/$sk/SKILL.md" "$dest/SKILL.md"
+  if [ -d "skills/$sk/references" ]; then
+    rm -rf "$dest/references"
+    cp -R "skills/$sk/references" "$dest/references"
+  fi
+}
 
 # ============================================================================
 # 1. Claude Code
@@ -39,14 +55,12 @@ cat > .claude-plugin/plugin.json <<EOF
 EOF
 
 for sk in "${SKILLS[@]}"; do
-  mkdir -p ".claude/skills/$sk"
-  cp "skills/$sk/SKILL.md" ".claude/skills/$sk/SKILL.md"
+  copy_skill "$sk" ".claude/skills"
 done
 # Also copy under plugin-bundle layout
 mkdir -p plugins/prompt-to-asset/skills
 for sk in "${SKILLS[@]}"; do
-  mkdir -p "plugins/prompt-to-asset/skills/$sk"
-  cp "skills/$sk/SKILL.md" "plugins/prompt-to-asset/skills/$sk/SKILL.md"
+  copy_skill "$sk" "plugins/prompt-to-asset/skills"
 done
 cp .claude-plugin/plugin.json plugins/prompt-to-asset/.claude-plugin/plugin.json 2>/dev/null || {
   mkdir -p plugins/prompt-to-asset/.claude-plugin
@@ -76,8 +90,7 @@ mkdir -p .cursor/rules .cursor/skills
 
 # Skills (Cursor reads SKILL.md identically to Claude Code)
 for sk in "${SKILLS[@]}"; do
-  mkdir -p ".cursor/skills/$sk"
-  cp "skills/$sk/SKILL.md" ".cursor/skills/$sk/SKILL.md"
+  copy_skill "$sk" ".cursor/skills"
 done
 
 # MCP registration
@@ -104,8 +117,7 @@ mkdir -p .windsurf/rules .windsurf/skills
   cat "$RULE_BODY"
 } > .windsurf/rules/prompt-to-asset.md
 for sk in "${SKILLS[@]}"; do
-  mkdir -p ".windsurf/skills/$sk"
-  cp "skills/$sk/SKILL.md" ".windsurf/skills/$sk/SKILL.md"
+  copy_skill "$sk" ".windsurf/skills"
 done
 
 # ============================================================================
