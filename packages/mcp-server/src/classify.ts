@@ -136,15 +136,23 @@ export function inferFlags(
   if (assetType === "icon_pack" || assetType === "favicon") vector_required = true;
   if (assetType === "logo") vector_required = true;
 
-  // Text content — look for quoted strings in brief
+  // Text content — look for quoted strings in brief.
+  // UI mockups are full screens with many small labels, not a single
+  // wordmark. The first quoted string in a ui_mockup brief is often an
+  // anti-pattern callout (e.g. quoting "10x faster" inside an anti-slop
+  // guard) — treating it as a wordmark mis-routes via text-length rules.
   let text_content: string | null = null;
-  const quoted = brief.match(/["'"\u2018\u2019]([^"'"\u2018\u2019]{1,40})["'"\u2018\u2019]/);
-  if (quoted && quoted[1]) {
-    text_content = quoted[1];
-  } else {
-    // "with the text X" / "wordmark X"
-    const m = brief.match(/\b(?:with\s+the\s+text|wordmark|saying|text:)\s+([A-Za-z0-9 ]{1,40})/i);
-    if (m && m[1]) text_content = m[1].trim();
+  if (assetType !== "ui_mockup") {
+    const quoted = brief.match(/["'"\u2018\u2019]([^"'"\u2018\u2019]{1,40})["'"\u2018\u2019]/);
+    if (quoted && quoted[1]) {
+      text_content = quoted[1];
+    } else {
+      // "with the text X" / "wordmark X"
+      const m = brief.match(
+        /\b(?:with\s+the\s+text|wordmark|saying|text:)\s+([A-Za-z0-9 ]{1,40})/i
+      );
+      if (m && m[1]) text_content = m[1].trim();
+    }
   }
 
   return { transparency_required, vector_required, text_content };

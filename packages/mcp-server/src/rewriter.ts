@@ -43,6 +43,18 @@ export function rewrite(input: RewriteInput): RewriteOutput {
   const model = findModel(input.target_model);
   const warnings: string[] = [];
 
+  // UI mockups bypass the single-mark rewriter entirely. The brief is
+  // already an enriched, slot-labeled prompt (composed by
+  // generate-ui-mockup.ts) carrying [Surface job], [Aesthetic direction],
+  // [Anti-slop guards], [Output framing]. The rewriter's logo defaults
+  // ("centered, fills 70-80%, no text, no wordmark, 1:1 1024×1024 white
+  // background") would catastrophically misframe a multi-region UI surface.
+  // Pass through with minimal augmentation: brand palette + typography +
+  // do_not anchors translated to positive form.
+  if (input.asset_type === "ui_mockup") {
+    return rewriteUiMockup(input, model, warnings);
+  }
+
   const dialect = model?.dialect ?? "prose";
   const subject = extractSubject(input.brief);
   const style = inferStyle(input.brief, input.asset_type);
@@ -170,6 +182,83 @@ export function rewrite(input: RewriteInput): RewriteOutput {
   }
 
   return { prompt, ...(negative_prompt !== undefined && { negative_prompt }), warnings };
+}
+
+/**
+ * UI mockup rewriter. Treats `input.brief` as the already-composed enriched
+ * prompt from generate-ui-mockup.ts (carries [Surface job], [Aesthetic
+ * direction], [Anti-slop guards], [Output framing] slots) and adds:
+ *   - brand palette anchored to resolved hex values
+ *   - typography commitment if the brand bundle ships one
+ *   - do_not anchors rewritten as positive instructions
+ *   - per-model dialect framing (Nano Banana bracket-tag preamble, Ideogram
+ *     8-section nudge, Midjourney --flags) without rewriting the surface body
+ *
+ * Crucially does NOT emit:
+ *   - "no text / no labels / no wordmark" (UI mockups are all text)
+ *   - "centered, fills 70-80%, bold silhouette" (UI is multi-region)
+ *   - "1:1 1024×1024" (overrides the user's aspect ratio)
+ *   - "solid pure white background" (kills dark mode briefs)
+ */
+function rewriteUiMockup(
+  input: RewriteInput,
+  model: ReturnType<typeof findModel>,
+  warnings: string[]
+): RewriteOutput {
+  const brand = input.brand_bundle;
+  const palette = brand?.palette ?? [];
+  const doNot = brand?.do_not ?? [];
+
+  const augmentations: string[] = [];
+  if (palette.length > 0) {
+    augmentations.push(
+      `[Palette] Strict palette — every visible color must come from this list of resolved hex: ${palette.join(", ")}. Dominant neutral 70-90% of pixels, single accent ≤10% used at most twice on the screen.`
+    );
+  }
+  if (brand?.typography?.primary) {
+    augmentations.push(
+      `[Typography] Headline typeface is ${brand.typography.primary}. Body in ${brand.typography.secondary ?? brand.typography.primary}. Tight letter-spacing on the headline (-0.02em). Wide letter-spacing on small caps if any (0.06em). 65-character body line length.`
+    );
+  } else {
+    augmentations.push(
+      `[Typography] Headline in a distinctive non-default sans-serif (NEVER Inter, Roboto, Arial, system-ui). Body in a paired neutral face. Tight letter-spacing on the headline (-0.02em).`
+    );
+  }
+  const positiveDoNot = positiveAnchorsFromDoNot(doNot);
+  if (positiveDoNot) {
+    augmentations.push(`[Brand do-not anchors] ${positiveDoNot}`);
+  }
+
+  // Dialect-specific preamble: Nano Banana wants explicit [Subject] /
+  // [Action] / [Location] tags; Ideogram wants the 8-section structure;
+  // Flux 2 supports ordinal "from image N" indexing; OpenAI is permissive
+  // (slot labels work). Midjourney is text-gibberish — generate-ui-mockup
+  // routes it via "never" so we shouldn't see it here, but warn if we do.
+  let preamble = "";
+  if (model?.family === "gemini") {
+    preamble =
+      "Compose this prompt as labeled prose: '[Subject] ...' / '[Action] ...' / '[Location/Context] ...' / '[Composition] ...' / '[Style] ...' / '[Editing] render all visible text legibly'. Use positive framing only — no negative prompts.\n\n";
+  } else if (model?.id === "ideogram-3-turbo" || model?.id === "ideogram-3") {
+    preamble =
+      "Compose as Ideogram 8-section structured prose (Image Summary / Main Subject / Action / Secondary Elements / Setting / Lighting / Framing / Enhancers). Hard cap ~150 words. style_type=DESIGN, magic_prompt=OFF.\n\n";
+  } else if (model?.family === "mj") {
+    warnings.push(
+      `Midjourney v7 cannot render legible UI labels. The router should never have picked it for ui_mockup; treating as a hero/mood pass and dropping in-image text. The skill 'ui-mockup-prompt' has the full Midjourney workflow that composites real text post-render.`
+    );
+  } else if (model?.id?.startsWith("flux-2")) {
+    preamble =
+      "Front-load the subject. Word-order priority: main subject → key action → critical style → essential context → secondary details. No negative_prompt (Flux 2 silently no-ops it). If reference images are provided, address them by ordinal: 'layout from image 1, palette from image 2, brand mark from image 3'.\n\n";
+  } else {
+    // gpt-image-2 / 1.5 — slot-labeled with line breaks (Cookbook recommendation
+    // for complex / dense UI requests).
+    preamble =
+      "For complex UI requests, use short labeled segments with line breaks instead of one long paragraph (per OpenAI Cookbook gpt-image-1.5 guidance). Quality: high. Render all visible text legibly.\n\n";
+  }
+
+  const prompt =
+    preamble + input.brief + (augmentations.length > 0 ? "\n\n" + augmentations.join("\n\n") : "");
+
+  return { prompt, warnings };
 }
 
 function extractSubject(brief: string): string {
