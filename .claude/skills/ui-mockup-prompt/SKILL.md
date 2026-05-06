@@ -238,6 +238,7 @@ When the agent calls the skill without overriding these, behave as follows. They
 ## Reference files in this skill
 
 - `references/surface-patterns.md` — **read this first.** UX-pattern requirements per surface type (pricing, dashboard, settings, onboarding, marketing, form, detail, modal, mobile home). Constrains aesthetic by job.
+- `references/laws-of-ux.md` — 30 cognitive / perceptual / design heuristics from lawsofux.com, each with a `For UI mockup prompts` directive. Pull into `[Surface job]` or `[Soul]` when the brief calls for it (Hick's on pricing, Miller's on settings, Postel's on forms, Peak-End on onboarding, Von Restorff for the recommended tier, etc.). Quick lookups by surface type at the bottom of the file.
 - `references/routing-evidence.md` — STRICT NED data, ImagenWorld, LMArena, why we route the way we do
 - `references/anti-slop-detail.md` — long-form expansion of every cardinal sin with examples and the open-design `lint-artifact` rule mappings
 - `references/craft-rules-condensed.md` — the open-design `craft/*` modules (color, typography, state, accessibility, RTL, form-validation) condensed into prompt-relevant deltas
