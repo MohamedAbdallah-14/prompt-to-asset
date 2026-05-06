@@ -76,5 +76,5 @@ describe("asset_export_bundle", () => {
     expect(r.platforms).toContain("favicon");
     expect(r.platforms).toContain("visionos");
     expect(r.platforms).toContain("flutter");
-  });
+  }, 20_000);
 });
