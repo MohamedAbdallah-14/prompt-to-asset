@@ -8,7 +8,8 @@ export type AssetType =
   | "icon_pack"
   | "hero"
   | "sticker"
-  | "transparent_mark";
+  | "transparent_mark"
+  | "ui_mockup";
 
 export type Dialect = "prose" | "tag-salad" | "prose+quoted" | "prose+flags" | "prose+instruction";
 

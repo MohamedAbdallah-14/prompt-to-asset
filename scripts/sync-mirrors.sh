@@ -70,7 +70,7 @@ cp .claude-plugin/plugin.json plugins/prompt-to-asset/.claude-plugin/plugin.json
 # CLAUDE.md — the top-level memory for Claude Code
 {
   printf '# prompt-to-asset (Claude Code memory)\n\n'
-  printf 'This repo registers a `prompt-to-asset` MCP server and a set of skills for generating production-grade software assets. When the user asks for a logo, app icon, favicon, OG image, illustration, splash screen, icon pack, transparent mark, or hero image, follow the rule below and prefer the `asset_*` MCP tool surface.\n\n'
+  printf 'This repo registers a `prompt-to-asset` MCP server and a set of skills for generating production-grade software assets. When the user asks for a logo, app icon, favicon, OG image, illustration, splash screen, icon pack, transparent mark, hero image, or a UI mockup (pricing page / dashboard / settings / onboarding / marketing landing / mobile screen / form / modal), follow the rule below and prefer the `asset_*` MCP tool surface.\n\n'
   cat "$RULE_BODY"
 } > CLAUDE.md
 
@@ -197,9 +197,9 @@ cat > .github/copilot-skillset.json <<EOF
   "skills": [
     {
       "name": "asset_generate",
-      "description": "Generate a production-grade software asset (logo, app icon, favicon, OG image, illustration, vector). Classifies and routes internally. Prefer this over ad-hoc image generation.",
+      "description": "Generate a production-grade software asset (logo, app icon, favicon, OG image, illustration, vector, UI mockup). Classifies and routes internally. Prefer this over ad-hoc image generation.",
       "inputs": {
-        "asset_type": { "type": "string", "enum": ["logo", "app_icon", "favicon", "og_image", "illustration", "icon_pack", "sticker", "transparent_mark", "hero"] },
+        "asset_type": { "type": "string", "enum": ["logo", "app_icon", "favicon", "og_image", "illustration", "icon_pack", "sticker", "transparent_mark", "hero", "ui_mockup"] },
         "brief": { "type": "string" },
         "brand_bundle": { "type": "object" }
       }

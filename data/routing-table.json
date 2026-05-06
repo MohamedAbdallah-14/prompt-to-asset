@@ -259,6 +259,48 @@
         "docs/research/13-transparent-backgrounds/",
         "docs/research/05-openai-dalle-gpt-image/5b-gpt-image-1-api.md"
       ]
+    },
+    {
+      "id": "ui-mockup-text-light",
+      "when": { "asset_type": "ui_mockup", "text_length": "1..5" },
+      "primary": { "model": "ideogram-3-turbo", "params": { "style_type": "DESIGN", "magic_prompt": "OFF" } },
+      "fallback": [
+        { "model": "gpt-image-2" },
+        { "model": "gpt-image-1.5" },
+        { "model": "gemini-3-pro-image" },
+        { "model": "gemini-3-flash-image" }
+      ],
+      "never": ["midjourney-v7", "imagen-3", "imagen-4", "sdxl", "sd-1.5", "flux-schnell"],
+      "postprocess": ["ocr_levenshtein_check", "palette_delta_e_check"],
+      "research_sources": [
+        "docs/research/ui-mockup-prompting/REPORT.md",
+        "docs/research/ui-mockup-prompting/findings/03-model-dialect.md",
+        "docs/research/ui-mockup-prompting/findings/07-failure-modes.md",
+        "skills/ui-mockup-prompt/references/routing-evidence.md"
+      ]
+    },
+    {
+      "id": "ui-mockup-default",
+      "when": { "asset_type": "ui_mockup" },
+      "primary": { "model": "gpt-image-2", "params": { "quality": "high" } },
+      "fallback": [
+        { "model": "gpt-image-1.5", "params": { "quality": "high", "input_fidelity": "high" } },
+        { "model": "gemini-3-pro-image" },
+        { "model": "gemini-3-flash-image" },
+        { "model": "flux-2" },
+        { "model": "flux-2-flex" },
+        { "model": "ideogram-3-turbo", "params": { "style_type": "DESIGN", "magic_prompt": "OFF" } }
+      ],
+      "never": ["imagen-3", "sdxl", "flux-schnell"],
+      "postprocess": ["ocr_levenshtein_check", "palette_delta_e_check"],
+      "research_sources": [
+        "docs/research/ui-mockup-prompting/REPORT.md",
+        "docs/research/ui-mockup-prompting/findings/03-model-dialect.md",
+        "docs/research/ui-mockup-prompting/findings/06-multi-ref-workflows.md",
+        "docs/research/ui-mockup-prompting/findings/07-failure-modes.md",
+        "skills/ui-mockup-prompt/references/routing-evidence.md",
+        "skills/ui-mockup-prompt/references/surface-patterns.md"
+      ]
     }
   ]
 }

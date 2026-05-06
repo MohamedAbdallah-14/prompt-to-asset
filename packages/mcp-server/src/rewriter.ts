@@ -222,6 +222,7 @@ function assetNoun(type: AssetType): string {
     illustration: "spot illustration",
     icon_pack: "UI icon",
     hero: "marketing hero image",
+    ui_mockup: "UI screen mockup",
     sticker: "sticker",
     transparent_mark: "isolated mark"
   };

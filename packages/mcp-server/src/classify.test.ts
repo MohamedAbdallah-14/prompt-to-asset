@@ -12,7 +12,11 @@ describe("classify", () => {
     ["hero banner for our landing page", "hero"],
     ["empty-state illustration for a settings screen", "illustration"],
     ["logo for a developer-tools company called Forge", "logo"],
-    ["isolated mark with no background", "transparent_mark"]
+    ["isolated mark with no background", "transparent_mark"],
+    ["mock up the pricing page for our SaaS", "ui_mockup"],
+    ["imagine the dashboard for our analytics product", "ui_mockup"],
+    ["give me a prompt for nano banana to design our pricing page", "ui_mockup"],
+    ["pricing page for indie founders", "ui_mockup"]
   ])("maps %j to %s", (brief, expected) => {
     expect(classify(brief).asset_type).toBe(expected);
   });

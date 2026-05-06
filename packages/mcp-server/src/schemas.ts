@@ -10,7 +10,8 @@ export const AssetTypeSchema = z.enum([
   "icon_pack",
   "hero",
   "sticker",
-  "transparent_mark"
+  "transparent_mark",
+  "ui_mockup"
 ]);
 
 /**
@@ -153,6 +154,56 @@ export const GenerateHeroInput = z.object({
   brand_bundle: BrandBundleSchema.optional(),
   aspect_ratio: z.enum(["16:9", "21:9", "3:2", "2:1"]).default("16:9"),
   count: z.number().int().min(1).max(8).default(1),
+  output_dir: z.string().optional()
+});
+
+/**
+ * Surface types the UI-mockup generator knows how to constrain.
+ * These map 1:1 to the catalog in
+ * skills/ui-mockup-prompt/references/surface-patterns.md.
+ * If omitted, the generator classifies the surface from the brief.
+ */
+export const UiMockupSurfaceSchema = z.enum([
+  "pricing_page",
+  "dashboard",
+  "settings",
+  "onboarding",
+  "marketing_landing",
+  "form",
+  "detail_view",
+  "search_results",
+  "modal",
+  "mobile_home",
+  "single_component"
+]);
+
+export const GenerateUiMockupInput = z.object({
+  brief: z.string().min(3),
+  mode: ModeSchema.optional(),
+  brand_bundle: BrandBundleSchema.optional(),
+  surface_type: UiMockupSurfaceSchema.optional().describe(
+    "What kind of UI surface this is. Drives the [Surface job] slot in the prompt — pricing pages need a comparison matrix, dashboards need a KPI strip + F-pattern, settings need grouped sections, onboarding needs ONE primary CTA. If omitted, classified from the brief."
+  ),
+  aspect_ratio: z
+    .enum(["16:9", "9:16", "4:3", "3:2", "1:1", "21:9"])
+    .default("16:9")
+    .describe(
+      "Desktop UI = 16:9, mobile = 9:16, tablet = 4:3 or 3:2. 21:9 for ultra-wide marketing heros only."
+    ),
+  count: z.number().int().min(1).max(8).default(1),
+  reference_images: z
+    .array(z.string())
+    .max(10)
+    .optional()
+    .describe(
+      "File paths or URLs to brand-reference images. Up to 10. With 3+ refs the router prefers Flux 2 Pro (only model with documented prompt-level ordinal indexing)."
+    ),
+  aesthetic_direction: z
+    .string()
+    .optional()
+    .describe(
+      "Optional override for the [Aesthetic] slot — e.g. 'editorial-magazine', 'brutalist', 'refined-minimal', 'soft-organic', 'industrial', 'archival', 'playful-precision', 'quiet-luxury'. Otherwise inferred from the brief or rotated by surface type to avoid AI-default flatness."
+    ),
   output_dir: z.string().optional()
 });
 
@@ -471,6 +522,8 @@ export type GenerateOgImageInputT = z.infer<typeof GenerateOgImageInput>;
 export type GenerateIllustrationInputT = z.infer<typeof GenerateIllustrationInput>;
 export type GenerateSplashScreenInputT = z.infer<typeof GenerateSplashScreenInput>;
 export type GenerateHeroInputT = z.infer<typeof GenerateHeroInput>;
+export type GenerateUiMockupInputT = z.infer<typeof GenerateUiMockupInput>;
+export type UiMockupSurface = z.infer<typeof UiMockupSurfaceSchema>;
 export type RemoveBackgroundInputT = z.infer<typeof RemoveBackgroundInput>;
 export type VectorizeInputT = z.infer<typeof VectorizeInput>;
 export type UpscaleRefineInputT = z.infer<typeof UpscaleRefineInput>;

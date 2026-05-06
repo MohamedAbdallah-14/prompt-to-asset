@@ -1,6 +1,6 @@
 # prompt-to-asset (Claude Code memory)
 
-This repo registers a `prompt-to-asset` MCP server and a set of skills for generating production-grade software assets. When the user asks for a logo, app icon, favicon, OG image, illustration, splash screen, icon pack, transparent mark, or hero image, follow the rule below and prefer the `asset_*` MCP tool surface.
+This repo registers a `prompt-to-asset` MCP server and a set of skills for generating production-grade software assets. When the user asks for a logo, app icon, favicon, OG image, illustration, splash screen, icon pack, transparent mark, hero image, or a UI mockup (pricing page / dashboard / settings / onboarding / marketing landing / mobile screen / form / modal), follow the rule below and prefer the `asset_*` MCP tool surface.
 
 # Asset generation — always-on rule
 
@@ -71,7 +71,7 @@ Every asset request resolves to one of three modes. Call `asset_capabilities()` 
 
 **Cost guardrail.** If the user has set `P2A_MAX_SPEND_USD_PER_RUN`, an api-mode call may throw `CostBudgetExceededError` before hitting the provider. Relay the estimate + cap verbatim — do not paper over with a retry loop.
 
-## MCP tool surface (24 tools)
+## MCP tool surface (25 tools)
 
 **Discovery / capability (read-only):**
 - `asset_capabilities()` — inventory of modes, paid/free/paste-only providers, unconfigured env vars, and zero-cost routes (`free_api.routes` enumerates Cloudflare, NVIDIA NIM, HF, Stable Horde, Pollinations, Google AI Studio paste-only, local ComfyUI, and trial routes).
@@ -85,6 +85,7 @@ Every asset request resolves to one of three modes. Call `asset_capabilities()` 
 **Generation (three-mode):**
 - `asset_generate_logo`, `asset_generate_app_icon`, `asset_generate_favicon`, `asset_generate_og_image`, `asset_generate_illustration` — each takes `mode?: "inline_svg" | "external_prompt_only" | "api"`. Omit for auto-select.
 - `asset_generate_splash_screen`, `asset_generate_hero` — cross-platform splash bundle + marketing hero art. `external_prompt_only` / `api` only (no inline_svg — path budget too small for composed scenes; generate a mark inline_svg first, then pass it via `existing_mark_svg`).
+- `asset_generate_ui_mockup` — designer-grade UI mockup for an actual product surface (pricing page / dashboard / settings / onboarding / marketing landing / mobile screen / form / modal / detail view / search results). `external_prompt_only` / `api` only. Routes by text density: gpt-image-2 default for text-heavy UI, Ideogram 3 Turbo for short-text mobile onboarding, Flux 2 when 3+ refs need ordinal-indexed roles. Each invocation includes a `[Surface job]` slot in the emitted prompt — comparison matrix on pricing pages, F-pattern on dashboards, ONE primary CTA on onboarding, grouped sections on settings — and bakes in the anti-AI-slop guards (no Tailwind indigo, no purple gradient, no Inter headline, no rounded-card-with-left-stripe, no invented metrics, no lorem ipsum). The companion `ui-mockup-prompt` skill is the SSOT for full surface-pattern + per-model dialect detail; this tool is the API equivalent for hands-off generation.
 
 **Round-trip + pipeline primitives:**
 - `asset_save_inline_svg({ svg, asset_type })` — **round-trip endpoint for `inline_svg` mode.** Call immediately after emitting the `<svg>` in chat. Writes master.svg and, for favicon/app_icon, the full platform bundle. Returns file paths.

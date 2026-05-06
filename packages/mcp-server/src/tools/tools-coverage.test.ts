@@ -10,6 +10,12 @@ import { generateAppIcon } from "./generate-app-icon.js";
 import { generateFavicon } from "./generate-favicon.js";
 import { generateHero } from "./generate-hero.js";
 import { generateIllustration } from "./generate-illustration.js";
+import {
+  generateUiMockup,
+  classifySurface,
+  surfaceJobLine,
+  surfaceValidationChecks
+} from "./generate-ui-mockup.js";
 import { generateOgImage } from "./generate-og-image.js";
 import { generateSplashScreen } from "./generate-splash-screen.js";
 import {
@@ -377,6 +383,85 @@ describe("generateIllustration", () => {
         count: 1
       })
     ).rejects.toThrow(/no provider API key/);
+  });
+});
+
+// ── generate-ui-mockup ────────────────────────────────────────────────────────
+
+describe("generateUiMockup", () => {
+  it("external_prompt_only across surfaces and aspect ratios", async () => {
+    const cases: Array<{
+      brief: string;
+      surface: Parameters<typeof surfaceJobLine>[0];
+      ar: "16:9" | "9:16" | "4:3";
+    }> = [
+      { brief: "pricing page for indie founders", surface: "pricing_page", ar: "16:9" },
+      { brief: "imagine the dashboard for analytics", surface: "dashboard", ar: "16:9" },
+      { brief: "settings page for our iOS app", surface: "settings", ar: "9:16" }
+    ];
+    for (const c of cases) {
+      const r = (await generateUiMockup({
+        brief: c.brief,
+        mode: "external_prompt_only",
+        aspect_ratio: c.ar,
+        count: 1,
+        surface_type: c.surface
+      })) as { mode: string };
+      expect(r.mode).toBe("external_prompt_only");
+    }
+  });
+
+  it("mode=api without keys throws", async () => {
+    await expect(
+      generateUiMockup({
+        brief: "mock up the pricing page",
+        mode: "api",
+        aspect_ratio: "16:9",
+        count: 1
+      })
+    ).rejects.toThrow(/no provider API key/);
+  });
+
+  it("inline_svg is rejected with a clear error", async () => {
+    await expect(
+      generateUiMockup({
+        brief: "mock up the pricing page",
+        mode: "inline_svg" as never,
+        aspect_ratio: "16:9",
+        count: 1
+      })
+    ).rejects.toThrow();
+  });
+});
+
+describe("ui-mockup surface helpers", () => {
+  it("classifySurface routes the obvious surface vocabulary", () => {
+    expect(classifySurface("pricing page for our SaaS")).toBe("pricing_page");
+    expect(classifySurface("analytics dashboard with KPIs")).toBe("dashboard");
+    expect(classifySurface("profile settings screen")).toBe("settings");
+    expect(classifySurface("first-time user onboarding")).toBe("onboarding");
+    expect(classifySurface("login form")).toBe("form");
+    expect(classifySurface("modal sheet for delete confirmation")).toBe("modal");
+    // Unknown surface defaults to marketing_landing (least constrained)
+    expect(classifySurface("something visual")).toBe("marketing_landing");
+  });
+
+  it("surfaceJobLine emits surface-specific UX moves", () => {
+    expect(surfaceJobLine("pricing_page")).toMatch(/comparison matrix/i);
+    expect(surfaceJobLine("dashboard")).toMatch(/KPI strip/);
+    expect(surfaceJobLine("settings")).toMatch(/grouped/);
+    expect(surfaceJobLine("onboarding")).toMatch(/ONE primary CTA/);
+    expect(surfaceJobLine("marketing_landing")).toMatch(/social proof/i);
+  });
+
+  it("surfaceValidationChecks return per-surface check arrays", () => {
+    expect(surfaceValidationChecks("pricing_page")).toContain(
+      "comparison matrix is used (feature-per-row, ✓/—/value per column) — not three parallel bullet lists"
+    );
+    expect(surfaceValidationChecks("dashboard").some((c) => c.includes("≤6 KPIs"))).toBe(true);
+    expect(surfaceValidationChecks("onboarding").some((c) => c.includes("ONE primary CTA"))).toBe(
+      true
+    );
   });
 });
 

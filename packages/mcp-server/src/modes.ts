@@ -56,7 +56,13 @@ export const MODES_BY_ASSET_TYPE: Record<AssetType, Mode[]> = {
   // inline SVG can't reach the detail budget. External or API only.
   illustration: ["external_prompt_only", "api"],
   hero: ["external_prompt_only", "api"],
-  splash_screen: ["external_prompt_only", "api"]
+  splash_screen: ["external_prompt_only", "api"],
+
+  // UI mockups (pricing pages, dashboards, settings, onboarding, mobile
+  // screens, marketing landings, forms) — composed multi-region surfaces
+  // with real labels. inline_svg can't reach the path budget for a full
+  // page. External or API only.
+  ui_mockup: ["external_prompt_only", "api"]
 };
 
 /**

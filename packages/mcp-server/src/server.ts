@@ -17,6 +17,7 @@ import {
   GenerateIllustrationInput,
   GenerateSplashScreenInput,
   GenerateHeroInput,
+  GenerateUiMockupInput,
   RemoveBackgroundInput,
   VectorizeInput,
   UpscaleRefineInput,
@@ -43,6 +44,7 @@ import { generateOgImage } from "./tools/generate-og-image.js";
 import { generateIllustration } from "./tools/generate-illustration.js";
 import { generateSplashScreen } from "./tools/generate-splash-screen.js";
 import { generateHero } from "./tools/generate-hero.js";
+import { generateUiMockup } from "./tools/generate-ui-mockup.js";
 import { removeBackground } from "./tools/remove-background.js";
 import { vectorizeImage } from "./tools/vectorize.js";
 import { upscaleRefine } from "./tools/upscale-refine.js";
@@ -79,7 +81,8 @@ export const TOOLS: Tool[] = [
             "icon_pack",
             "hero",
             "sticker",
-            "transparent_mark"
+            "transparent_mark",
+            "ui_mockup"
           ],
           description: "Narrow the modes-by-asset-type section to one type."
         }
@@ -108,7 +111,8 @@ export const TOOLS: Tool[] = [
             "icon_pack",
             "hero",
             "sticker",
-            "transparent_mark"
+            "transparent_mark",
+            "ui_mockup"
           ]
         },
         target_model: {
@@ -306,6 +310,58 @@ export const TOOLS: Tool[] = [
     annotations: { openWorldHint: true }
   },
   {
+    name: "asset_generate_ui_mockup",
+    description:
+      "Generate a designer-grade UI mockup (pricing page, dashboard, settings, onboarding, marketing landing, mobile screen, form, modal, detail view, search results). Two modes (external_prompt_only / api); inline_svg is not supported (UI surfaces exceed the path budget). Routes by text density: gpt-image-2 default for text-heavy UI (pricing, dashboard, settings), Ideogram 3 Turbo for short-text mobile onboarding, Flux 2 Pro when 3+ refs need ordinal-indexed roles. Includes a [Surface job] slot per surface (comparison matrix on pricing, F-pattern on dashboards, ONE primary CTA on onboarding, grouped sections on settings). Bakes in anti-AI-slop guards (no Tailwind indigo, no purple gradient, no Inter headline, no rounded-card-with-left-stripe, no invented metrics, no lorem ipsum). Use this when the user asks 'imagine the X page' / 'mock up the Y screen' / 'give me a prompt for nano banana'. The companion ui-mockup-prompt skill is the SSOT for full surface-pattern guidance and is the right path for an interactive agent; this tool is the API equivalent for hands-off generation.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string" },
+        mode: { type: "string", enum: ["external_prompt_only", "api"] },
+        brand_bundle: { type: "object" },
+        surface_type: {
+          type: "string",
+          enum: [
+            "pricing_page",
+            "dashboard",
+            "settings",
+            "onboarding",
+            "marketing_landing",
+            "form",
+            "detail_view",
+            "search_results",
+            "modal",
+            "mobile_home",
+            "single_component"
+          ],
+          description:
+            "Surface kind. Drives the [Surface job] slot. If omitted, classified from the brief."
+        },
+        aspect_ratio: {
+          type: "string",
+          enum: ["16:9", "9:16", "4:3", "3:2", "1:1", "21:9"],
+          default: "16:9"
+        },
+        count: { type: "integer", minimum: 1, maximum: 8, default: 1 },
+        reference_images: {
+          type: "array",
+          items: { type: "string" },
+          maxItems: 10,
+          description:
+            "File paths or URLs to brand-reference images. With 3+ refs Flux 2 wins routing."
+        },
+        aesthetic_direction: {
+          type: "string",
+          description:
+            "Optional [Aesthetic] override (editorial-magazine, brutalist, refined-minimal, soft-organic, industrial, archival, playful-precision, quiet-luxury)."
+        },
+        output_dir: { type: "string" }
+      },
+      required: ["brief"]
+    },
+    annotations: { openWorldHint: true }
+  },
+  {
     name: "asset_remove_background",
     description:
       "Matte an image to transparent background (BiRefNet / BRIA RMBG / U²-Net via remote endpoint; local white-chroma fallback). Returns RGBA PNG path.",
@@ -419,7 +475,8 @@ export const TOOLS: Tool[] = [
             "icon_pack",
             "hero",
             "sticker",
-            "transparent_mark"
+            "transparent_mark",
+            "ui_mockup"
           ]
         },
         brand_bundle: { type: "object" },
@@ -475,7 +532,8 @@ export const TOOLS: Tool[] = [
             "icon_pack",
             "hero",
             "sticker",
-            "transparent_mark"
+            "transparent_mark",
+            "ui_mockup"
           ]
         },
         brand_bundle: { type: "object" },
@@ -806,6 +864,9 @@ export function createServer(): Server {
           break;
         case "asset_generate_hero":
           result = await generateHero(GenerateHeroInput.parse(args ?? {}));
+          break;
+        case "asset_generate_ui_mockup":
+          result = await generateUiMockup(GenerateUiMockupInput.parse(args ?? {}));
           break;
         case "asset_remove_background":
           result = await removeBackground(RemoveBackgroundInput.parse(args ?? {}));

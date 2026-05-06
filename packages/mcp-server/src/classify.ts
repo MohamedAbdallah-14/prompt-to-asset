@@ -33,6 +33,38 @@ export function classify(brief: string): {
       weight: 0.95
     },
     { type: "sticker", regex: /\bsticker|emoji[-\s]like/, weight: 0.9 },
+    // UI mockup detection — runs BEFORE hero/illustration. The trigger has
+    // to be a request to RENDER a UI surface, not a passing mention. So we
+    // require either an explicit "mock up X" / "mockup of X" phrase, an
+    // "imagine the X page/screen" phrase, an explicit prompt-for-an-image-
+    // model phrasing, or a clean noun like "pricing page" / "dashboard"
+    // standing on its own. Briefs like "hero banner for our landing page"
+    // or "illustration for a settings screen" must NOT hit this rule —
+    // they're scenes about a page, not requests for the page itself.
+    {
+      type: "ui_mockup",
+      regex: new RegExp(
+        // Trigger phrases — explicit asks to render a UI surface
+        "\\bmock\\s*up\\s+(?:the|of|a|my|this)\\b" +
+          "|\\bmockup\\s+of\\b" +
+          "|\\bimagine\\s+the\\s+(?:pricing|dashboard|settings|onboarding|signup|login|profile|search|checkout|home|landing|marketing|hero|empty[-\\s]state|nav|footer|sidebar)\\b" +
+          "|\\bimagine\\s+the\\s+\\w+\\s+(?:page|screen|section|view|surface)\\b" +
+          "|\\bdescribe\\s+the\\s+\\w+\\s+(?:page|screen)\\b" +
+          "|\\bdesign\\s+(?:the|a|my)\\s+\\w+\\s+(?:page|screen|view|surface)\\b" +
+          "|\\bprompt\\s+for\\s+(?:nano[-\\s]?banana|gpt[-\\s]?image|ideogram|flux|midjourney)\\b" +
+          "|\\bui\\s*mockup\\b" +
+          "|\\bscreen\\s*mockup\\b" +
+          // Bare surface nouns that read as "render me this surface" without
+          // adjacent scene-language. Pricing page and dashboard are the two
+          // unambiguous ones; anything else needs the trigger phrase above.
+          "|\\bpricing\\s*page\\b" +
+          "|^dashboard\\b|\\bdashboard\\s+(?:for|of|mockup|ui|design|page|screen)\\b" +
+          // Onboarding-as-surface (NOT onboarding scene/illustration which
+          // hits the illustration rule below)
+          "|\\bonboarding\\s+(?:screen|flow|page)\\s+for\\s+(?:first[-\\s]time|new)\\s+users\\b"
+      ),
+      weight: 0.95
+    },
     {
       type: "hero",
       regex: /\bhero\s*(image|banner)|marketing\s*hero|landing\s*page\s*hero|banner/,
