@@ -14,7 +14,8 @@ import {
   generateUiMockup,
   classifySurface,
   surfaceJobLine,
-  surfaceValidationChecks
+  surfaceValidationChecks,
+  lawsForSurface
 } from "./generate-ui-mockup.js";
 import { generateOgImage } from "./generate-og-image.js";
 import { generateSplashScreen } from "./generate-splash-screen.js";
@@ -452,6 +453,33 @@ describe("ui-mockup surface helpers", () => {
     expect(surfaceJobLine("settings")).toMatch(/grouped/);
     expect(surfaceJobLine("onboarding")).toMatch(/ONE primary CTA/);
     expect(surfaceJobLine("marketing_landing")).toMatch(/social proof/i);
+  });
+
+  it("lawsForSurface returns named UX heuristics per surface", () => {
+    expect(lawsForSurface("pricing_page").join(" ")).toMatch(
+      /Hick's Law|Choice Overload|Von Restorff/
+    );
+    expect(lawsForSurface("dashboard").join(" ")).toMatch(/Pareto|Selective Attention/);
+    expect(lawsForSurface("settings").join(" ")).toMatch(/Miller's Law|Chunking/);
+    expect(lawsForSurface("onboarding").join(" ")).toMatch(/Goal-Gradient|Zeigarnik/);
+    expect(lawsForSurface("form").join(" ")).toMatch(/Postel's Law/);
+    expect(lawsForSurface("modal").join(" ")).toMatch(/Fitts's Law/);
+    // Every surface returns at least 3 directives.
+    for (const s of [
+      "pricing_page",
+      "dashboard",
+      "settings",
+      "onboarding",
+      "marketing_landing",
+      "form",
+      "detail_view",
+      "search_results",
+      "modal",
+      "mobile_home",
+      "single_component"
+    ] as const) {
+      expect(lawsForSurface(s).length).toBeGreaterThanOrEqual(3);
+    }
   });
 
   it("surfaceValidationChecks return per-surface check arrays", () => {

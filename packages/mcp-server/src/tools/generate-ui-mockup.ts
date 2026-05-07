@@ -223,6 +223,97 @@ export function surfaceJobLine(surface: UiMockupSurface): string {
 }
 
 /**
+ * UX-law directives applicable to a given surface.
+ *
+ * Distilled from `skills/ui-mockup-prompt/references/laws-of-ux.md` — the
+ * quick-lookup-by-surface-type table at the bottom of that file. Each
+ * directive is one sentence: a named law + the prompt-emission move it
+ * implies. Injected into the enriched brief so the model has the *why*
+ * behind the structural moves the [Surface job] slot already encodes.
+ *
+ * The skill version of this catalog is richer (full principle + citation
+ * + source URL); this server-side port keeps just the prompt directives
+ * to stay in the rewriter's word budget.
+ */
+export function lawsForSurface(surface: UiMockupSurface): string[] {
+  switch (surface) {
+    case "pricing_page":
+      return [
+        "Hick's Law: limit primary tiers to 3-4 visible; visually distinguish the recommended one.",
+        "Choice Overload: never present a wall of equivalents — exactly one tier reads as recommended.",
+        "Von Restorff Effect: render the recommended tier with one contrasting color + elevated scale against neutral secondaries; pair contrast with text + icon for accessibility.",
+        "Cognitive Bias (anchoring): place the recommended tier where it anchors the comparison; show savings deltas on yearly-billing toggle as concrete numbers, not percentages alone."
+      ];
+    case "dashboard":
+      return [
+        "Pareto Principle: visually emphasize the 2-3 actions that drive the dominant user journey; demote the long tail to overflow / settings.",
+        "Selective Attention: reserve the strongest visual contrast for the single goal-relevant primary action; let supporting widgets recede in weight.",
+        "Working Memory: keep prior filter selections visible (sticky filter chips / 'last 24 hours' label) so the user can read state without re-navigating.",
+        "Law of Common Region: bind the KPI strip in one shared container; group secondary lists in their own bounded regions."
+      ];
+    case "settings":
+      return [
+        "Miller's Law: chunk dense settings into 3-5 named sections (Account / Notifications / Privacy / Billing / Danger zone), each with 3-7 rows max.",
+        "Chunking: clear section headings + dividers; never a flat list of 20+ rows.",
+        "Postel's Law: input fields visibly accept varied formats with quiet inline normalization (phone with or without dashes, etc.).",
+        "Cognitive Load: visual restraint — one accent color, one display face, ≤2 type weights, generous padding."
+      ];
+    case "onboarding":
+      return [
+        "Goal-Gradient Effect: progress indicator shows user already partway along (e.g. step 1 of 3 visually pre-credited); never starts at zero.",
+        "Zeigarnik Effect: visible 'X more steps' indicator above the fold creates completion pressure; reserve for genuinely beneficial flows.",
+        "Aesthetic-Usability Effect: spend the adjective budget on tasteful typography + generous whitespace + calm palette — polish buys patience for any rough edges.",
+        "Peak-End Rule: stage a memorable success state at completion; intermediate steps stay calm."
+      ];
+    case "marketing_landing":
+      return [
+        "Aesthetic-Usability Effect: visual polish biases judgment — refined typography, generous whitespace, restrained palette, crisp hierarchy.",
+        "Pareto Principle: hero highlights the 2-3 actions that drive the dominant journey; long tail demoted to footer / secondary surfaces.",
+        "Jakob's Law: layout follows category convention (top nav + hero + social proof + features + CTA + footer) so users don't relearn interaction grammar.",
+        "Mental Model: if the brief names a comparable product, anchor explicitly ('feels like Linear's landing, not Stripe's')."
+      ];
+    case "form":
+      return [
+        "Postel's Law: input fields liberal in what they accept; rendered output strict and predictable.",
+        "Miller's Law / Chunking: forms with >7 fields split into named sections with eyebrow labels.",
+        "Fitts's Law: primary submit button oversized and well-spaced from secondary actions.",
+        "Cognitive Load: one accent color for the primary action; quiet treatment for everything else; visible labels above inputs (never placeholder-as-label)."
+      ];
+    case "detail_view":
+      return [
+        "Pareto Principle / Selective Attention: single primary action visually dominant; secondary actions in an overflow menu.",
+        "Tesler's Law: irreducible complexity (versions, raw IDs, advanced metadata) collapsed into progressive disclosure rather than hidden or flooded.",
+        "Law of Proximity: tightly grouped key metadata next to the title; supporting detail with breathing room beneath."
+      ];
+    case "search_results":
+      return [
+        "Serial Position Effect: anchor the most important filters/actions at the leftmost and rightmost positions; cluster utilities in the middle.",
+        "Law of Similarity: every result row identical in shape (title + excerpt + metadata) so the eye scans by content, not layout.",
+        "Law of Proximity: tight rhythm within a row, generous gap between rows.",
+        "Selective Attention: the search-bar query echo is the strongest visual contrast on the page."
+      ];
+    case "modal":
+      return [
+        "Fitts's Law: paired action footer with the primary action labeled by verb (Save changes / Delete project) and visually larger than Cancel.",
+        "Tesler's Law: if the modal exposes irreducible complexity (sharing permissions, billing edge cases), surface contextual guidance inline rather than punting to docs.",
+        "Doherty Threshold: include explicit feedback states for the primary action (loading spinner inline, success toast, error inline) so the modal feels responsive."
+      ];
+    case "mobile_home":
+      return [
+        "Fitts's Law: bottom-tab-bar nav within the thumb arc; primary action at thumb-rest position; touch targets ≥44pt apart.",
+        "Pareto Principle: 80% of opens go to 1-2 actions; emphasize those, demote the long tail.",
+        "Selective Attention: one dominant action above the fold; no competing visual weight."
+      ];
+    case "single_component":
+      return [
+        "Law of Similarity: every state variant (default / hover / focus / active / disabled) shares the same skeleton; only the visual state differs.",
+        "Von Restorff Effect: the active or selected state is the visual outlier against neutrals.",
+        "Aesthetic-Usability Effect: state labels use refined typography; spacing shows the component's intended density."
+      ];
+  }
+}
+
+/**
  * Per-surface validation checks the calling agent should still verify
  * post-generation. Surface-aware analogue to the universal OCR/ΔE/aspect
  * checks tier0 already runs.
@@ -308,6 +399,18 @@ function composeEnrichedBrief(
   lines.push("");
   lines.push(`[Surface job — ${surface}]`);
   lines.push(surfaceJob);
+  // UX-law directives for this surface — port of laws-of-ux.md's
+  // surface-by-surface lookup. Tells the model the *why* behind the
+  // structural moves the [Surface job] slot encodes, so when the model
+  // has discretion (which CTA to emphasize, where to place the
+  // recommended tier, how to chunk a settings list) it picks the right
+  // move grounded in named cognitive heuristics.
+  const laws = lawsForSurface(surface);
+  if (laws.length > 0) {
+    lines.push("");
+    lines.push(`[UX laws applicable to ${surface}]`);
+    for (const directive of laws) lines.push("- " + directive);
+  }
   if (input.aesthetic_direction) {
     lines.push("");
     lines.push(`[Aesthetic direction]`);
