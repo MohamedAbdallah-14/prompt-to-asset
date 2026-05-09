@@ -1,0 +1,102 @@
+name: Scheduled audit
+
+# Catches transitive-dep vulnerabilities that Dependabot can't raise a PR for.
+# Dependabot only PRs direct deps; transitive ones show up as security alerts
+# but never get auto-fixed. This job runs npm audit on a schedule and opens
+# (or updates) a single tracking issue when high-severity findings exist.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # every Monday 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    name: audit (scheduled)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run audit and capture output
+        id: audit
+        run: |
+          set +e
+          npm audit --audit-level=high --omit=dev --json > audit.json 2>&1
+          EXIT=$?
+          echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
+          set -e
+
+      - name: Build issue body from audit output
+        if: steps.audit.outputs.exit_code != '0'
+        run: |
+          node -e "
+            const raw = require('fs').readFileSync('audit.json', 'utf8');
+            let data;
+            try { data = JSON.parse(raw); } catch {
+              require('fs').writeFileSync('issue-body.md', 'Could not parse audit output.\n\`\`\`\n' + raw.slice(0, 4000) + '\n\`\`\`');
+              process.exit(0);
+            }
+            const vulns = Object.values(data.vulnerabilities || {})
+              .filter(v => ['high','critical'].includes(v.severity));
+            const lines = vulns.map(v => {
+              const vias = v.via.filter(x => typeof x === 'object').map(x => x.title || x.name).join(', ');
+              return '- **' + v.name + '** (' + v.severity + ') range: \`' + v.range + '\` — ' + (vias || 'see audit output');
+            });
+            const body = '### npm audit findings\n\n' + lines.join('\n') +
+              '\n\nRun \`npm audit\` locally for full detail. Fix by adding an \`overrides\` entry in the root \`package.json\` or upgrading the parent dep.\n';
+            require('fs').writeFileSync('issue-body.md', body);
+          "
+
+      - name: Open or update tracking issue on failure
+        if: steps.audit.outputs.exit_code != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          TITLE="Security: high-severity transitive dep vulnerabilities detected"
+          EXISTING=$(gh issue list --repo "$REPO" --state open --label "security,dependencies" --json number,title \
+            --jq ".[] | select(.title == \"$TITLE\") | .number" | head -1)
+
+          if [ -n "$EXISTING" ]; then
+            COMMENT_HEADER="$(date -u '+%Y-%m-%d') re-scan still failing:"
+            { echo "$COMMENT_HEADER"; echo; cat issue-body.md; } > comment-body.md
+            gh issue comment "$EXISTING" --repo "$REPO" --body-file comment-body.md
+            echo "Updated existing issue #$EXISTING"
+          else
+            gh issue create --repo "$REPO" \
+              --title "$TITLE" \
+              --label "security,dependencies" \
+              --body-file issue-body.md
+            echo "Opened new issue"
+          fi
+
+      - name: Close tracking issue if audit is clean
+        if: steps.audit.outputs.exit_code == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          TITLE="Security: high-severity transitive dep vulnerabilities detected"
+          EXISTING=$(gh issue list --repo "$REPO" --state open --label "security,dependencies" --json number,title \
+            --jq ".[] | select(.title == \"$TITLE\") | .number" | head -1)
+          if [ -n "$EXISTING" ]; then
+            CLOSE_MSG="Audit is clean as of $(date -u '+%Y-%m-%d'). Closing."
+            gh issue close "$EXISTING" --repo "$REPO" --comment "$CLOSE_MSG"
+            echo "Closed issue #$EXISTING"
+          else
+            echo "Audit clean, no open issue to close."
+          fi
