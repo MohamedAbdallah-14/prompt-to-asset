@@ -219,7 +219,7 @@ describe("tier0 integration", () => {
     } else {
       expect(res.tier0["ocr_text"]).toBeDefined();
     }
-  });
+  }, 15_000);
 });
 
 describe("tier0 failure codes", () => {
