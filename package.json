@@ -60,7 +60,7 @@
     "@types/node": "^25.8.0",
     "@typescript-eslint/utils": "^8.59.3",
     "@vitest/coverage-v8": "^4.1.6",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.0",
     "globals": "^17.6.0",
     "husky": "^9.1.7",
     "prettier": "^3.8.3",
