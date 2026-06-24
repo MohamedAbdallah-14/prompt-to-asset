@@ -71,7 +71,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "png-to-ico": "^3.0.1",
     "satori": "^0.26.0",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.2",
     "svgo": "^4.0.1",
     "tesseract.js": "^7.0.0"
   },
