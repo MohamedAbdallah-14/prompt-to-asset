@@ -72,7 +72,7 @@
     "png-to-ico": "^3.0.1",
     "satori": "^0.26.0",
     "sharp": "^0.34.5",
-    "svgo": "^4.0.1",
+    "svgo": "^4.0.2",
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
