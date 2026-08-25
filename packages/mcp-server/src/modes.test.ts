@@ -32,6 +32,8 @@ const KEYS = [
   "CLOUDFLARE_ACCOUNT_ID",
   "REPLICATE_API_TOKEN",
   "REPLICATE_API_KEY",
+  "ATLASCLOUD_API_KEY",
+  "ATLAS_CLOUD_API_KEY",
   "PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL"
 ];
 
@@ -93,7 +95,8 @@ describe("providerKeyForModel", () => {
     ["cf-flux-1-schnell", "cloudflare"],
     ["cf-sdxl-lightning", "cloudflare"],
     ["replicate-flux-1.1-pro", "replicate"],
-    ["replicate-recraft-v3", "replicate"]
+    ["replicate-recraft-v3", "replicate"],
+    ["atlas-nano-banana-2-lite", "atlasCloud"]
   ])("routes %s → %s", (model, expected) => {
     expect(providerKeyForModel(model)).toBe(expected);
   });
@@ -141,6 +144,7 @@ describe("availability + selectMode", () => {
       // Cloudflare needs both CLOUDFLARE_API_TOKEN AND CLOUDFLARE_ACCOUNT_ID.
       cloudflare: false,
       replicate: false,
+      atlasCloud: false,
       // User-owned ComfyUI endpoint — opt-in via PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL.
       comfyui: false
     });

@@ -11,6 +11,10 @@ changelog notes otherwise.
 
 ## [Unreleased]
 
+### Added
+
+- **Optional Atlas Cloud image provider.** Configure `ATLASCLOUD_API_KEY` (or `ATLAS_CLOUD_API_KEY`) to use `atlas-nano-banana-2-lite` for text-to-image generation. The adapter submits once, polls prediction status with bounded retries, and leaves all existing provider defaults unchanged when no Atlas Cloud key is configured.
+
 ## [0.4.5] — 2026-04-22
 
 Windows CI hotfix #2. The 0.4.4 release fixed most Windows path-separator asserts but missed the `cachePath` test in `core-logic.test.ts`, which still hard-coded `ab/abcd1234.../preview.png`. This release finishes the job.
