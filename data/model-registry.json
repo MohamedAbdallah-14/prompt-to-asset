@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/model-registry.schema.json",
   "version": "1.4.0",
-  "updated": "2026-04-26",
+  "updated": "2026-08-26",
   "source": "docs/research/SYNTHESIS.md § Model Capability Matrix",
   "models": [
     {
@@ -206,6 +206,35 @@
         "new integrations (deprecated)"
       ],
       "cost_hint": "No free API tier for image output (verified at ai.google.dev/gemini-api/docs/pricing, Apr 2026). Paid: Imagen 4 Fast $0.02/img, Imagen 4 Standard $0.04/img, Imagen 4 Ultra $0.06/img. Use AI Studio web as the free paste-only route."
+    },
+    {
+      "id": "atlas-nano-banana-2-lite",
+      "provider": "atlas-cloud",
+      "family": "gemini",
+      "text_encoder": "gemini-class",
+      "native_rgba": false,
+      "native_svg": false,
+      "text_ceiling_chars": 50,
+      "negative_prompt_support": "ignored",
+      "ref_image_support": false,
+      "dialect": "prose",
+      "mode": "text-to-image",
+      "api": "REST",
+      "paste_only": false,
+      "canonical_api_id": "google/nano-banana-2-lite/text-to-image-developer",
+      "strengths": [
+        "single Atlas Cloud key for an explicit Nano Banana 2 Lite route",
+        "asynchronous generation with downloadable output URLs",
+        "supports common aspect ratios at 1K output"
+      ],
+      "weaknesses": [
+        "no native RGBA",
+        "requires polling before the output is available"
+      ],
+      "never_use_for": [
+        "transparent background"
+      ],
+      "cost_hint": "Model-dependent; query /api/v1/model/calculate before generation."
     },
     {
       "id": "gemini-3-flash-image",

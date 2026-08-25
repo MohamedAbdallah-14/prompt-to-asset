@@ -18,6 +18,7 @@ import { MidjourneyProvider } from "./midjourney.js";
 import { AdobeProvider } from "./adobe.js";
 import { KreaProvider } from "./krea.js";
 import { ComfyUiProvider } from "./comfyui.js";
+import { AtlasCloudProvider } from "./atlas-cloud.js";
 import type { Provider, GenerateRequest, GenerateResult } from "./types.js";
 import { ProviderError } from "./types.js";
 
@@ -50,6 +51,7 @@ const PROVIDERS: Provider[] = [
   FreepikProvider,
   PixazoProvider,
   ReplicateProvider,
+  AtlasCloudProvider,
   // User-owned infra (Modal / Runpod / self-hosted ComfyUI). Opt-in via
   // PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL. Unlocks brand-LoRA + custom workflows.
   ComfyUiProvider,

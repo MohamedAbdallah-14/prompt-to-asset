@@ -22,7 +22,8 @@ const PAID_KEYS: Array<keyof ApiAvailability> = [
   "fal",
   "freepik",
   "pixazo",
-  "replicate"
+  "replicate",
+  "atlasCloud"
 ];
 
 /** Provider families you can use for $0 today (free tier or zero signup). */
@@ -123,6 +124,7 @@ export async function capabilities(input: CapabilitiesInputT): Promise<Capabilit
       "PIXAZO_API_KEY (free tier exists but Appy Pie LLP claims output ownership — paid tier transfers ownership)"
     );
   if (!api.replicate) unconfigured.push("REPLICATE_API_TOKEN (signup trial credit)");
+  if (!api.atlasCloud) unconfigured.push("ATLASCLOUD_API_KEY (or ATLAS_CLOUD_API_KEY)");
   if (!api.huggingface)
     unconfigured.push("HF_TOKEN (free, https://huggingface.co/settings/tokens)");
   if (!api.cloudflare)
@@ -349,6 +351,8 @@ function envVarForKey(k: keyof ApiAvailability): string {
       return "CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID";
     case "replicate":
       return "REPLICATE_API_TOKEN";
+    case "atlasCloud":
+      return "ATLASCLOUD_API_KEY";
     case "comfyui":
       return "PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL (+ optional PROMPT_TO_BUNDLE_MODAL_COMFYUI_TOKEN)";
   }
@@ -358,6 +362,8 @@ function envAliasesForKey(k: keyof ApiAvailability): string[] | undefined {
   switch (k) {
     case "nvidia":
       return ["NIM_API_KEY"];
+    case "atlasCloud":
+      return ["ATLAS_CLOUD_API_KEY"];
     default:
       return undefined;
   }

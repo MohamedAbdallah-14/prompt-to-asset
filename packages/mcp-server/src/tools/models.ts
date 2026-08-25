@@ -192,6 +192,8 @@ function envForKey(k: ReturnType<typeof providerKeyForModel>): string {
       return "CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID";
     case "replicate":
       return "REPLICATE_API_TOKEN";
+    case "atlasCloud":
+      return "ATLASCLOUD_API_KEY";
     case "comfyui":
       return "PROMPT_TO_BUNDLE_MODAL_COMFYUI_URL";
     default:

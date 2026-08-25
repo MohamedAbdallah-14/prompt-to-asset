@@ -17,6 +17,7 @@ import { NvidiaNimProvider } from "./nvidia-nim.js";
 import { PollinationsProvider } from "./pollinations.js";
 import { StableHordeProvider } from "./stable-horde.js";
 import { ComfyUiProvider } from "./comfyui.js";
+import { AtlasCloudProvider } from "./atlas-cloud.js";
 import { MidjourneyProvider } from "./midjourney.js";
 import { AdobeProvider } from "./adobe.js";
 import { KreaProvider } from "./krea.js";
@@ -328,6 +329,76 @@ describe("OpenAIProvider", () => {
     const buf = dummyPng(16, 16);
     expect(buf[0]).toBe(0x89);
     expect(buf[1]).toBe(0x50);
+  });
+});
+
+// ── Atlas Cloud ───────────────────────────────────────────────────────────────
+
+describe("AtlasCloudProvider", () => {
+  it("supports only explicit Atlas model ids", () => {
+    expect(AtlasCloudProvider.supportsModel("atlas-nano-banana-2-lite")).toBe(true);
+    expect(AtlasCloudProvider.supportsModel("gemini-3-flash-image")).toBe(false);
+  });
+
+  it("tracks its key and supports dry-run without one", async () => {
+    expect(AtlasCloudProvider.isAvailable()).toBe(false);
+    (CONFIG as { dryRun: boolean }).dryRun = true;
+    const result = await AtlasCloudProvider.generate("atlas-nano-banana-2-lite", baseReq);
+    expect(result.image.length).toBeGreaterThan(0);
+    expect(result.model).toBe("atlas-nano-banana-2-lite");
+  });
+
+  it("submits once, polls, and downloads the completed image", async () => {
+    setKey("atlasCloud", "atlas-test-key");
+    const { calls, restore } = installFetch(
+      { kind: "json", body: { data: { id: "prediction-1", status: "starting" } } },
+      {
+        kind: "json",
+        body: {
+          data: {
+            id: "prediction-1",
+            status: "completed",
+            outputs: ["https://cdn.example.test/image.png"]
+          }
+        }
+      },
+      { kind: "buffer", body: PNG_BYTES, contentType: "image/png" }
+    );
+    try {
+      const result = await AtlasCloudProvider.generate("atlas-nano-banana-2-lite", {
+        ...baseReq,
+        width: 1792,
+        height: 1024
+      });
+      expect(result.image.equals(PNG_BYTES)).toBe(true);
+      expect(calls).toHaveLength(3);
+      expect(calls[0]!.url).toBe("https://api.atlascloud.ai/api/v1/model/generateImage");
+      expect(calls[0]!.method).toBe("POST");
+      expect(calls[0]!.headers["Authorization"]).toBe("Bearer atlas-test-key");
+      expect(JSON.parse(calls[0]!.body ?? "{}")).toMatchObject({
+        model: "google/nano-banana-2-lite/text-to-image-developer",
+        aspect_ratio: "16:9",
+        resolution: "1k",
+        seed: 42
+      });
+      expect(calls[1]!.url).toBe("https://api.atlascloud.ai/api/v1/model/prediction/prediction-1");
+      expect(calls[2]!.url).toBe("https://cdn.example.test/image.png");
+    } finally {
+      restore();
+    }
+  });
+
+  it("does not retry a failed submit", async () => {
+    setKey("atlasCloud", "atlas-test-key");
+    const { calls, restore } = installFetch({ kind: "text", status: 400, body: "bad input" });
+    try {
+      await expect(
+        AtlasCloudProvider.generate("atlas-nano-banana-2-lite", baseReq)
+      ).rejects.toThrow(/submit HTTP 400/);
+      expect(calls).toHaveLength(1);
+    } finally {
+      restore();
+    }
   });
 });
 

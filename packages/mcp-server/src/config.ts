@@ -60,8 +60,13 @@ export const CONFIG = {
     nvidia: process.env["NVIDIA_API_KEY"] || process.env["NIM_API_KEY"],
     huggingface: process.env["HF_TOKEN"] || process.env["HUGGINGFACE_API_KEY"],
     cloudflare: process.env["CLOUDFLARE_API_TOKEN"],
-    replicate: process.env["REPLICATE_API_TOKEN"] || process.env["REPLICATE_API_KEY"]
+    replicate: process.env["REPLICATE_API_TOKEN"] || process.env["REPLICATE_API_KEY"],
+    atlasCloud: process.env["ATLASCLOUD_API_KEY"] || process.env["ATLAS_CLOUD_API_KEY"]
   },
+  atlasCloudBaseUrl:
+    process.env["ATLASCLOUD_API_BASE"] ||
+    process.env["ATLAS_CLOUD_API_BASE"] ||
+    "https://api.atlascloud.ai",
   cloudflareAccountId: process.env["CLOUDFLARE_ACCOUNT_ID"] ?? "",
   transport: (process.env["PROMPT_TO_BUNDLE_TRANSPORT"] || "stdio") as "stdio" | "http",
   httpPort: Number(process.env["PROMPT_TO_BUNDLE_HTTP_PORT"] || "3333"),
